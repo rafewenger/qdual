@@ -154,7 +154,6 @@ namespace QDUAL {
 
   /// IO time.
   struct IO_TIME {
-    double read_table_time; ///< Wall time to read isosurface lookup table.
     double read_nrrd_time;  ///< Wall time to read nrrd file.
     double write_time;      ///< Wall time to write output.
   };
@@ -175,13 +174,6 @@ namespace QDUAL {
 // **************************************************
 // READ NEARLY RAW RASTER DATA (nrrd) FILE
 // **************************************************
-
-/* OBSOLETE
-  /// Read a nearly raw raster data (nrrd) file.
-  void read_nrrd_file
-    (const char * input_filename, DUALISO_SCALAR_GRID & scalar_grid, 
-     NRRD_INFO & nrrd_info, IO_TIME & io_time);
-*/
 
   /// Read a nearly raw raster data (nrrd) file.
   void read_nrrd_file
@@ -299,12 +291,6 @@ namespace QDUAL {
   ///   this routines is called.
   void set_dualiso_data
     (const IO_INFO & io_info, DUALISO_DATA & dualiso_data, DUALISO_TIME & dualiso_time);
-
-  /* OBSOLETE
-  /// Copy nrrd_info into io_info.
-  void set_io_info
-    (const NRRD_INFO & nrrd_info, IO_INFO & io_info);
-  */
 
   /// Set output_info based on isotable, io_info and isovalue index i.
   void set_output_info

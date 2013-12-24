@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   time(&start_time);
 
   DUALISO_TIME dualiso_time;
-  IO_TIME io_time = {0.0, 0.0, 0.0};
+  IO_TIME io_time = {0.0, 0.0};
   IO_INFO io_info;
   IJK::ERROR error;
 

@@ -864,9 +864,6 @@ void QDUAL::report_time
   cout << "Time to read file " << io_info.input_filename << ": "
        << io_time.read_nrrd_time << " seconds." << endl;
 
-  cout << "Time to read " << mesh_type_string << " lookup tables: "
-       << io_time.read_table_time << " seconds." << endl;
-
   report_dualiso_time(io_info, dualiso_time, mesh_type_string);
   if (!io_info.nowrite_flag) {
     cout << "Time to write "
