@@ -4,7 +4,7 @@
 
 /*
   IJK: Isosurface Jeneration Kode
-  Copyright (C) 2012 Rephael Wenger
+  Copyright (C) 2012-2013 Rephael Wenger
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public License
@@ -209,7 +209,7 @@ void ISODUAL_TABLE::SetNumTableEntries(const int num_table_entries)
       (procname, "Unable to allocate memory for dual isosurface table.");
 
   for (int i = 0; i < num_table_entries; i++) {
-    entry[i].Allocate(NumPolyVertices());
+    entry[i].Allocate(NumPolyEdges());
   }
 
   this->num_table_entries = num_table_entries;
