@@ -39,9 +39,9 @@ using namespace IJKDUALTABLE;
 /// Returns list representing isosurface polytopes
 /// @param scalar_grid = scalar grid data
 /// @param isovalue = isosurface scalar value
-/// @param iso_poly[] = vector of isosurface polygope vertices
-///   iso_simplices[numv_per_poly*ip+k] = 
-///     cube containing k'th vertex of polytope ip.
+/// @param iso_poly[] = vector of isosurface polytope vertices
+///   iso_poly[numv_per_poly*ip+k] = 
+///      cube containing k'th vertex of polytope ip.
 void QDUAL::extract_dual_isopoly
 (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
  const SCALAR_TYPE isovalue, std::vector<ISO_VERTEX_INDEX> & iso_poly,

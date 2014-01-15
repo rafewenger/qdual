@@ -93,7 +93,7 @@ void QDUAL::dual_contouring
  const VERTEX_POSITION_METHOD vertex_position_method,
  const bool flag_select_split,
  const bool flag_separate_neg,
- std::vector<VERTEX_INDEX> & isopoly_vert,
+ std::vector<VERTEX_INDEX> & quad_vert,
  std::vector<COORD_TYPE> & vertex_coord,
  MERGE_DATA & merge_data, 
  DUALISO_INFO & dualiso_info)
@@ -105,28 +105,52 @@ void QDUAL::dual_contouring
 
   t0 = clock();
 
-  isopoly_vert.clear();
+  quad_vert.clear();
   vertex_coord.clear();
   dualiso_info.time.Clear();
-
-  std::vector<ISO_VERTEX_INDEX> isopoly;
 
   bool flag_always_separate_opposite(true);
   IJKDUALTABLE::ISODUAL_CUBE_TABLE 
     isodual_table(dimension, flag_separate_neg, 
                   flag_always_separate_opposite);
 
+  // List of cubes containing isosurface quadrilateral vertices.
+  // quad_cube[iq*4+j] = Index of cube containing j'th vertex of quad iq.
+  std::vector<ISO_VERTEX_INDEX> quad_cube;
+
+  // Position on quadrilateral of quadrilateral vertices.
+  // facet_vertex[iq*4+j] = Position on quad iquad of j'th vertex of quad iq.
   std::vector<FACET_VERTEX_INDEX> facet_vertex;
+
+  // For each bipolar edge e,
+  //   For each vertex iv of quad iq dual to e,
+  //     Add cube containing iv to quad_cube[].
+  //     Add position of iv on quad iq to facet_vertex[].
   extract_dual_isopoly
-    (scalar_grid, isovalue, isopoly, facet_vertex, dualiso_info);
+    (scalar_grid, isovalue, quad_cube, facet_vertex, dualiso_info);
   t1 = clock();
 
+  // List of cubes containing isosurface vertices.
   std::vector<ISO_VERTEX_INDEX> cube_list;
-  std::vector<ISO_VERTEX_INDEX> isopoly_cube;
-  merge_identical(isopoly, cube_list, isopoly_cube, merge_data);
+
+  // List of cubes containing isosurface quadrilateral vertices.
+  // quad_cube2[iq*4+j] = Index in cube_list[] of cube 
+  //     containing j'th vertex of quad iq.
+  // quad_cube[k] and quad_cube2[k] represent the same cube but
+  //     quad_cube[k] is the cube index in scalar_grid
+  //     while quad_cube2[k] is the location in cube_list[].
+  std::vector<ISO_VERTEX_INDEX> quad_cube2;
+
+  // Merge identical cubes in list quad_cube[].
+  // Return list of cubes cube_list[] with no duplicate entries.
+  // quad_cube2[k] = Location in cube_list[] of quad_cube[k].
+  merge_identical(quad_cube, cube_list, quad_cube2, merge_data);
   t2 = clock();
 
+  // List of isosurface vertices. 
+  // Class DUAL_ISOVERT contains cube_index, patch_index and table_index.
   std::vector<DUAL_ISOVERT> iso_vlist;
+
   VERTEX_INDEX num_split;
   IJKDUALTABLE::ISODUAL_CUBE_TABLE_AMBIG_INFO ambig_info(dimension);
   int num_non_manifold_split;
@@ -135,18 +159,23 @@ void QDUAL::dual_contouring
   if (flag_select_split) {
     split_dual_isovert_ambig
       (scalar_grid, isodual_table, ambig_info, isovalue, 
-       cube_list, isopoly_cube, facet_vertex,
-       iso_vlist, isopoly_vert, num_split, 
+       cube_list, quad_cube2, facet_vertex,
+       iso_vlist, quad_vert, num_split, 
        num_non_manifold_split, num_1_2_change);
 
     dualiso_info.multi_isov.num_non_manifold_split = num_non_manifold_split;
     dualiso_info.multi_isov.num_1_2_change = num_1_2_change;
   }
   else {
+    // Split isosurface vertices using isodual_table and ambig_info
+    //   to ensure that the isosurface is a manifold.
+    // Initially, each cube contains exactly one isosurface vertex.
+    // iso_vlist[] = Resulting list of isosurface vertices.
+    // quad_vert[iq*4+j] = Index in iso_vlist[] of j'th vertex of quad iq.
     split_dual_isovert_manifold
       (scalar_grid, isodual_table, ambig_info, isovalue, 
-       cube_list, isopoly_cube, facet_vertex,
-       iso_vlist, isopoly_vert, num_split, num_non_manifold_split);
+       cube_list, quad_cube2, facet_vertex,
+       iso_vlist, quad_vert, num_split, num_non_manifold_split);
 
     dualiso_info.multi_isov.num_non_manifold_split = num_non_manifold_split;
   }
@@ -161,6 +190,9 @@ void QDUAL::dual_contouring
        vertex_coord);
   }
   else {
+    // Compute the coordinates of each isosurface vertex iv in iso_vlist[]
+    //   as the centroid of the intersection points of the quadrilaterals
+    //   incident on vertex iv and the cube edges.
     position_dual_isovertices_centroid_multi
       (scalar_grid, isodual_table, isovalue, iso_vlist, vertex_coord);
   }
@@ -177,7 +209,7 @@ void QDUAL::dual_contouring
 void QDUAL::dual_contouring
 (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
  const SCALAR_TYPE isovalue, 
- std::vector<VERTEX_INDEX> & isopoly_vert, 
+ std::vector<VERTEX_INDEX> & quad_vert, 
  std::vector<COORD_TYPE> & vertex_coord)
   // same as previous function but with default vertex_position_method
   //   and without reporting time
@@ -190,7 +222,7 @@ void QDUAL::dual_contouring
   ISO_MERGE_DATA merge_data(dimension, axis_size);
   dual_contouring(scalar_grid, isovalue, CENTROID_EDGE_ISO, 
                   false, true,
-                  isopoly_vert, vertex_coord, merge_data, dualiso_info);
+                  quad_vert, vertex_coord, merge_data, dualiso_info);
 }
 
 // **************************************************
