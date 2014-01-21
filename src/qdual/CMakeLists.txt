@@ -21,15 +21,37 @@ IF (NOT CMAKE_BUILD_TYPE)
        "Default build type: Release" FORCE)
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
+#Find Expat
+include(FindEXPAT)
+find_package(EXPAT REQUIRED)
+include_directories(${EXPAT_INCLUDE_DIRS})
+
+find_library (ITKZLIB_LIBRARY ITKZLIB PATHS "${QDUAL_DIR}/lib")
+find_library (ZLIB_FOUND ZLIB PATHS "${QDUAL_DIR}/lib")
+
+#Find itkzlib or z library
+if ("${ITKZLIB_LIBRARY}" STREQUAL "ITKZLIB_LIBRARY-NOTFOUND")
+  if ("${ZLIB_LIBRARY}" STREQUAL "ZLIB_LIBRARY-NOTFOUND")
+    message ("ITKZLIB and ZLIB not found.  Exiting.")
+    return(10)
+  else()
+  message ("ZLIB FOUND")
+    set (LIB_ZLIB "z")
+  endif()
+else()
+  message ("ITKZLIB FOUND")
+  set (LIB_ZLIB "ITKZLIB")
+endif()
+
 INCLUDE_DIRECTORIES("${QDUAL_DIR}/include")
 LINK_DIRECTORIES("${NRRD_LIBDIR}")
-LINK_LIBRARIES(expat NrrdIO z)
+#LINK_LIBRARIES(expat NrrdIO z)
 
 ADD_EXECUTABLE(qdual qdual_main.cxx qdualIO.cxx qdual.cxx 
                      qdual_datastruct.cxx qdual_extract.cxx 
                      qdual_position.cxx 
                      ijkdualtable.cxx ijkdualtable_ambig.cxx)
-
+target_link_libraries(qdual ${EXPAT_LIBRARIES} NrrdIO ${LIB_ZLIB})
 SET(CMAKE_INSTALL_PREFIX ${QDUAL_DIR})
 INSTALL(TARGETS qdual DESTINATION "bin")
 
