@@ -36,8 +36,11 @@
 #include "qdual_extract.h"
 #include "qdual_position.h"
 
+#include "qdualCollapse.h"
+
 using namespace IJK;
 using namespace QDUAL;
+using namespace QCOLLAPSE; 
 
 
 // **************************************************
@@ -198,6 +201,9 @@ void QDUAL::dual_contouring
   }
 
   t3 = clock();
+  // DEBUG 
+  const float epsilon = 0.33;
+  dual_collapse(scalar_grid, isodual_table, quad_vert, iso_vlist, vertex_coord, epsilon);
 
   // store times
   clock2seconds(t1-t0, dualiso_info.time.extract);
