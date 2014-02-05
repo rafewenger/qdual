@@ -202,7 +202,7 @@ void QDUAL::dual_contouring
 
   t3 = clock();
   // DEBUG 
-  const float epsilon = 0.33;
+  const float epsilon = 0.23;
   dual_collapse(scalar_grid, isodual_table, quad_vert, iso_vlist, vertex_coord, epsilon);
 
   // store times

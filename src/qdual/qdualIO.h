@@ -79,6 +79,10 @@ namespace QDUAL {
     int supersample_resolution;
     bool flag_color_alternating;  ///< Color simplices in alternating cubes
     int region_length;
+	//store info regarding collapses
+	bool flag_collapse_info; 
+	//do not collapse
+	bool flag_NO_collapse;
 
     /// List of high resolution arguments,
     ///   e.g., "-highres {coord list}".

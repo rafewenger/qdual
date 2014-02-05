@@ -51,7 +51,7 @@ namespace {
      SINGLE_ISOV_PARAM,  MULTI_ISOV_PARAM, 
      SPLIT_NON_MANIFOLD_PARAM, SELECT_SPLIT_PARAM,
      SEP_NEG_PARAM, SEP_POS_PARAM,
-     TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,
+     TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_INFO,NO_COLLAPSE,
      HELP_PARAM, OFF_PARAM, IV_PARAM, 
      OUTPUT_FILENAME_PARAM, STDOUT_PARAM, 
      NOWRITE_PARAM, SILENT_PARAM, TIME_PARAM, UNKNOWN_PARAM} PARAMETER;
@@ -59,7 +59,7 @@ namespace {
     {"-subsample", "-supersample", "-position", 
      "-single_isov", "-multi_isov", "-split_non_manifold", "-select_split",
      "-sep_neg", "-sep_pos",
-     "-trimesh", "-uniform_trimesh",
+     "-trimesh", "-uniform_trimesh","-info","-no_collapse",
      "-help", "-off", "-iv", "-o", "-stdout",
      "-nowrite", "-s", "-time", "-unknown"};
 
@@ -206,6 +206,15 @@ void QDUAL::parse_command_line(int argc, char **argv, IO_INFO & io_info)
     case HELP_PARAM:
       help();
       break;
+
+	case COLLAPSE_INFO:
+		io_info.flag_collapse_info = true;
+		break;
+
+	case NO_COLLAPSE:
+		io_info.flag_NO_collapse = true;
+		break;
+
     };
 
     iarg++;
@@ -968,6 +977,8 @@ void QDUAL::IO_INFO::Init()
   supersample_resolution = 2;
   flag_color_alternating = false;  // color simplices in alternating cubes
   region_length = 1;
+  flag_collapse_info = false;
+  flag_NO_collapse = false;
 }
 
 // **************************************************
