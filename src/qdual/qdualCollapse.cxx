@@ -50,7 +50,8 @@ bool is_permitted_collapse()
 //param 'facet_base_coord' returns the facet base coord in direction d
 void find_closest_facet 
 	(const int DIM3,
-	IJK::ARRAY<COORD_TYPE> &endPt1_coord,
+	//IJK::ARRAY<COORD_TYPE> &endPt1_coord,
+	const COORD_TYPE * endPt1_coord,
 	const int d,
 	IJK::ARRAY<GRID_COORD_TYPE> &facet_base_coord)
 {
@@ -65,10 +66,13 @@ void find_closest_facet
 }
 
 
+
+
 // Compute distance to a particular facet
 void distance_to_facet (
 	const int DIM3,
-	IJK::ARRAY<COORD_TYPE> &endPt_coord,
+	//IJK::ARRAY<COORD_TYPE> &endPt_coord,
+	const COORD_TYPE * endPt_coord,
 	const int d,
 	float &dist
 	)
@@ -82,20 +86,23 @@ void distance_to_facet (
 //And the distance to the closest edge
 void find_closest_edge_and_distance 
 	(const int DIM3,
-	IJK::ARRAY<COORD_TYPE> &endPt1_coord,
+	const COORD_TYPE * endPt1_coord,
 	const int d,
 	IJK::ARRAY<GRID_COORD_TYPE> &edge_base_coord,
 	float & close_dist)
 {
 	int d1 = (d+1)%3;
 	int d2 = (d+2)%3;
-	edge_base_coord[d] =  floorf(endPt1_coord[d]); 
-	edge_base_coord[d1] = floorf(endPt1_coord[d1] + 0.5);
-	edge_base_coord[d2] = floorf(endPt1_coord[d1] + 0.5);
+	edge_base_coord[d] =  floor(endPt1_coord[d]); 
+	edge_base_coord[d1] = floor(endPt1_coord[d1] + 0.5);
+	edge_base_coord[d2] = floor(endPt1_coord[d2] + 0.5);
 
 	float dist1=0, dist2=0;
-	distance_to_facet ( DIM3, endPt1_coord, d1, dist1);
-	distance_to_facet ( DIM3, endPt1_coord, d2, dist2);
+	//distance_to_facet ( DIM3, endPt1_coord, d1, dist1);
+	//distance_to_facet ( DIM3, endPt1_coord, d2, dist2);
+	
+	dist1 = abs(edge_base_coord[d1]-endPt1_coord[d1]);
+	dist2 = abs(edge_base_coord[d2]-endPt1_coord[d2]);
 	//return the larger distance
 	if (dist1 < dist2)
 		close_dist = dist2;
@@ -103,16 +110,16 @@ void find_closest_edge_and_distance
 		close_dist = dist1;
 	
 	// DEBUG
-	cout <<"d "<< d <<" edge base "<< edge_base_coord[0] << "," << edge_base_coord[1] 
-	<<","<<edge_base_coord[2]<<" ";
-	cout <<" endpt [" << endPt1_coord[0] <<","<< endPt1_coord[1]<<","<<endPt1_coord[2]<<"]"<<endl;
-	cout <<"dir "<<d1<<" dist "<< dist1 << " dir "<<d2<<" dist "<< dist2 <<endl;
+	//cout <<"d "<< d <<" edge base "<< edge_base_coord[0] << "," << edge_base_coord[1] 
+	//<<","<<edge_base_coord[2]<<" ";
+	//cout <<" endpt [" << endPt1_coord[0] <<","<< endPt1_coord[1]<<","<<endPt1_coord[2]<<"]"<<endl;
+	//cout <<"dir "<<d1<<" dist "<< dist1 << " dir "<<d2<<" dist "<< dist2 <<endl;
 }
 
 //Check if the point is 'epsilon' close to facet 'f' in direction 'd'
 //The facet 'f' is defined by the params 'facet_base_coord' and 'd/closest_facet'
 bool is_epsilon_close(
-	const IJK::ARRAY<COORD_TYPE> &endPt1_coord,
+	const COORD_TYPE * endPt1_coord,
 	const IJK::ARRAY<GRID_COORD_TYPE> &facet_base_coord,
 	const int d,
 	const float epsilon)
@@ -131,38 +138,55 @@ bool is_epsilon_close(
 	}
 }
 
+
 //Setup the COLLAPSE_MAP
 void setup_collapse_edges(
 	const std::vector<COORD_TYPE> & vertex_coord,
-	IJK::ARRAY<VERTEX_INDEX> &collapse_edges)
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map)
 {
 	int num_vertex = vertex_coord.size();
 	for (int v=0; v<num_vertex; v++)
 	{
-		collapse_edges[v]=v;
+		collapse_map[v]=v;
 	}
 }
 
 //Collapse edge, endPt2 is mapped to endPt1.
 void update_collapse_edges(
-	IJK::ARRAY<VERTEX_INDEX> &collapse_edges,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	const VERTEX_INDEX endPt1,
 	const VERTEX_INDEX endPt2)
 {
-	collapse_edges[endPt2]=endPt1;
+	collapse_map[endPt2]=endPt1;
 }
 
 //implements find part of the union find operation
-int find_vertex(IJK::ARRAY<VERTEX_INDEX> &collapse_edges, int endpt)
+int find_vertex_recursive(IJK::ARRAY<VERTEX_INDEX> &collapse_map, int endpt)
 {
-	if (collapse_edges[endpt]!= endpt)
+	if (collapse_map[endpt]!= endpt)
 	{
 		// DEBUG
-		//cout <<"ce["<<endpt<<"]="<<collapse_edges[endpt]<<"!="<<endpt<< endl;
-		collapse_edges[endpt]=find_vertex(collapse_edges, collapse_edges[endpt]);
+		//cout <<"ce["<<endpt<<"]="<<collapse_map[endpt]<<"!="<<endpt<< endl;
+		collapse_map[endpt]=find_vertex_recursive(collapse_map, collapse_map[endpt]);
 	}
-	return collapse_edges[endpt];
+	return collapse_map[endpt];
 }
+
+
+//Implements find vertex iteratively
+int find_vertex(IJK::ARRAY<VERTEX_INDEX> &collapse_map, int endpt)
+{
+	VERTEX_INDEX temp = endpt;
+	while (collapse_map[temp]!=temp)
+	{
+		int temp2 = collapse_map[temp];
+		collapse_map[temp]=collapse_map[temp2];
+		temp = temp2;
+	}
+	return temp;
+}
+
+
 
 //Collapse across facets
 void collapse_across_facets(
@@ -170,7 +194,7 @@ void collapse_across_facets(
 	const std::vector<DUAL_ISOVERT> & iso_vlist,
 	std::vector<VERTEX_INDEX> & quad_vert,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	IJK::ARRAY<VERTEX_INDEX> &collapse_edges,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	const float epsilon)
 {
 	const int num_quads = quad_vert.size()/4;
@@ -187,17 +211,14 @@ void collapse_across_facets(
 	{
 		//for each edge
 		for ( v1 = count-1, v2 = 0; v2 < count; v1 = v2++ ) {
-			// DEBUG
-			/*	cout <<"edges are "
-			<< quad_vert[q*4+v1] << " "
-			<< quad_vert[q*4+v2] << endl;*/
+
 
 			int endPt1 = quad_vert[q*4+v1];
 			int endPt2 = quad_vert[q*4+v2];
 
 			cout <<"(before find) Initial endpoint1 = "<< endPt1 <<" endpt2 = "<< endPt2 <<endl;
-			endPt1 = find_vertex(collapse_edges, endPt1);
-			endPt2 = find_vertex(collapse_edges, endPt2);
+			endPt1 = find_vertex(collapse_map, endPt1);
+			endPt2 = find_vertex(collapse_map, endPt2);
 
 			// DEBUG 
 			cout <<"(after find) Initial endpoint1 = "<< endPt1 <<" endpt2 = "<< endPt2 <<endl;
@@ -215,22 +236,12 @@ void collapse_across_facets(
 					cout <<"cube index of endPT2, is lower than endPt1 swap "<<endl;
 					swap(endPt1, endPt2);
 				}
-				// DEBUG
-				//cout <<"After swapping\n";
-				//cout << vertex_coord[3*endPt1+0] <<" " << vertex_coord[3*endPt1+1] << " " << vertex_coord[3*endPt1+2] << endl;
-				//cout << vertex_coord[3*endPt2+0] <<" " << vertex_coord[3*endPt2+1] << " " << vertex_coord[3*endPt2+2] << endl;
 
-				//VERTEX_INDEX v = iso_vlist[endPt1].cube_index;
+				
+				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
+				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
 
-				IJK::ARRAY<COORD_TYPE> endPt1_coord(dimension,0);
-				IJK::ARRAY<COORD_TYPE> endPt2_coord(dimension,0);
-				for (int d=0;d<dimension;d++) //coordinates of endPt1
-				{
-					endPt1_coord[d] = vertex_coord[3*endPt1+d];
-					endPt2_coord[d] = vertex_coord[3*endPt2+d];
-				}
-
-
+				
 				// DEBUG
 				cout <<"end pt1 "<< endPt1_coord[0] << "," << endPt1_coord[1]<<","<<endPt1_coord[2]<<endl;
 
@@ -252,6 +263,7 @@ void collapse_across_facets(
 						closest_facet_base_coord[2] = facet_base_coord[2];
 					}
 				}
+				
 				//cout <<" num close " << num_close <<endl;
 				if(num_close == 1)
 				{
@@ -275,7 +287,7 @@ void collapse_across_facets(
 									<< quad_vert[q*4+1] << " "
 									<< quad_vert[q*4+2] << " "
 									<< quad_vert[q*4+3] << "]"<< endl;
-								update_collapse_edges(collapse_edges,endPt1, endPt2);
+								update_collapse_edges(collapse_map,endPt1, endPt2);
 							}
 						}
 					}
@@ -313,12 +325,8 @@ void collapse_across_facets(
 									cout <<"veretx " <<scalar_grid.ComputeVertexIndex(&facet_base_coord[0])
 										<<" = "<<scalar_grid.ComputeVertexIndex(&closest_facet_base_coord[0])<<endl;
 									cout <<"**** collapse **** "<< endPt1 <<" to " << endPt2 <<endl;
-									update_collapse_edges(collapse_edges,endPt2, endPt1);
-									cout <<"\nvertices are ["
-										<< quad_vert[q*4] << " "
-										<< quad_vert[q*4+1] << " "
-										<< quad_vert[q*4+2] << " "
-										<< quad_vert[q*4+3] << "]"<< endl;
+									update_collapse_edges(collapse_map,endPt2, endPt1);
+
 								}
 							}
 						}
@@ -337,7 +345,7 @@ void collapse_across_edges(
 	const std::vector<DUAL_ISOVERT> & iso_vlist,
 	std::vector<VERTEX_INDEX> & quad_vert,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	IJK::ARRAY<VERTEX_INDEX> &collapse_edges,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	const float epsilon)
 {
 	const int num_quads = quad_vert.size()/4;
@@ -348,25 +356,16 @@ void collapse_across_edges(
 	int v1,v2;
 	for (int q=0; q<num_quads; q++)
 	{
-		cout <<"\nvertices are ["
-			<< quad_vert[q*4] << " "
-			<< quad_vert[q*4+1] << " "
-			<< quad_vert[q*4+2] << " "
-			<< quad_vert[q*4+3] << "]"<< endl;
-
 		//for each edge
 		for ( v1 = count-1, v2 = 0; v2 < count; v1 = v2++ ) {
-			// DEBUG
-			/*	cout <<"edges are "
-			<< quad_vert[q*4+v1] << " "
-			<< quad_vert[q*4+v2] << endl;*/
+
 
 			int endPt1 = quad_vert[q*4+v1];
 			int endPt2 = quad_vert[q*4+v2];
-			endPt1 = find_vertex(collapse_edges, endPt1);
-			endPt2 = find_vertex(collapse_edges, endPt2);
-			// DEBUG 
-			cout <<"\n \nendpoint1 = "<< endPt1 <<" endpt2 = "<< endPt2 <<endl;
+
+			endPt1 = find_vertex(collapse_map, endPt1);
+			endPt2 = find_vertex(collapse_map, endPt2);
+
 			if (endPt1!=endPt2)
 			{
 				if ( vert_simple(iso_vlist[endPt2].patch_index ) 
@@ -385,13 +384,9 @@ void collapse_across_edges(
 				cout << vertex_coord[3*endPt2+0] <<" " << vertex_coord[3*endPt2+1] << " " << vertex_coord[3*endPt2+2] << endl;
 
 
-				IJK::ARRAY<COORD_TYPE> endPt1_coord(dimension,0);
-				IJK::ARRAY<COORD_TYPE> endPt2_coord(dimension,0);
-				for (int d=0;d<dimension;d++) //coordinates of endPt1
-				{
-					endPt1_coord[d] = vertex_coord[3*endPt1+d];
-					endPt2_coord[d] = vertex_coord[3*endPt2+d];
-				}
+				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
+				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
+
 				// DEBUG
 				cout <<"end pt1 "<< endPt1_coord[0] << "," << endPt1_coord[1]<<","<<endPt1_coord[2]<<endl;
 
@@ -407,7 +402,6 @@ void collapse_across_edges(
 					find_closest_edge_and_distance(DIM3, endPt1_coord, d, edge_base_coord, closest_distance);
 					if (closest_distance < epsilon)
 					{
-						cout <<" vertex close to edge\n";
 						num_close++;
 						closest_edge_dir=d;
 						closest_edge_base_coord[0]=edge_base_coord[0];
@@ -415,8 +409,6 @@ void collapse_across_edges(
 						closest_edge_base_coord[2]=edge_base_coord[2];
 					}
 				}
-				cout <<" num close " << num_close <<endl;
-
 
 				if(num_close == 1)
 				{
@@ -429,8 +421,8 @@ void collapse_across_edges(
 							== scalar_grid.ComputeVertexIndex(&closest_edge_base_coord[0]))
 							if (is_permitted_collapse)
 							{ 
-								cout <<"**** collapse **** "<<endl;
-								update_collapse_edges(collapse_edges,endPt1, endPt2);
+								cout <<"**** collapse **** "<< endPt2 <<" to " << endPt1 <<endl;
+								update_collapse_edges(collapse_map,endPt1, endPt2);
 							}
 					}
 				}
@@ -463,8 +455,8 @@ void collapse_across_edges(
 								== scalar_grid.ComputeVertexIndex(&closest_edge_base_coord[0]))
 								if (is_permitted_collapse)
 								{ 
-									cout <<"**** collapse **** "<<endl;
-									update_collapse_edges(collapse_edges,endPt2, endPt1);
+									cout <<"**** collapse **** "<< endPt1 << " to " << endPt2 <<endl;
+									update_collapse_edges(collapse_map,endPt2, endPt1);
 								}
 						}
 					}
@@ -475,9 +467,11 @@ void collapse_across_edges(
 	}
 }
 
+
+
 //Find the closest grid vertex to endpt_coord
 void find_closest_grid_vertex(const int DIM3,
-	IJK::ARRAY<COORD_TYPE> &endPt_coord,
+	const COORD_TYPE * endPt_coord,
 	IJK::ARRAY<GRID_COORD_TYPE> &vertex_base_coord,
 	float & close_dist)
 {
@@ -486,7 +480,7 @@ void find_closest_grid_vertex(const int DIM3,
 	for (int d=0;d<DIM3;d++)
 	{
 		vertex_base_coord[d]= floorf(endPt_coord[d]+0.5);
-		distance_to_facet ( DIM3, endPt_coord, d, dist);
+		dist = abs(vertex_base_coord[d]-endPt_coord[d]);
 		dists.push_back(dist);
 	}
 	close_dist = *std::max_element(dists.begin(), dists.end());
@@ -499,7 +493,7 @@ void collapse_across_vertices(
 	const std::vector<DUAL_ISOVERT> & iso_vlist,
 	std::vector<VERTEX_INDEX> & quad_vert,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	IJK::ARRAY<VERTEX_INDEX> &collapse_edges,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	const float epsilon)
 {
 	const int num_quads = quad_vert.size()/4;
@@ -513,8 +507,8 @@ void collapse_across_vertices(
 
 				int endPt1 = quad_vert[q*4+v1];
 				int endPt2 = quad_vert[q*4+v2];
-				endPt1 = find_vertex(collapse_edges, endPt1);
-				endPt2 = find_vertex(collapse_edges, endPt2);
+				endPt1 = find_vertex(collapse_map, endPt1);
+				endPt2 = find_vertex(collapse_map, endPt2);
 				if (endPt1!=endPt2)
 				{
 					if ( vert_simple(iso_vlist[endPt2].patch_index ) 
@@ -528,13 +522,9 @@ void collapse_across_vertices(
 					{
 						swap(endPt1, endPt2);
 					}
-					IJK::ARRAY<COORD_TYPE> endPt1_coord(dimension,0);
-					IJK::ARRAY<COORD_TYPE> endPt2_coord(dimension,0);
-					for (int d=0;d<dimension;d++) //coordinates of endPt1
-					{
-						endPt1_coord[d] = vertex_coord[3*endPt1+d];
-						endPt2_coord[d] = vertex_coord[3*endPt2+d];
-					}
+					const COORD_TYPE * endPt1_coord =  & (vertex_coord[DIM3*endPt1]);
+					const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
+
 					float closest_distance=0;
 					IJK::ARRAY<GRID_COORD_TYPE> vertex_base_coord(dimension,0);
 					IJK::ARRAY<GRID_COORD_TYPE> closest_vertex_base_coord(dimension,0);
@@ -552,7 +542,7 @@ void collapse_across_vertices(
 								if (is_permitted_collapse)
 								{ 
 									cout <<"**** collapse **** "<<endl;
-									update_collapse_edges(collapse_edges,endPt1, endPt2);
+									update_collapse_edges(collapse_map,endPt1, endPt2);
 								}
 						}
 					}
@@ -560,16 +550,16 @@ void collapse_across_vertices(
 			}//for each edge
 }
 
-//update the collapses in "collapse_edges" in "quad_vert"
+//update the collapses in "collapse_map" in "quad_vert"
 void update_quads(
-	const IJK::ARRAY<VERTEX_INDEX> & collapse_edges,
+	const IJK::ARRAY<VERTEX_INDEX> & collapse_map,
 	std::vector<VERTEX_INDEX> & quad_vert
 	)
 {
 	for (int v=0;v<quad_vert.size();v++)
 	{
 			int k = quad_vert[v];
-			quad_vert[v]=collapse_edges[k];
+			quad_vert[v]=collapse_map[k];
 	}
 }
 
@@ -587,16 +577,16 @@ void QCOLLAPSE::dual_collapse(
 
 	//set up the vertex collapse map
 	int num_vertex = vertex_coord.size();
-	IJK::ARRAY<VERTEX_INDEX> collapse_edges(num_vertex,0);
-	//COLLAPSE_MAP collapse_edges;
-	//setup collapse_edges.
-	setup_collapse_edges(vertex_coord, collapse_edges);
+	IJK::ARRAY<VERTEX_INDEX> collapse_map(num_vertex,0);
+	//COLLAPSE_MAP collapse_map;
+	//setup collapse_map.
+	setup_collapse_edges(vertex_coord, collapse_map);
 		//Reordering QuadVert 
 	IJK::reorder_quad_vertices(quad_vert);
-	collapse_across_facets(scalar_grid, iso_vlist, quad_vert, vertex_coord, collapse_edges, epsilon);
-	collapse_across_edges(scalar_grid, iso_vlist, quad_vert, vertex_coord, collapse_edges, epsilon);
-	collapse_across_vertices(scalar_grid, iso_vlist, quad_vert, vertex_coord, collapse_edges, epsilon);
-	update_quads(collapse_edges, quad_vert);
+	collapse_across_facets(scalar_grid, iso_vlist, quad_vert, vertex_coord, collapse_map, epsilon);
+	collapse_across_edges(scalar_grid, iso_vlist, quad_vert, vertex_coord, collapse_map, epsilon);
+	collapse_across_vertices(scalar_grid, iso_vlist, quad_vert, vertex_coord, collapse_map, epsilon);
+	update_quads(collapse_map, quad_vert);
 	//reorder the quads back to the original.
 	IJK::reorder_quad_vertices(quad_vert);
 }
