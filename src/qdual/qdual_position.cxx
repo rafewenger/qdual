@@ -70,17 +70,17 @@ void QDUAL::position_dual_isovertices_centroid
  const std::vector<ISO_VERTEX_INDEX> & vlist, COORD_TYPE * coord)
 {
   const int dimension = scalar_grid.Dimension();
-  GRID_COORD_TYPE grid_coord[dimension];
-  COORD_TYPE vcoord[dimension];
-  COORD_TYPE coord0[dimension];
-  COORD_TYPE coord1[dimension];
-  COORD_TYPE coord2[dimension];
+  ARRAY<GRID_COORD_TYPE> grid_coord(dimension);
+  ARRAY<COORD_TYPE> vcoord(dimension);
+  ARRAY<COORD_TYPE> coord0(dimension);
+  ARRAY<COORD_TYPE> coord1(dimension);
+  ARRAY<COORD_TYPE> coord2(dimension);
 
   for (VERTEX_INDEX i = 0; i < vlist.size(); i++) {
     VERTEX_INDEX iv = vlist[i];
 
     int num_intersected_edges = 0;
-    set_coord(dimension, 0.0, vcoord);
+    set_coord(dimension, 0.0, vcoord.Ptr());
 
     for (int edge_dir = 0; edge_dir < dimension; edge_dir++)
       for (int k = 0; k < scalar_grid.NumFacetVertices(); k++) {
@@ -99,13 +99,13 @@ void QDUAL::position_dual_isovertices_centroid
 
         if (is_end0_positive != is_end1_positive) {
 
-          scalar_grid.ComputeCoord(iend0, coord0);
-          scalar_grid.ComputeCoord(iend1, coord1);
+          scalar_grid.ComputeCoord(iend0, coord0.Ptr());
+          scalar_grid.ComputeCoord(iend1, coord1.Ptr());
 
           linear_interpolate_coord
-            (dimension, s0, coord0, s1, coord1, isovalue, coord2);
+            (dimension, s0, coord0.Ptr(), s1, coord1.Ptr(), isovalue, coord2.Ptr());
 
-          add_coord(dimension, vcoord, coord2, vcoord);
+          add_coord(dimension, vcoord.Ptr(), coord2.Ptr(), vcoord.Ptr());
 
           num_intersected_edges++;
         }
@@ -114,7 +114,7 @@ void QDUAL::position_dual_isovertices_centroid
 
     if (num_intersected_edges > 0) {
       multiply_coord
-        (dimension, 1.0/num_intersected_edges, vcoord, coord+i*dimension);
+        (dimension, 1.0/num_intersected_edges, vcoord.Ptr(), coord+i*dimension);
     }
     else {
       scalar_grid.ComputeCubeCenterCoord(iv, coord+i*dimension);
@@ -155,10 +155,11 @@ void QDUAL::position_dual_isovertices_centroid_multi
 {
   const int dimension = scalar_grid.Dimension();
   const int num_cube_vertices = scalar_grid.NumCubeVertices();
-  COORD_TYPE vcoord[dimension];
-  COORD_TYPE coord0[dimension];
-  COORD_TYPE coord1[dimension];
-  COORD_TYPE coord2[dimension];
+  ARRAY<COORD_TYPE> vcoord(dimension);
+  ARRAY<COORD_TYPE> coord0(dimension);
+  ARRAY<COORD_TYPE> coord1(dimension);
+  ARRAY<COORD_TYPE> coord2(dimension);
+
   IJK::CUBE_FACE_INFO<int,int,int> cube(dimension);
 
   for (ISO_VERTEX_INDEX i = 0; i < iso_vlist.size(); i++) {
@@ -167,7 +168,7 @@ void QDUAL::position_dual_isovertices_centroid_multi
     TABLE_INDEX it = iso_vlist[i].table_index;
 
     int num_intersected_edges = 0;
-    IJK::set_coord(dimension, 0.0, vcoord);
+    IJK::set_coord(dimension, 0.0, vcoord.Ptr());
 
     for (int ie = 0; ie < cube.NumEdges(); ie++) {
       if (isodual_table.IsBipolar(it, ie)) {
@@ -179,13 +180,13 @@ void QDUAL::position_dual_isovertices_centroid_multi
           SCALAR_TYPE s0 = scalar_grid.Scalar(iend0);
           SCALAR_TYPE s1 = scalar_grid.Scalar(iend1);
 
-          scalar_grid.ComputeCoord(iend0, coord0);
-          scalar_grid.ComputeCoord(iend1, coord1);
+          scalar_grid.ComputeCoord(iend0, coord0.Ptr());
+          scalar_grid.ComputeCoord(iend1, coord1.Ptr());
 
           linear_interpolate_coord
-            (dimension, s0, coord0, s1, coord1, isovalue, coord2);
+            (dimension, s0, coord0.Ptr(), s1, coord1.Ptr(), isovalue, coord2.Ptr());
 
-          add_coord(dimension, vcoord, coord2, vcoord);
+          add_coord(dimension, vcoord.Ptr(), coord2.Ptr(), vcoord.Ptr());
 
           num_intersected_edges++;
         }
@@ -194,7 +195,7 @@ void QDUAL::position_dual_isovertices_centroid_multi
 
     if (num_intersected_edges > 0) {
       multiply_coord
-        (dimension, 1.0/num_intersected_edges, vcoord, coord+i*dimension);
+        (dimension, 1.0/num_intersected_edges, vcoord.Ptr(), coord+i*dimension);
     }
     else {
       scalar_grid.ComputeCubeCenterCoord(icube, coord+i*dimension);
@@ -231,10 +232,11 @@ void QDUAL::position_dual_isovertices_near_cube_center_multi
  COORD_TYPE * coord)
 {
   const int dimension = scalar_grid.Dimension();
-  COORD_TYPE vcoord[dimension];
+  ARRAY<COORD_TYPE> vcoord(dimension);
   IJK::CUBE_FACE_INFO<int,int,int> cube(dimension);
   IJK::UNIT_CUBE<int,int,int> unit_cube(dimension);
-  bool intersects_facet[2*dimension];
+  ARRAY<bool> intersects_facet(2*dimension);
+ 
 
   for (VERTEX_INDEX i = 0; i < iso_vlist.size(); i++) {
     VERTEX_INDEX icube = iso_vlist[i].cube_index;
@@ -246,7 +248,7 @@ void QDUAL::position_dual_isovertices_near_cube_center_multi
     }
     else {
 
-      scalar_grid.ComputeCubeCenterCoord(icube, vcoord);
+      scalar_grid.ComputeCubeCenterCoord(icube, vcoord.Ptr());
 
       // Set intersects facet to false.
       for (int d = 0; d < dimension; d++) {
@@ -282,7 +284,7 @@ void QDUAL::position_dual_isovertices_near_cube_center_multi
             { vcoord[d] += offset; }
         }
       }
-      IJK::copy_coord(dimension, vcoord, coord+i*dimension);
+      IJK::copy_coord(dimension, vcoord.Ptr(), coord+i*dimension);
     }
   }
 }
