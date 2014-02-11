@@ -44,8 +44,8 @@ namespace QDUAL {
 // DUAL CONTOURING 
 // **************************************************
 
-  /// Dual Contouring Algorithm.
-  void dual_contouring
+  /// Dual Contouring Algorithm. (main function red1)
+  void quality_dual_contouring
     (const DUALISO_DATA & dualiso_data, const SCALAR_TYPE isovalue, 
      DUAL_ISOSURFACE & dual_isosurface, DUALISO_INFO & dualiso_info);
 
@@ -60,7 +60,7 @@ namespace QDUAL {
     std::vector<VERTEX_INDEX> & quad_vert, 
     std::vector<COORD_TYPE> & vertex_coord);
 
-  /// Dual Contouring Algorithm.
+  /// Dual Contouring Algorithm. (main function red2)
   /// Represents each grid edge by a single integer.
   /// @param flag_separate_neg  If true, isosurface patches
   ///        separate negative grid vertices.
@@ -68,9 +68,10 @@ namespace QDUAL {
   ///        quad_vert[iq*4+j] is index to j'th vertex of quadrilateral iq.
   /// @param[out] vertex_coord[] Array of vertex coordinates.
   ///        vertex_coord[i*dimension+j] is j'th coordinate of vertex i.
+  /// @param[out] Class DUAL_ISOVERT contains cube_index, patch_index and table_index.
   /// @param merge_data Data structure for merging edges.  
   ///        Requires memory of size(MERGE_INDEX) for each grid edge.
-  void dual_contouring
+  void dual_contouring 
    (const DUALISO_SCALAR_GRID_BASE & scalar_grid, 
     const SCALAR_TYPE isovalue, 
     const VERTEX_POSITION_METHOD vertex_position_method,
@@ -78,6 +79,7 @@ namespace QDUAL {
     const bool flag_separate_neg,
     std::vector<VERTEX_INDEX> & quad_vert, 
     std::vector<COORD_TYPE> & vertex_coord,
+    std::vector<DUAL_ISOVERT> &iso_vlist,
     MERGE_DATA & merge_data, DUALISO_INFO & dualiso_info);
 
   // **************************************************

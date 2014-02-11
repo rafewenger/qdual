@@ -71,7 +71,7 @@ namespace QDUAL {
   // **************************************************
 
   typedef IJK::DUAL_ISOVERT
-    <ISO_VERTEX_INDEX, FACET_VERTEX_INDEX, IJKDUALTABLE::TABLE_INDEX>
+    <ISO_VERTEX_INDEX, FACET_VERTEX_INDEX, IJKDUALTABLE::TABLE_INDEX, DEGREE_TYPE>
     DUAL_ISOVERT;
 
   // **************************************************

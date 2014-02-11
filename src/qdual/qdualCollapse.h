@@ -27,11 +27,19 @@ namespace QCOLLAPSE{
 	// Dual Collapse
 	void dual_collapse(
 		const DUALISO_SCALAR_GRID_BASE & scalar_grid,
-		const IJKDUALTABLE::ISODUAL_CUBE_TABLE & isodual_table,
 		std::vector<VERTEX_INDEX> & quad_vert,
 		const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 		const std::vector<COORD_TYPE> & vertex_coord,
 		const float epsilon
 		);
+
+
+	// Triangulate quads based on their angles
+	void triangulate_quad_angle_based(
+		std::vector<VERTEX_INDEX> & non_degen_quad_vert, // only non degenerate quads
+		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
+		const std::vector<COORD_TYPE> & vertex_coord
+		);
+
 }
 #endif // !_QDUAL_COLLAPSE_
