@@ -1,4 +1,7 @@
 #include "qdual_remove_degen.h"
+
+#include <cmath>
+
 using namespace std;
 using namespace IJK;
 
