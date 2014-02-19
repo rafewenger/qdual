@@ -11,7 +11,7 @@ ENDIF (NOT DEFINED ${QDUAL_DIR})
 
 SET(CMAKE_INSTALL_PREFIX "${QDUAL_DIR}/")
 SET(LIBRARY_OUTPUT_PATH ${QDUAL_DIR}/lib CACHE PATH "Library directory")
-SET(QDUALL_DIR "src/qdual")
+SET(QDUAL_DIR "src/qdual")
 SET(NRRD_LIBDIR "${QDUAL_DIR}/lib")
 
 #---------------------------------------------------------
@@ -55,4 +55,4 @@ target_link_libraries(qdual ${EXPAT_LIBRARIES} NrrdIO ${LIB_ZLIB})
 SET(CMAKE_INSTALL_PREFIX ${QDUAL_DIR})
 INSTALL(TARGETS qdual DESTINATION "bin")
 
-ADD_CUSTOM_TARGET(tar WORKING_DIRECTORY ../.. COMMAND tar cvfh ${QDUAL_DIR}/ijkdual.tar ${QDUAL_DIR}/*.cxx ${QDUAL_DIR}/*.h ${QDUAL_DIR}/*.txx ${QDUAL_DIR}/CMakeLists.txt)
+ADD_CUSTOM_TARGET(tar WORKING_DIRECTORY ../.. COMMAND tar cvfh ${QDUAL_DIR}/qdual.tar ${QDUAL_DIR}/*.cxx ${QDUAL_DIR}/*.h ${QDUAL_DIR}/CMakeLists.txt)
