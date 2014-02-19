@@ -50,7 +50,9 @@ LINK_DIRECTORIES("${NRRD_LIBDIR}")
 ADD_EXECUTABLE(qdual qdual_main.cxx qdualIO.cxx qdual.cxx 
                      qdual_datastruct.cxx qdual_extract.cxx 
                      qdual_position.cxx 
-                     ijkdualtable.cxx ijkdualtable_ambig.cxx)
+                     ijkdualtable.cxx ijkdualtable_ambig.cxx
+					 qdual_remove_degen.cxx qdual_table.cxx
+					 qdual_collapse.cxx qdual_restrictions.cxx)
 target_link_libraries(qdual ${EXPAT_LIBRARIES} NrrdIO ${LIB_ZLIB})
 SET(CMAKE_INSTALL_PREFIX ${QDUAL_DIR})
 INSTALL(TARGETS qdual DESTINATION "bin")

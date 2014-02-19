@@ -281,6 +281,13 @@ namespace QDUAL {
    const std::vector<VERTEX_INDEX> & tri_vert,
    IO_TIME & io_time);
 
+  /// Write dual isosurface as a quad and triangle  mesh
+  void write_dual_quad_tri_mesh
+	  ( const OUTPUT_INFO & output_info,
+	  const DUALISO_DATA & dualiso_data,
+	  const DUAL_ISOSURFACE & dual_isosurface
+	  );
+
 
 // **************************************************
 // SET ROUTINES
