@@ -1,4 +1,4 @@
-/// \file ijkdualIO.cxx
+// \file ijkdualIO.cxx
 /// IO classes and routines for qdual.
 
 /*
@@ -361,7 +361,10 @@ void QDUAL::output_dual_isosurface
 	}
 	else if (output_info.use_quad_tri_mesh && dual_isosurface.flag_has_degen_quads)
 	{
-		write_dual_quad_tri_mesh(output_info, dualiso_data, dual_isosurface);
+		output_dual_tri_quad_isosurface
+			(output_info, dualiso_data, dual_isosurface.vertex_coord, 
+       dual_isosurface.tri_vert, dual_isosurface.isopoly_vert,
+       dualiso_info, io_time);
 	}
 	else {
 		output_dual_isosurface
@@ -398,6 +401,25 @@ void QDUAL::output_dual_tri_isosurface
 
 	if (!output_info.nowrite_flag) {
 		write_dual_tri_mesh(output_info, vertex_coord, tri_vert, io_time);
+	}
+}
+
+/// Output isosurface of quadrilaterals and triangles.
+void QDUAL::output_dual_tri_quad_isosurface
+	(const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
+	const std::vector<COORD_TYPE> & vertex_coord,
+	const std::vector<VERTEX_INDEX> & tri_vert,
+	const std::vector<VERTEX_INDEX> & quad_vert,
+	const DUALISO_INFO & dualiso_info, IO_TIME & io_time)
+{
+	if (!output_info.use_stdout && !output_info.flag_silent) {
+		report_iso_info(output_info, dualiso_data,
+                    vertex_coord, tri_vert, quad_vert, dualiso_info);
+	}
+
+	if (!output_info.nowrite_flag) {
+		write_dual_tri_quad_mesh
+      (output_info, vertex_coord, tri_vert, quad_vert, io_time);
 	}
 }
 
@@ -667,6 +689,7 @@ void QDUAL::write_dual_tri_mesh
 // WRITE DUAL QUAD + TRI MESH 
 // **************************************************
 
+/* OBSOLETE
 void QDUAL::write_dual_quad_tri_mesh
 	( const OUTPUT_INFO & output_info,
 	const DUALISO_DATA & dualiso_data,
@@ -682,6 +705,9 @@ void QDUAL::write_dual_quad_tri_mesh
 	const int tri = 3;
 	const int quad = 4;
 
+  report_iso_info(output_info, dualiso_data, 
+                  vertex_coord, slist, dualiso_info);
+
 	ofstream output_file;
 	ERROR error_mcube("write_dual_mesh");
 	string ofilename = output_info.output_filename;
@@ -689,6 +715,28 @@ void QDUAL::write_dual_quad_tri_mesh
 	ijkoutOFF(output_file, dimension, &(dual_isosurface.vertex_coord[0]), numv, 
 		&(dual_isosurface.tri_vert[0]), tri, num_tri,
 		&(dual_isosurface.isopoly_vert[0]), quad, num_quad);
+	output_file.close();
+}
+*/
+
+
+void QDUAL::write_dual_tri_quad_mesh
+(const OUTPUT_INFO & output_info,
+ const std::vector<COORD_TYPE> & vertex_coord, 
+ const std::vector<VERTEX_INDEX> & tri_vert,
+ const std::vector<VERTEX_INDEX> & quad_vert,
+ IO_TIME & io_time)
+{
+	const int NUM_VERT_PER_TRI(3);
+	const int NUM_VERT_PER_QUAD(4);
+	const int dimension = output_info.dimension;
+
+	ofstream output_file;
+	ERROR error_mcube("write_dual_mesh");
+	string ofilename = output_info.output_filename;
+	output_file.open(ofilename.c_str(), ios::out);
+	ijkoutOFF(output_file, dimension, vertex_coord,
+            tri_vert, NUM_VERT_PER_TRI, quad_vert, NUM_VERT_PER_QUAD);
 	output_file.close();
 }
 
@@ -844,7 +892,7 @@ void QDUAL::report_num_cubes
 }
 
 void QDUAL::report_iso_info
-	(const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
+(const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
 	const vector<COORD_TYPE> & vertex_coord, 
 	const vector<VERTEX_INDEX> & plist, 
 	const DUALISO_INFO & dualiso_info)
@@ -868,6 +916,57 @@ void QDUAL::report_iso_info
 	cout << "  Isovalue " << output_info.isovalue[0] << ".  " 
 		<< numv << " isosurface vertices.  "
 		<< num_poly << " isosurface polytopes." << endl;
+
+	if (output_info.allow_multiple_iso_vertices) {
+		cout << indent4 << "# cubes with single isosurface vertex: "
+			<< dualiso_info.multi_isov.num_cubes_single_isov << endl;
+		cout << indent4 << "# cubes with multiple isosurface vertices: "
+			<< dualiso_info.multi_isov.num_cubes_multi_isov << endl;
+
+		if (output_info.flag_split_non_manifold) {
+			cout << indent4 << "# cubes changed to 2 iso vertices to avoid non-manifold edges: "
+				<< dualiso_info.multi_isov.num_non_manifold_split << endl;
+		}
+
+		if (output_info.flag_select_split) {
+			cout << indent4 << "# cubes changed in selecting isosurface patch splits: "
+				<< dualiso_info.multi_isov.num_1_2_change << endl;
+		}
+
+	}
+
+}
+
+void QDUAL::report_iso_info
+(const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
+	const vector<COORD_TYPE> & vertex_coord, 
+	const vector<VERTEX_INDEX> & tri_list, 
+	const vector<VERTEX_INDEX> & quad_list, 
+	const DUALISO_INFO & dualiso_info)
+{
+	const int dimension = output_info.dimension;
+  const int NUM_VERT_PER_TRI(3);
+  const int NUM_VERT_PER_QUAD(4);
+
+	const char * indent4 = "    ";
+	string grid_element_name = "cubes";
+	if (dimension == 2) { grid_element_name = "squares"; };
+
+	VERTEX_INDEX numv = (vertex_coord.size())/dimension;
+	VERTEX_INDEX num_tri = (tri_list.size())/NUM_VERT_PER_TRI;
+	VERTEX_INDEX num_quad = (quad_list.size())/NUM_VERT_PER_QUAD;
+	VERTEX_INDEX num_grid_cubes = dualiso_info.grid.num_cubes;
+	VERTEX_INDEX num_non_empty_cubes = dualiso_info.scalar.num_non_empty_cubes;
+
+	float percent = 0.0;
+	if (num_grid_cubes > 0)
+	{ percent = float(num_non_empty_cubes)/float(num_grid_cubes); }
+	int ipercent = int(100*percent);
+	cout << "  Isovalue " << output_info.isovalue[0] << ".  " 
+       << numv << " isosurface vertices.  " << endl;
+  cout << "    " << num_tri << " isosurface triangles.  "
+       << num_quad << " isosurface quadrilaterals."
+       << endl;
 
 	if (output_info.allow_multiple_iso_vertices) {
 		cout << indent4 << "# cubes with single isosurface vertex: "

@@ -202,6 +202,14 @@ namespace QDUAL {
    const std::vector<VERTEX_INDEX> & tri_vert,
    const DUALISO_INFO & dualiso_info, IO_TIME & io_time);
 
+  /// Output isosurface of triangles and quadrilaterals.
+  void output_dual_tri_quad_isosurface
+  (const OUTPUT_INFO & output_info, const DUALISO_DATA & isodual_data,
+   const std::vector<COORD_TYPE> & vertex_coord,
+   const std::vector<VERTEX_INDEX> & tri_vert,
+   const std::vector<VERTEX_INDEX> & quad_vert,
+   const DUALISO_INFO & dualiso_info, IO_TIME & io_time);
+
   void output_dual_isosurface_color
     (const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
      const DUAL_ISOSURFACE & dual_isosurface,
@@ -281,13 +289,13 @@ namespace QDUAL {
    const std::vector<VERTEX_INDEX> & tri_vert,
    IO_TIME & io_time);
 
-  /// Write dual isosurface as a quad and triangle  mesh
-  void write_dual_quad_tri_mesh
-	  ( const OUTPUT_INFO & output_info,
-	  const DUALISO_DATA & dualiso_data,
-	  const DUAL_ISOSURFACE & dual_isosurface
-	  );
-
+  /// Write dual isosurface as a tri and quad mesh
+  void write_dual_tri_quad_mesh
+  (const OUTPUT_INFO & output_info,
+   const std::vector<COORD_TYPE> & vertex_coord, 
+   const std::vector<VERTEX_INDEX> & tri_vert,
+   const std::vector<VERTEX_INDEX> & quad_vert,
+   IO_TIME & io_time);
 
 // **************************************************
 // SET ROUTINES
@@ -321,6 +329,13 @@ namespace QDUAL {
     (const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
      const std::vector<COORD_TYPE> & vertex_coord, 
      const std::vector<VERTEX_INDEX> & slist, 
+     const DUALISO_INFO & dualiso_info);
+
+  void report_iso_info
+    (const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
+     const std::vector<COORD_TYPE> & vertex_coord, 
+     const std::vector<VERTEX_INDEX> & tri_list, 
+     const std::vector<VERTEX_INDEX> & quad_list, 
      const DUALISO_INFO & dualiso_info);
 
 // **************************************************
