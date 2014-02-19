@@ -980,13 +980,18 @@ namespace IJK {
   // SPLIT DUAL ISOSURFACE VERTICES: DATA STRUCTURES
   // **************************************************
 
-  template <typename CI_TYPE, typename PI_TYPE, typename TI_TYPE, typename DEG_TYPE>
+  template <typename CI_TYPE, typename PI_TYPE, typename TI_TYPE,
+   typename DEG_TYPE, typename SV_TYPE, typename COORD_TYPE>
   class DUAL_ISOVERT {
   public:
     CI_TYPE cube_index;
     PI_TYPE patch_index;
     TI_TYPE table_index;
 	DEG_TYPE ver_degree;
+	SV_TYPE  sep_vert;
+	PI_TYPE restricted_facets;
+	bool flag_restrictionC;
+	std::vector<COORD_TYPE> cube_coord; 
   };
 
   // **************************************************

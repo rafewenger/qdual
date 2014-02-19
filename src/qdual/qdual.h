@@ -72,15 +72,16 @@ namespace QDUAL {
   /// @param merge_data Data structure for merging edges.  
   ///        Requires memory of size(MERGE_INDEX) for each grid edge.
   void dual_contouring 
-   (const DUALISO_SCALAR_GRID_BASE & scalar_grid, 
-    const SCALAR_TYPE isovalue, 
-    const VERTEX_POSITION_METHOD vertex_position_method,
-    const bool flag_select_split,
-    const bool flag_separate_neg,
-    std::vector<VERTEX_INDEX> & quad_vert, 
-    std::vector<COORD_TYPE> & vertex_coord,
-    std::vector<DUAL_ISOVERT> &iso_vlist,
-    MERGE_DATA & merge_data, DUALISO_INFO & dualiso_info);
+	  (const DUALISO_SCALAR_GRID_BASE & scalar_grid, 
+	  const SCALAR_TYPE isovalue, 
+	  const VERTEX_POSITION_METHOD vertex_position_method,
+	  const bool flag_select_split,
+	  const bool flag_separate_neg,
+	  std::vector<VERTEX_INDEX> & quad_vert, 
+	  std::vector<COORD_TYPE> & vertex_coord,
+	  std::vector<DUAL_ISOVERT> &iso_vlist,
+	  IJKDUALTABLE::ISODUAL_CUBE_TABLE  & isodual_table,
+	  MERGE_DATA & merge_data, DUALISO_INFO & dualiso_info);
 
   // **************************************************
   // CONVERT QUADRILATERALS TO TRIANGLES

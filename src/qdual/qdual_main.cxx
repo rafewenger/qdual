@@ -140,12 +140,11 @@ void construct_isosurface
 
 		rescale_vertex_coord(grow_factor, shrink_factor, io_info.grid_spacing,
 			dual_isosurface.vertex_coord);
-		/*
-		//DEBUG : already triangles mesh created.
-		if (dimension == 3 && dualiso_data.UseTriangleMesh()) {
+		
+		if (dimension == 3 && dualiso_data.UseTriangleMesh() && dualiso_data.flag_NO_collapse) {
 			convert_quad_to_tri(dualiso_data, dual_isosurface);
 		}
-		*/
+		
 		output_dual_isosurface
 			(output_info, dualiso_data, dual_isosurface, dualiso_info, io_time);
 	}

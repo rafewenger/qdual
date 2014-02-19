@@ -79,10 +79,6 @@ namespace QDUAL {
     int supersample_resolution;
     bool flag_color_alternating;  ///< Color simplices in alternating cubes
     int region_length;
-	//store info regarding collapses
-	bool flag_collapse_info; 
-	//do not collapse
-	bool flag_NO_collapse;
 
     /// List of high resolution arguments,
     ///   e.g., "-highres {coord list}".
@@ -284,6 +280,13 @@ namespace QDUAL {
    const std::vector<COORD_TYPE> & vertex_coord,
    const std::vector<VERTEX_INDEX> & tri_vert,
    IO_TIME & io_time);
+
+  /// Write dual isosurface as a quad and triangle  mesh
+  void write_dual_quad_tri_mesh
+	  ( const OUTPUT_INFO & output_info,
+	  const DUALISO_DATA & dualiso_data,
+	  const DUAL_ISOSURFACE & dual_isosurface
+	  );
 
 
 // **************************************************

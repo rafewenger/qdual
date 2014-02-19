@@ -60,7 +60,14 @@ void DUALISO_DATA_FLAGS::Init()
   allow_multiple_iso_vertices = true;
   max_small_magnitude = 0.0001;
   use_triangle_mesh = false;
+  use_quad_tri_mesh = false;
   quad_tri_method = UNDEFINED_TRI;
+  flag_NO_collapse = false;
+  flag_no_restriction_AB=false;
+  flag_no_restriciton_B=false;
+  flag_no_restriciton_C=false;
+  flag_collapse_info = false;
+
 }
 
 

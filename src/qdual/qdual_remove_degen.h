@@ -10,7 +10,8 @@ using namespace QDUAL;
 namespace QTRIANGULATE{
 	// Triangulate the non degenerate quads into tris. 
 	// Returns an updated set of quads and tris. 
-	void triangulate_non_degen_quads (
+	// Returns a bool which "has_degen_quads"
+	bool triangulate_non_degen_quads (
 		std::vector<VERTEX_INDEX> & quad_vert,
 		std::vector<VERTEX_INDEX> & tri_vert,
 		const std::vector<COORD_TYPE> & vertex_coord);

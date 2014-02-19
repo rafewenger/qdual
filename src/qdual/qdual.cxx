@@ -36,9 +36,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "qdual_extract.h"
 #include "qdual_position.h"
 
-#include "qdualCollapse.h"
+#include "qdual_collapse.h"
 #include "qdual_remove_degen.h"
-
+#include "qdual_restrictions.h"
 #include "qdual_table.h"
 
 using namespace IJK;
@@ -80,31 +80,73 @@ void QDUAL::quality_dual_contouring
 	// Class DUAL_ISOVERT contains cube_index, patch_index and table_index.
 	std::vector<DUAL_ISOVERT> iso_vlist;
 
+	bool flag_always_separate_opposite(true);
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE 
+		isodual_table(dimension, flag_separate_neg, 
+		flag_always_separate_opposite);
+
 	dual_contouring
 		(dualiso_data.ScalarGrid(), isovalue, vpos_method, 
 		flag_select_split, flag_separate_neg,
 		dual_isosurface.isopoly_vert, dual_isosurface.vertex_coord, iso_vlist,
-		merge_data, dualiso_info);
+		isodual_table, merge_data, dualiso_info);
+
+	if (!dualiso_data.flag_NO_collapse)
+	{
+		//set variables in iso_vlist
+		COORD_TYPE *a = new COORD_TYPE[3];
+		for (int j=0;j<iso_vlist.size();j++)
+		{
+			iso_vlist[j].ver_degree=0;
+			iso_vlist[j].restricted_facets=0;
+			iso_vlist[j].flag_restrictionC = false;
+			(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index,a);
+			//set iso_vlist[j].cube_coord
+			for (int d=0; d<DIM3; d++)
+				iso_vlist[j].cube_coord.push_back(a[d]);
+		}
+		delete[] a;
+
+		DUALISO_INDEX_GRID first_isov;
+		first_isov.SetSize(dualiso_data.ScalarGrid());
+		first_isov.SetAll(-1);
+
+		// set up first_isov
+		for (int i = iso_vlist.size()-1; i>=0; i--)
+		{
+			first_isov.Set(iso_vlist[i].cube_index, i);
+		}
+
+		// set up restriction conditions
+		QDUAL_TABLE qdual_table(DIM3);
+		//setup sep  vert
+		compute_sep_vert(dualiso_data.ScalarGrid(), iso_vlist, qdual_table);
+		
+		set_restrictions (dualiso_data,  dualiso_data.ScalarGrid(), isovalue,  dual_isosurface.isopoly_vert,
+			iso_vlist, isodual_table, first_isov, qdual_table, dual_isosurface.vertex_coord);
+
+		// Collapse Function calls.
+		const float epsilon = 0.33;
 
 
-	// set up restriction conditions
-	QDUAL_TABLE qdual_table(DIM3);
-
-	// Collapse Function calls.
-	const float epsilon = 0.33;
-	
-	//dual_collapse(dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
-	//	dual_isosurface.vertex_coord, epsilon);
-	
-	/*
-	triangulate_non_degen_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
-		dual_isosurface.vertex_coord);
-	*/
-	// triangulate all quads
-	
-	//triangulate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
-	//iso_vlist, dual_isosurface.vertex_coord);
-	
+		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
+			dual_isosurface.vertex_coord, epsilon);
+		if (dualiso_data.use_quad_tri_mesh)
+		{
+			dual_isosurface.flag_has_degen_quads = triangulate_non_degen_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
+				dual_isosurface.vertex_coord);
+			//Reordering QuadVert 
+			IJK::reorder_quad_vertices(dual_isosurface.isopoly_vert);
+		}
+		else if (dualiso_data.use_triangle_mesh)
+		{
+			dual_isosurface.flag_has_degen_quads =  triangulate_non_degen_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
+				dual_isosurface.vertex_coord);
+			// triangulate all quads
+			triangulate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
+				iso_vlist, dual_isosurface.vertex_coord);
+		}
+	}
 	// store times
 	clock_t t_end = clock();
 	clock2seconds(t_end-t_start, dualiso_info.time.total);
@@ -127,10 +169,10 @@ void QDUAL::dual_contouring
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<COORD_TYPE> & vertex_coord,
 	std::vector<DUAL_ISOVERT> &iso_vlist,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE & isodual_table,
 	MERGE_DATA & merge_data, 
 	DUALISO_INFO & dualiso_info)
 {
-	std::cout <<"sub function " << std::endl;
 	const int dimension = scalar_grid.Dimension();
 	const COORD_TYPE center_offset = 0.1;
 	PROCEDURE_ERROR error("dual_contouring");
@@ -141,11 +183,6 @@ void QDUAL::dual_contouring
 	quad_vert.clear();
 	vertex_coord.clear();
 	dualiso_info.time.Clear();
-
-	bool flag_always_separate_opposite(true);
-	IJKDUALTABLE::ISODUAL_CUBE_TABLE 
-		isodual_table(dimension, flag_separate_neg, 
-		flag_always_separate_opposite);
 
 	// List of cubes containing isosurface quadrilateral vertices.
 	// quad_cube[iq*4+j] = Index of cube containing j'th vertex of quad iq.
@@ -254,9 +291,13 @@ void QDUAL::dual_contouring
 	// List of isosurface vertices. 
 	// Class DUAL_ISOVERT contains cube_index, patch_index and table_index.
 	std::vector<DUAL_ISOVERT> iso_vlist;
+	bool flag_always_separate_opposite(true);
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE 
+		isodual_table(dimension, false, 
+		true);
 	dual_contouring(scalar_grid, isovalue, CENTROID_EDGE_ISO, 
 		false, true,
-		quad_vert, vertex_coord, iso_vlist, merge_data, dualiso_info);
+		quad_vert, vertex_coord, iso_vlist, isodual_table, merge_data, dualiso_info);
 }
 
 // **************************************************

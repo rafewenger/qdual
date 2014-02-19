@@ -2,17 +2,19 @@
 using namespace std;
 using namespace IJK;
 
-void QTRIANGULATE::triangulate_non_degen_quads (
+bool QTRIANGULATE::triangulate_non_degen_quads (
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<VERTEX_INDEX> & tri_vert,
 	const std::vector<COORD_TYPE> & vertex_coord)
 {
-	cout <<"triangulate only the non degen quads"<<endl;
-
+	
 	std::vector<VERTEX_INDEX> non_degen_quad_vert;
 	remove_degenerate_quads(quad_vert, non_degen_quad_vert, tri_vert, vertex_coord);
 	quad_vert = non_degen_quad_vert;
-
+	if (tri_vert.size() == 0 )
+		return false;
+	else
+		return true;
 }
 
 // Triangulate all quads
@@ -22,7 +24,7 @@ void QTRIANGULATE::triangulate_quads (
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 	const std::vector<COORD_TYPE> & vertex_coord)
 {
-	triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
+	bool has_non_degen_quad = triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
 	// only non degenerate quads and triangles remain
 	triangulate_quad_angle_based(quad_vert, tri_vert, iso_vlist, vertex_coord);
 }
@@ -89,28 +91,6 @@ void QTRIANGULATE::remove_degenerate_quads(
 				tri_vert.push_back(non_degen_verts[d]);
 		}
 	}
-	/*
-	int v1,v2;
-	const int count = 4;
-	for (int q=0;q<num_quads;q++)
-	{
-	bool degenerate = false;
-	for ( v1 = count-1, v2 = 0; v2 < count; v1 = v2++ ) {
-	int endPt1 = quad_vert[q*4+v1];
-	int endPt2 = quad_vert[q*4+v2];
-	if (endPt1==endPt2)
-	{
-	degenerate = true;
-	break;
-	}
-	}
-	if (!degenerate)
-	{
-	for (int i=0; i<4; i++)
-	non_degen_quad_vert.push_back(quad_vert[q*4+i]);
-	}
-	}
-	*/
 	//reorder the quads back to the original.
 	IJK::reorder_quad_vertices(quad_vert);
 	IJK::reorder_quad_vertices(non_degen_quad_vert);
@@ -196,12 +176,6 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	const int num_quad = non_degen_quad_vert.size()/NUM_VERTEX_PER_POLY;
 	IJK::reorder_quad_vertices(non_degen_quad_vert);
 
-
-	//set vertex_degrees in isovlist
-	for (int j=0;j<iso_vlist.size();j++)
-	{
-		iso_vlist[j].ver_degree=0;
-	}
 	compute_degree_per_vertex(4, non_degen_quad_vert, iso_vlist);
 	compute_degree_per_vertex(3, tri_vert, iso_vlist);
 
@@ -213,25 +187,19 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 		for (int j=0; j<NUM_VERTEX_PER_POLY; j++)
 		{
 			vertex = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+j];
-			cout <<"j="<<j<<" "<<vertex<<" ";
 			if (iso_vlist[vertex].ver_degree == 2)
 			{
 				w1 = j;
 				flag_deg2 = true;
-				cout <<"-deg2 ";
 				//break;
 			}
 		}
 
 
-
-
-		cout <<"\n w1="<<w1<<", deg="<< iso_vlist[ non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+w1]].ver_degree;
 		vertex = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+ (w1)%NUM_VERTEX_PER_POLY];
 		int B = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+ (w1+2)%NUM_VERTEX_PER_POLY];
 		int C = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+ (w1+3)%NUM_VERTEX_PER_POLY];
 		int D = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+ (w1+1)%NUM_VERTEX_PER_POLY];
-		cout <<" A="<< vertex << " B="<< B << " C="<< C<<" D="<<D<<endl;
 
 
 		//find the 4 angles.
@@ -266,15 +234,13 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 				tri_vert.push_back(vertex);
 				tri_vert.push_back(B);
 				tri_vert.push_back(C);
-                cout <<"tris  "<<vertex<<","<<B<<","<<C;
 				tri_vert.push_back(vertex);
 				tri_vert.push_back(D);
 				tri_vert.push_back(B);
-                cout <<" "<<vertex<<","<<B<<","<<D<<endl;
+               
 			}
 			else
 			{
-                cout <<"tris_  "<<B<<","<<C<<","<<D<<endl;
 				if (length_of_side(vertex, C, vertex_coord) <
 					length_of_side(vertex, D, vertex_coord))
 					///***************** PROBLEM
