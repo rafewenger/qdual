@@ -29,6 +29,19 @@
 #include "ijkscalar_grid.txx"
 #include "ijkmerge.txx"
 
+
+namespace NamedConstants{
+	static const  int DIM3 = 3;
+	static const int NUM_CUBE_FACETS = 6;
+	static const int NUM_CUBE_FACET_VERT = 4;
+	static const int NUM_CUBE_VERT = 8;
+	static const int NUM_CUBE_EDGES = 12;
+	static const int MAX_NUM_ISOVERT_PER_CUBE = 4;
+	static const int NO_ISOVERTEX_IN_CUBE = -1;
+	static const int VERT_PER_QUAD = 4;
+}
+
+
 namespace QDUAL {
 
 

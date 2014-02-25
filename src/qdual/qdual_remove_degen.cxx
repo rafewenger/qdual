@@ -1,16 +1,18 @@
 #include "qdual_remove_degen.h"
+#include "qdual_collapse.h"
 
 #include <cmath>
 
 using namespace std;
 using namespace IJK;
+using namespace NamedConstants;
 
 bool QTRIANGULATE::triangulate_non_degen_quads (
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<VERTEX_INDEX> & tri_vert,
 	const std::vector<COORD_TYPE> & vertex_coord)
 {
-	
+
 	std::vector<VERTEX_INDEX> non_degen_quad_vert;
 	remove_degenerate_quads(quad_vert, non_degen_quad_vert, tri_vert, vertex_coord);
 	quad_vert = non_degen_quad_vert;
@@ -73,12 +75,12 @@ void QTRIANGULATE::remove_degenerate_quads(
 	int num_vertex = vertex_coord.size();
 	//Reordering QuadVert 
 	IJK::reorder_quad_vertices(quad_vert);
-	const int num_quads = quad_vert.size()/4;
+	const int num_quads = quad_vert.size()/VERT_PER_QUAD;
 
 	for (int q=0;q<num_quads;q++)
 	{
 		vector<VERTEX_INDEX> non_degen_verts;
-		int num_non_degen =0;
+		int num_non_degen = 0;
 		remove_degen(q, quad_vert, non_degen_verts, num_non_degen);
 
 		if ( num_non_degen == 0 )
@@ -103,14 +105,14 @@ void QTRIANGULATE::remove_degenerate_quads(
 
 // Compute degree of each vertex
 // Only for non degenerate poly
+// param 1 : num vertex in the poly.
+// param 2 : non degenerate polys
 void compute_degree_per_vertex(
 	const int vert_per_poly,
 	std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
 	)
 {
-
-	cout <<"compute_degree_per_vertex"<<endl;
 
 	const int num_poly = poly_vert.size()/vert_per_poly;
 	for (int q=0; q<num_poly; q++)
@@ -166,7 +168,36 @@ void compute_cos_min_angle (
 		cos_angle = cos_angle_C;
 }
 
+// update collapses in trivert with collapse map
+void update_tris(
+	const IJK::ARRAY<VERTEX_INDEX> & collapse_map,
+	std::vector<VERTEX_INDEX> & tri_vert
+	)
+{
+	const int tri_vert_size = tri_vert.size();
+
+	for (int v=0; v<tri_vert_size; v++)
+	{
+		int k = tri_vert[v];
+		tri_vert[v]=collapse_map[k];
+	}
+}
+
+// push triangle ABC into trivert
+void push_triangle(
+	const int A, 
+	const int B, 
+	const int C,
+	std::vector<VERTEX_INDEX> & tri_vert)
+{
+	tri_vert.push_back(A);
+	tri_vert.push_back(B);
+	tri_vert.push_back(C);
+}
+
+
 // Triangulate quads based on their angles
+// Param 1: set of NON_DEGENERATE quads
 void QTRIANGULATE::triangulate_quad_angle_based(
 	std::vector<VERTEX_INDEX> & non_degen_quad_vert, // only non degenerate quads
 	std::vector<VERTEX_INDEX> & tri_vert,
@@ -174,22 +205,26 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	const std::vector<COORD_TYPE> & vertex_coord
 	)
 {
-	cout <<"Triangulate "<< endl;
-	const int NUM_VERTEX_PER_POLY = 4;
-	const int num_quad = non_degen_quad_vert.size()/NUM_VERTEX_PER_POLY;
+	const int num_quad = non_degen_quad_vert.size()/VERT_PER_QUAD;
 	IJK::reorder_quad_vertices(non_degen_quad_vert);
 
 	compute_degree_per_vertex(4, non_degen_quad_vert, iso_vlist);
 	compute_degree_per_vertex(3, tri_vert, iso_vlist);
+
+	//set up the vertex collapse map
+	int num_vertex = vertex_coord.size();
+	IJK::ARRAY<VERTEX_INDEX> collapse_map(num_vertex,0);
+	//setup collapse_map.
+	QCOLLAPSE::setup_collapse_map(collapse_map, num_vertex);
 
 	for (int q=0; q < num_quad; q++)
 	{
 		int w1=0;// has the index NOT the vertex
 		bool flag_deg2 = false;
 		int vertex;
-		for (int j=0; j<NUM_VERTEX_PER_POLY; j++)
+		for (int j=0; j<VERT_PER_QUAD; j++)
 		{
-			vertex = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+j];
+			vertex = QCOLLAPSE::find_vertex(collapse_map,non_degen_quad_vert[q*VERT_PER_QUAD+j]);
 			if (iso_vlist[vertex].ver_degree == 2)
 			{
 				w1 = j;
@@ -198,96 +233,142 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			}
 		}
 
+		//
+		bool flag_non_degen_quad = false;
 
-		vertex = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+ (w1)%NUM_VERTEX_PER_POLY];
-		int B = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+ (w1+2)%NUM_VERTEX_PER_POLY];
-		int C = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+ (w1+3)%NUM_VERTEX_PER_POLY];
-		int D = non_degen_quad_vert[q*NUM_VERTEX_PER_POLY+ (w1+1)%NUM_VERTEX_PER_POLY];
-
-
-		//find the 4 angles.
-
-		float cos_min_angle_abc; // min angle of triangle ABC.
-		compute_cos_min_angle(vertex, B, C, vertex_coord, cos_min_angle_abc);
-		float cos_min_angle_abd; // min angle of triangle ABD.
-		compute_cos_min_angle(vertex, B, D, vertex_coord, cos_min_angle_abd);
-
-		float cos_min_angle_dbc; // min angle of triangle DBC.
-		compute_cos_min_angle(D, B, C, vertex_coord, cos_min_angle_dbc);
-		float cos_min_angle_dca; // min angle of triangle DCA.
-		compute_cos_min_angle(vertex, D, C, vertex_coord, cos_min_angle_dca);
-
-		// min of the cosines of the first set of angles ABC and ABD 
-		float cos_min_1;
-		if (cos_min_angle_abc > cos_min_angle_abd )
-			cos_min_1 = cos_min_angle_abc;
-		else
-			cos_min_1 = cos_min_angle_abd;
-
-		//min of the cosine of the second set of angles DBC and DCA
-		float cos_min_2;
-		if (cos_min_angle_dbc > cos_min_angle_dca)
-			cos_min_2 = cos_min_angle_dbc;
-		else
-			cos_min_2 = cos_min_angle_dca;
-		if (flag_deg2)
-		{	
-			if (cos_min_1 < cos_min_2)
+		int num_non_degen = 0;
+		VERTEX_INDEX temp_tri[3]={0};
+		VERTEX_INDEX v1,v2=0;
+		for (  v1 =  VERT_PER_QUAD-1,  v2 = 0; v2 <VERT_PER_QUAD; v1 = v2++ ) 
+		{
+			int endPt1 = QCOLLAPSE::find_vertex(collapse_map,non_degen_quad_vert[q*4+v1]);
+			int endPt2 = QCOLLAPSE::find_vertex(collapse_map,non_degen_quad_vert[q*4+v2]);
+			if (endPt1!=endPt2)
 			{
-				tri_vert.push_back(vertex);
-				tri_vert.push_back(B);
-				tri_vert.push_back(C);
-				tri_vert.push_back(vertex);
-				tri_vert.push_back(D);
-				tri_vert.push_back(B);
-               
+				temp_tri[num_non_degen]=endPt2;
+				num_non_degen++;
 			}
+		}
+		if (num_non_degen <=2)
+			num_non_degen=0;
+
+		if ( num_non_degen == 0 )
+			continue;
+		else if (num_non_degen == 4 )
+		{
+			// do computation
+			flag_non_degen_quad = true;
+		}
+		else // triangle
+		{
+			for (int d=0;d<num_non_degen;d++)
+				tri_vert.push_back(temp_tri[d]);
+		}
+		//
+		if (flag_non_degen_quad)
+		{
+			vertex = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1)%VERT_PER_QUAD];
+			vertex = QCOLLAPSE::find_vertex(collapse_map,vertex);
+			int B = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1+2)%VERT_PER_QUAD];
+			B = QCOLLAPSE::find_vertex(collapse_map,B);
+			int C = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1+3)%VERT_PER_QUAD];
+			C = QCOLLAPSE::find_vertex(collapse_map,C);
+			int D = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1+1)%VERT_PER_QUAD];
+			D = QCOLLAPSE::find_vertex(collapse_map, D);
+
+
+			//find the 4 angles.
+
+			float cos_min_angle_abc; // min angle of triangle ABC.
+			compute_cos_min_angle(vertex, B, C, vertex_coord, cos_min_angle_abc);
+			float cos_min_angle_abd; // min angle of triangle ABD.
+			compute_cos_min_angle(vertex, B, D, vertex_coord, cos_min_angle_abd);
+
+			float cos_min_angle_dbc; // min angle of triangle DBC.
+			compute_cos_min_angle(D, B, C, vertex_coord, cos_min_angle_dbc);
+			float cos_min_angle_dca; // min angle of triangle DCA.
+			compute_cos_min_angle(vertex, D, C, vertex_coord, cos_min_angle_dca);
+
+			// min of the cosines of the first set of angles ABC and ABD 
+			float cos_min_1;
+			if (cos_min_angle_abc > cos_min_angle_abd )
+				cos_min_1 = cos_min_angle_abc;
 			else
-			{
-				if (length_of_side(vertex, C, vertex_coord) <
-					length_of_side(vertex, D, vertex_coord))
-					///***************** PROBLEM
+				cos_min_1 = cos_min_angle_abd;
+
+			//min of the cosine of the second set of angles DBC and DCA
+			float cos_min_2;
+			if (cos_min_angle_dbc > cos_min_angle_dca)
+				cos_min_2 = cos_min_angle_dbc;
+			else
+				cos_min_2 = cos_min_angle_dca;
+
+			if (flag_deg2)
+			{	
+				if (cos_min_1 < cos_min_2)
 				{
-					tri_vert.push_back(B);
-					tri_vert.push_back(C);
-					tri_vert.push_back(D);
+					push_triangle(vertex, B, C, tri_vert);
+					push_triangle(vertex, B, D, tri_vert);
+					//tri_vert.push_back(vertex);
+					//tri_vert.push_back(B);
+					//tri_vert.push_back(C);
+					//tri_vert.push_back(vertex);
+					//tri_vert.push_back(D);
+					//tri_vert.push_back(B);
+
 				}
 				else
 				{
-                    tri_vert.push_back(B);
-					tri_vert.push_back(C);
-					tri_vert.push_back(D);
 
+					if (length_of_side(vertex, C, vertex_coord) <
+						length_of_side(vertex, D, vertex_coord))
+					{
+						// MAP vertex to C.
+						collapse_map[vertex] = C;
+					}
+					else
+					{
+						// MAP vertex to D
+						collapse_map[vertex] = D;
+					}
+					//tri_vert.push_back(B);
+					//tri_vert.push_back(C);
+					//tri_vert.push_back(D);
+					push_triangle(B, C, D, tri_vert);
 				}
-			}
-
-		}
-		else
-		{
-			if (cos_min_1 < cos_min_2)
-			{
-				tri_vert.push_back(vertex);
-				tri_vert.push_back(B);
-				tri_vert.push_back(C);
-
-				tri_vert.push_back(vertex);
-				tri_vert.push_back(D);
-				tri_vert.push_back(B);
 
 			}
 			else
 			{
-				tri_vert.push_back(D);
-				tri_vert.push_back(B);
-				tri_vert.push_back(C);
-				
-				tri_vert.push_back(D);
-                tri_vert.push_back(C);
-                tri_vert.push_back(vertex);
-			}
-		}
-	}
+				if (cos_min_1 < cos_min_2)
+				{
+					//tri_vert.push_back(vertex);
+					//tri_vert.push_back(B);
+					//tri_vert.push_back(C);
 
+					//tri_vert.push_back(vertex);
+					//tri_vert.push_back(D);
+					//tri_vert.push_back(B);
+					push_triangle(vertex, B, C, tri_vert);
+					push_triangle(vertex, B, D, tri_vert);
+
+				}
+				else
+				{
+					/*tri_vert.push_back(D);
+					tri_vert.push_back(B);
+					tri_vert.push_back(C);
+
+					tri_vert.push_back(D);
+					tri_vert.push_back(C);
+					tri_vert.push_back(vertex);*/
+					push_triangle(D, B, C, tri_vert);
+					push_triangle(D, C, vertex, tri_vert);
+				}
+			}
+		}//if	
+	}
+	update_tris(collapse_map, tri_vert);
 	//reorder back to original 
 	IJK::reorder_quad_vertices(non_degen_quad_vert);
 

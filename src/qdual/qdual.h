@@ -32,6 +32,7 @@
 #define _QDUAL_
 
 #include <string>
+#include <memory>
 
 #include "ijk.txx"
 #include "qdual_types.h"

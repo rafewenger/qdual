@@ -168,6 +168,7 @@ namespace QDUAL {
 		bool flag_no_restriciton_C;
 		//store info regarding collapses
 		bool flag_collapse_info; 
+		bool flag_collapse_debug;
 
 	public:
 		DUALISO_DATA_FLAGS() { Init(); };

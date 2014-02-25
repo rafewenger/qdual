@@ -67,6 +67,7 @@ void DUALISO_DATA_FLAGS::Init()
   flag_no_restriciton_B=false;
   flag_no_restriciton_C=false;
   flag_collapse_info = false;
+  flag_collapse_debug = false;
 
 }
 

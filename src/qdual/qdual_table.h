@@ -1,16 +1,7 @@
 #ifndef _QDUALTABLE_
 #define _QDUALTABLE_
+#include "qdual_types.h"
 #include "ijkdualtable.h"
-
-
-namespace NamedConstants{
- static const  int DIM3 = 3;
- static const int NUM_CUBE_FACETS = 6;
- static const int NUM_CUBE_FACET_VERT = 4;
- static const int NUM_CUBE_VERT =8;
- static const int NUM_CUBE_EDGES = 12;
- static const int MAX_NUM_ISOVERT_PER_CUBE = 4;
-}
 
 
 

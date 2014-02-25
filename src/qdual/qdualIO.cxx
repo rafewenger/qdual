@@ -52,7 +52,7 @@ namespace {
 	SINGLE_ISOV_PARAM,  MULTI_ISOV_PARAM, 
 	SPLIT_NON_MANIFOLD_PARAM, SELECT_SPLIT_PARAM,
 	SEP_NEG_PARAM, SEP_POS_PARAM,
-	TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_INFO,NO_COLLAPSE,QTMESH,
+	TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_DEBUG,COLLAPSE_INFO,NO_COLLAPSE,QTMESH,
 	NO_RESTR_AB,NO_RESTR_B, NO_RESTR_C,
 	HELP_PARAM, OFF_PARAM, IV_PARAM, 
 	OUTPUT_FILENAME_PARAM, STDOUT_PARAM, 
@@ -61,7 +61,7 @@ namespace {
 	{"-subsample", "-supersample", "-position", 
 	"-single_isov", "-multi_isov", "-split_non_manifold", "-select_split",
 	"-sep_neg", "-sep_pos",
-	"-trimesh", "-uniform_trimesh","-collapse_info","-no_collapse","-qt_mesh",
+	"-trimesh", "-uniform_trimesh","-collapse_debug", "-collapse_info","-no_collapse","-qt_mesh",
 	"-no_res_AB","-no_res_B","-no_res_C",
 	"-help", "-off", "-iv", "-o", "-stdout",
 	"-nowrite", "-s", "-time", "-unknown"};
@@ -212,6 +212,10 @@ void QDUAL::parse_command_line(int argc, char **argv, IO_INFO & io_info)
 
 		case HELP_PARAM:
 			help();
+			break;
+
+		case COLLAPSE_DEBUG:
+			io_info.flag_collapse_debug = true;
 			break;
 
 		case COLLAPSE_INFO:
@@ -730,7 +734,7 @@ void QDUAL::write_dual_tri_quad_mesh
 	const int NUM_VERT_PER_TRI(3);
 	const int NUM_VERT_PER_QUAD(4);
 	const int dimension = output_info.dimension;
-
+	//IJK::reorder_quad_vertices(quad_vert);
 	ofstream output_file;
 	ERROR error_mcube("write_dual_mesh");
 	string ofilename = output_info.output_filename;

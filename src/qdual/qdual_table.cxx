@@ -57,16 +57,21 @@ void QDUAL_TABLE::CreateV1()
 {
 	std::vector<unsigned char> T(64, 255);
 	const int V1_size =  num_table_entries * MAX_NUM_ISOVERT_PER_CUBE;
-	for (int i_corner=0; i_corner < NUM_CUBE_VERT-1; i_corner++)
+	array_V1 = new CORNER_INDEX [V1_size]();
+	for (int k=0; k < V1_size; k++)
+	{
+		array_V1[k]=255;
+	}
+
+	for (int i_corner=0; i_corner < NUM_CUBE_VERT; i_corner++)
 	{
 		TABLE_INDEX it = (1<<i_corner);
 		int k = IsoVIndex(it, 0);
 		int edgeFlag = connect_dir[k];
-		T[edgeFlag]= i_corner; 
+		T[edgeFlag] = i_corner; 
 	}
 
-	array_V1 = new CORNER_INDEX [V1_size]();
-
+	
 	for (int k = 0; k < V1_size; k++)
 	{
 		int edgeFlag = connect_dir[k];
@@ -74,7 +79,7 @@ void QDUAL_TABLE::CreateV1()
 			// Quads incident on the isosurface vertex separate one cube corner 
 				// from other cube corners
 		{
-			int icorner = T[edgeFlag];
+			unsigned char icorner = T[edgeFlag];
 			array_V1[k]=icorner;
 		}
 	}

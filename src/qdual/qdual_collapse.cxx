@@ -1,5 +1,5 @@
 #include "qdual_collapse.h"
-#include "qdual_table.h"
+
 using namespace QCOLLAPSE;
 using namespace std;
 using namespace NamedConstants;
@@ -31,7 +31,7 @@ inline  void print_collapse_info (
 	const int endPt2,
 	GRID_COORD_TYPE * base_coord)
 {
-	cout <<str<<" | "<< endPt2 <<" to " << endPt1<<"; ";
+	cout <<str<<" | "<< endPt2 <<" mapped to " << endPt1<<"; ";
 	cout <<"facet base coord "<< base_coord[0]<<","
 		<<base_coord[1]<<","<<base_coord[2]<<endl;
 }
@@ -54,7 +54,7 @@ bool is_epsilon_close_facet(
 
 //Is the endpt permitted to collapse across facet, edge, vertex ?
 //Returns TRUE if it is.
-//***Currently always returns true.
+
 bool is_permitted_collapse(
 	const std::vector<DUAL_ISOVERT> & iso_vlist,
 	const VERTEX_INDEX v, // is the index into iso_vlist
@@ -194,18 +194,19 @@ bool is_epsilon_close(
 	}
 	else
 	{
-		//cout <<"\n";
 		return false;
 	}
 }
 
 
-//Setup the COLLAPSE_MAP
-void setup_collapse_edges(
-	const std::vector<COORD_TYPE> & vertex_coord,
-	IJK::ARRAY<VERTEX_INDEX> &collapse_map)
+//Setup the COLLAPSE MAP
+//param 1 : collapse map
+//param 2 : size of the map
+void QCOLLAPSE::setup_collapse_map(
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
+	const int num_vertex)
 {
-	int num_vertex = vertex_coord.size();
+
 	for (int v=0; v<num_vertex; v++)
 	{
 		collapse_map[v]=v;
@@ -233,7 +234,7 @@ int find_vertex_recursive(IJK::ARRAY<VERTEX_INDEX> &collapse_map, int endpt)
 
 
 //Implements find vertex iteratively
-int find_vertex(IJK::ARRAY<VERTEX_INDEX> &collapse_map, int endpt)
+int QCOLLAPSE::find_vertex(IJK::ARRAY<VERTEX_INDEX> &collapse_map, int endpt)
 {
 	VERTEX_INDEX temp = endpt;
 	while (collapse_map[temp]!=temp)
@@ -259,7 +260,7 @@ void collapse_across_facets(
 {
 	const int num_quads = quad_vert.size()/4;
 	const int dimension = scalar_grid.Dimension();
-	//const int DIM3 = 3;
+
 	COORD_TYPE * a = new COORD_TYPE[3];
 	int count = 4;
 	int v1,v2;
@@ -353,7 +354,7 @@ void collapse_across_facets(
 							closest_facet_base_coord[2] = facet_base_coord[2];
 						}
 					}
-					
+
 					if (num_close==1)//endPt2 is close to a facet but not to an edge.
 					{
 						find_closest_facet(DIM3, endPt1_coord, closest_facet, facet_base_coord);	
@@ -461,20 +462,28 @@ void collapse_across_edges(
 					{
 						if (scalar_grid.ComputeVertexIndex(&edge_base_coord[0])
 							== scalar_grid.ComputeVertexIndex(&closest_edge_base_coord[0]))
-							if (is_permitted_collapse(iso_vlist, endPt1,  &(edge_base_coord[0]),
+							if (is_permitted_collapse(iso_vlist, endPt2,  &(edge_base_coord[0]),
 								closest_edge_dir, EDGE))
 							{ 
-								if (print_info)
+								if (print_info){
 									print_collapse_info("collapse across edges [permitted]", 
-									endPt1, endPt2, &(edge_base_coord[0]));
-
+										endPt1, endPt2, &(edge_base_coord[0]));
+									cout <<"edge base "<< edge_base_coord[0]<<","
+										<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
+									cout <<"edge dir "<< closest_edge_dir <<endl;
+								}
 								update_collapse_edges(collapse_map,endPt1, endPt2);
 							}
 							else
 							{
-								if (print_info)
+								if (print_info){
 									print_collapse_info("collapse across edges [NOT permitted]", 
-									endPt1, endPt2, &(edge_base_coord[0]));
+										endPt1, endPt2, &(edge_base_coord[0]));
+									cout <<"edge base "<< edge_base_coord[0]<<","
+										<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
+									cout <<"edge dir "<< closest_edge_dir <<endl;
+								}
+
 							}
 					}
 				}
@@ -504,19 +513,27 @@ void collapse_across_edges(
 						{
 							if (scalar_grid.ComputeVertexIndex(&edge_base_coord[0])
 								== scalar_grid.ComputeVertexIndex(&closest_edge_base_coord[0]))
-								if (is_permitted_collapse(iso_vlist, endPt2,  &(edge_base_coord[0]),
+								if (is_permitted_collapse(iso_vlist, endPt1,  &(edge_base_coord[0]),
 									closest_edge_dir, EDGE))
 								{ 
-									if (print_info)
+									if (print_info){
 										print_collapse_info("collapse across edges [permitted]", 
-										endPt2, endPt1, &(edge_base_coord[0]));
+											endPt2, endPt1, &(edge_base_coord[0]));
+										cout <<"edge base "<< edge_base_coord[0]<<","
+											<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
+										cout <<"edge dir "<< closest_edge_dir <<endl;
+									}
 									update_collapse_edges(collapse_map,endPt2, endPt1);
 								}
 								else
 								{
-									if (print_info)
+									if (print_info){
 										print_collapse_info("collapse across edges [ NOT permitted]", 
-										endPt2, endPt1, &(edge_base_coord[0]));
+											endPt2, endPt1, &(edge_base_coord[0]));
+										cout <<"edge base "<< edge_base_coord[0]<<","
+											<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
+										cout <<"edge dir "<< closest_edge_dir <<endl;
+									}
 								}
 						}
 					}
@@ -558,10 +575,10 @@ void collapse_across_vertices(
 	const float epsilon,
 	const bool print_info)
 {
-	const int num_quads = quad_vert.size()/4;
+	const int num_quads = quad_vert.size()/VERT_PER_QUAD;
 	const int dimension = scalar_grid.Dimension();
-	
-	
+
+
 	int v1, v2;
 	for (int q=0; q<num_quads; q++)
 		//for each edge
@@ -589,12 +606,14 @@ void collapse_across_vertices(
 					IJK::ARRAY<GRID_COORD_TYPE> vertex_base_coord(dimension,0);
 					IJK::ARRAY<GRID_COORD_TYPE> closest_vertex_base_coord(dimension,0);
 					find_closest_grid_vertex(DIM3, endPt1_coord, vertex_base_coord, closest_distance);
+
 					if (closest_distance < epsilon)
 					{
 						for (int d=0;d<DIM3;d++)
 							closest_vertex_base_coord[d]=vertex_base_coord[d];
 
 						find_closest_grid_vertex(DIM3, endPt2_coord, vertex_base_coord, closest_distance);
+
 						if (closest_distance < epsilon)
 						{
 							if (scalar_grid.ComputeVertexIndex(&vertex_base_coord[0])
@@ -622,13 +641,15 @@ void collapse_across_vertices(
 			}//for each edge
 }
 
-//update the collapses in "collapse_map" in "quad_vert"
+//Update the collapses in "collapse_map" in "quad_vert"
 void update_quads(
 	const IJK::ARRAY<VERTEX_INDEX> & collapse_map,
 	std::vector<VERTEX_INDEX> & quad_vert
 	)
 {
-	for (int v=0;v<quad_vert.size();v++)
+	const int quad_vert_size = quad_vert.size();
+
+	for (int v=0; v<quad_vert_size; v++)
 	{
 		int k = quad_vert[v];
 		quad_vert[v]=collapse_map[k];
@@ -650,17 +671,16 @@ void QCOLLAPSE::dual_collapse(
 	//set up the vertex collapse map
 	int num_vertex = vertex_coord.size();
 	IJK::ARRAY<VERTEX_INDEX> collapse_map(num_vertex,0);
-	//COLLAPSE_MAP collapse_map;
 	//setup collapse_map.
-	setup_collapse_edges(vertex_coord, collapse_map);
+	setup_collapse_map(collapse_map, num_vertex);
 	//Reordering QuadVert 
 	IJK::reorder_quad_vertices(quad_vert);
 	collapse_across_facets(scalar_grid, iso_vlist, quad_vert,
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_info);
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug);
 	collapse_across_edges(scalar_grid, iso_vlist, quad_vert,
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_info);
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug);
 	collapse_across_vertices(scalar_grid, iso_vlist, quad_vert, 
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_info);
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug);
 	update_quads(collapse_map, quad_vert);
 	//reorder the quads back to the original.
 	IJK::reorder_quad_vertices(quad_vert);
