@@ -92,8 +92,10 @@ void QTRIANGULATE::remove_degenerate_quads(
 		}
 		else // triangle
 		{
-			for (int d=0;d<num_non_degen;d++)
+			for (int d=num_non_degen-1; d>=0; d--)
+			{
 				tri_vert.push_back(non_degen_verts[d]);
+			}
 		}
 	}
 	//reorder the quads back to the original.

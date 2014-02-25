@@ -103,7 +103,7 @@ void QDUAL::quality_dual_contouring
 			iso_vlist[j].restricted_facets=0;
 			iso_vlist[j].flag_restrictionC = false;
 			(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index,a);
-			//set iso_vlist[j].cube_coord
+			//Set iso_vlist[j].cube_coord
 			for (int d=0; d<DIM3; d++)
 				iso_vlist[j].cube_coord.push_back(a[d]);
 		}
