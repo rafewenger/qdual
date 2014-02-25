@@ -47,6 +47,20 @@ INCLUDE_DIRECTORIES("${QDUAL_DIR}/include")
 LINK_DIRECTORIES("${NRRD_LIBDIR}")
 #LINK_LIBRARIES(expat NrrdIO z)
 
+IF(MSVC AND MSVC_VERSION GREATER 1600)
+# Nothing special needed for MSVC
+# Just enable all warnings for debug and set NDEBUG for release
+set(CMAKE_CXX_FLAGS_DEBUG "/W4")
+set(CMAKE_CXX_FLAGS_RELEASE "/D NDEBUG")
+  message(
+  "Your compiler probably does support C++11. This project requires C++11")
+ELSEIF(CMAKE_COMPILER_IS_GNUCXX)
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
+else()
+  message(FATAL_ERROR
+  "Your compiler probably does not support C++11. This project requires C++11")
+ENDIF()
+
 ADD_EXECUTABLE(qdual qdual_main.cxx qdualIO.cxx qdual.cxx 
                      qdual_datastruct.cxx qdual_extract.cxx 
                      qdual_position.cxx 

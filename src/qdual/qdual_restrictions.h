@@ -1,7 +1,8 @@
 #ifndef _QDUAL_RESTRICTIONS_
 #define _QDUAL_RESTRICTIONS_
-#include "memory"
-#include "vector"
+#include <memory>
+#include <vector>
+
 #include "qdual_types.h"
 #include "qdual_datastruct.h"
 #include "ijk.txx"
