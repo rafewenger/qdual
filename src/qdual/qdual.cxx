@@ -124,7 +124,7 @@ void QDUAL::quality_dual_contouring
 		//setup sep  vert
 		compute_sep_vert(dualiso_data.ScalarGrid(), iso_vlist, qdual_table);
 		
-		std::unique_ptr<RestricitonInfo> rs_info(new RestricitonInfo());
+		std::unique_ptr<RestrictionInfo> rs_info(new RestrictionInfo());
 		
 		set_restrictions (dualiso_data,  dualiso_data.ScalarGrid(), isovalue,  dual_isosurface.isopoly_vert,
 			iso_vlist, isodual_table, first_isov, qdual_table,

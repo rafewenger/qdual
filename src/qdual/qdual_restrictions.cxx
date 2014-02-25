@@ -271,7 +271,7 @@ void set_restrictionsB(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	bool print_info,
-	std::unique_ptr<RestricitonInfo> &rs_info)
+	std::unique_ptr<RestrictionInfo> &rs_info)
 {
 	
 	vector< pair<VERTEX_INDEX, int> > restricted_edges;
@@ -345,7 +345,7 @@ void set_restrictionsC(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	std::unique_ptr<RestricitonInfo> &rs_info)
+	std::unique_ptr<RestrictionInfo> &rs_info)
 {
 	vector<VERTEX_INDEX> restriction_Clist;
 	compute_restrictions_CList( scalar_grid, isovalue, iso_vlist, isodual_table, first_isov,
@@ -409,7 +409,7 @@ void set_restrictions(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	std::unique_ptr<RestricitonInfo> &rs_info)
+	std::unique_ptr<RestrictionInfo> &rs_info)
 {
 	if (!dualiso_data.flag_no_restriction_AB)
 	{

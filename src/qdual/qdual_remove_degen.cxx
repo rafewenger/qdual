@@ -307,14 +307,8 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			{	
 				if (cos_min_1 < cos_min_2)
 				{
-					push_triangle(vertex, B, C, tri_vert);
+					push_triangle(C, B, vertex, tri_vert);
 					push_triangle(vertex, B, D, tri_vert);
-					//tri_vert.push_back(vertex);
-					//tri_vert.push_back(B);
-					//tri_vert.push_back(C);
-					//tri_vert.push_back(vertex);
-					//tri_vert.push_back(D);
-					//tri_vert.push_back(B);
 
 				}
 				else
@@ -331,10 +325,8 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 						// MAP vertex to D
 						collapse_map[vertex] = D;
 					}
-					//tri_vert.push_back(B);
-					//tri_vert.push_back(C);
-					//tri_vert.push_back(D);
-					push_triangle(B, C, D, tri_vert);
+
+					push_triangle(D, C, B, tri_vert);
 				}
 
 			}
@@ -342,28 +334,15 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			{
 				if (cos_min_1 < cos_min_2)
 				{
-					//tri_vert.push_back(vertex);
-					//tri_vert.push_back(B);
-					//tri_vert.push_back(C);
 
-					//tri_vert.push_back(vertex);
-					//tri_vert.push_back(D);
-					//tri_vert.push_back(B);
-					push_triangle(vertex, B, C, tri_vert);
+					push_triangle(vertex, C, B, tri_vert);
 					push_triangle(vertex, B, D, tri_vert);
 
 				}
 				else
 				{
-					/*tri_vert.push_back(D);
-					tri_vert.push_back(B);
-					tri_vert.push_back(C);
-
-					tri_vert.push_back(D);
-					tri_vert.push_back(C);
-					tri_vert.push_back(vertex);*/
-					push_triangle(D, B, C, tri_vert);
-					push_triangle(D, C, vertex, tri_vert);
+					push_triangle(D, C, B, tri_vert);
+					push_triangle(vertex, C, D, tri_vert);
 				}
 			}
 		}//if	
