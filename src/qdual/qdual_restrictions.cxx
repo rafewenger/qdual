@@ -8,7 +8,6 @@ using namespace NamedConstants;
 
 
 
-
 void check_edge_has_square_isosurface_path(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	const DUALISO_INDEX_GRID & first_isov,
@@ -85,8 +84,6 @@ void compute_restrictions_BList(
 	IJK_FOR_EACH_INTERIOR_GRID_EDGE(end0, edge_dir, scalar_grid, VERTEX_INDEX)
 	{
 		VERTEX_INDEX end1 = scalar_grid.NextVertex(end0,edge_dir);
-	
-
 		SCALAR_TYPE s_end0, s_end1;
 		s_end0 = scalar_grid.Scalar(end0);
 		s_end1 = scalar_grid.Scalar(end1);
@@ -142,8 +139,6 @@ bool  check_vertex_has_box_around (
 			//for each isosurface vertex in cube c
 			for (int k = 0; k < num_iso_verts; k++)
 			{
-				//cout <<" isovlist index "<< indx_iso_vlist+k << " cube index= "
-				//	<< iso_vlist[indx_iso_vlist+k].cube_index << endl;
 				if ( iso_vlist[indx_iso_vlist+k].sep_vert == iv)
 				{
 					count++;
@@ -222,19 +217,7 @@ void compute_sep_vert(
 		{
 			iso_vlist[i].sep_vert = scalar_grid.CubeVertex(icube, icorner);
 			scalar_grid.ComputeCoord(i, c);
-
-			//cout <<"debug vertex "<< i 
-			//	<< " ["<< c[0]<<","<<c[1]<<","<<c[2]<<"]";
-
 			scalar_grid.ComputeCoord(iso_vlist[i].sep_vert , c);
-
-			//cout <<" separates " << iso_vlist[i].sep_vert <<" [ " 
-			//	<< " ["<< c[0]<<","<<c[1]<<","<<c[2]<<"]"<<endl;
-		}
-		else
-		{
-			/*iso_vlist[i].sep_vert = scalar_grid.NumVertices();
-			cout <<"debug vertex "<< i << " seperates NOTHING " <<  iso_vlist[i].sep_vert << endl;  */
 		}
 	}
 }
@@ -271,7 +254,7 @@ void set_restrictionsB(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	bool print_info,
-	std::unique_ptr<RestrictionInfo> &rs_info)
+	DUALISO_INFO & dualiso_info)
 {
 	
 	vector< pair<VERTEX_INDEX, int> > restricted_edges;
@@ -279,8 +262,8 @@ void set_restrictionsB(
 	compute_restrictions_BList( scalar_grid, isovalue, iso_vlist, 
 		isodual_table, first_isov, qdual_table, restricted_edges, print_info);
 	//store information 
-	rs_info->restriction_BList_size = restricted_edges.size();
-	rs_info->restricted_edges_info = restricted_edges;
+	dualiso_info.rs_info.restriction_BList_size = restricted_edges.size();
+	dualiso_info.rs_info.restricted_edges_info = restricted_edges;
 	
 	int d1coef[NUM_CUBE_FACET_VERT]={0,1,0,1};
 	int d2coef[NUM_CUBE_FACET_VERT]= {0,0,1,1};
@@ -345,15 +328,15 @@ void set_restrictionsC(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	std::unique_ptr<RestrictionInfo> &rs_info)
+	DUALISO_INFO & dualiso_info)
 {
 	vector<VERTEX_INDEX> restriction_Clist;
 	compute_restrictions_CList( scalar_grid, isovalue, iso_vlist, isodual_table, first_isov,
 		qdual_table, vertex_coord, restriction_Clist);
 	//store info
 	
-	rs_info->restriction_CList_size = restriction_Clist.size();
-	rs_info->restricted_vertex_info = restriction_Clist;
+	dualiso_info.rs_info.restriction_CList_size = restriction_Clist.size();
+	dualiso_info.rs_info.restricted_vertex_info = restriction_Clist;
 
 	for (int v = 0; v < restriction_Clist.size(); v++)
 	{
@@ -409,7 +392,7 @@ void set_restrictions(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	std::unique_ptr<RestrictionInfo> &rs_info)
+	DUALISO_INFO & dualiso_info)
 {
 	if (!dualiso_data.flag_no_restriction_AB)
 	{
@@ -417,12 +400,12 @@ void set_restrictions(
 		if (!dualiso_data.flag_no_restriciton_B)
 		{
 			set_restrictionsB(scalar_grid, isovalue, iso_vlist, isodual_table,
-				first_isov, qdual_table, dualiso_data.flag_collapse_debug, rs_info);
+				first_isov, qdual_table, dualiso_data.flag_collapse_debug, dualiso_info);
 		}
 	}
 	if(!dualiso_data.flag_no_restriciton_C)
 	{
 		set_restrictionsC(scalar_grid, isovalue, quad_vert,
-			iso_vlist, isodual_table, first_isov,qdual_table, vertex_coord, rs_info);
+			iso_vlist, isodual_table, first_isov,qdual_table, vertex_coord, dualiso_info);
 	}
 }

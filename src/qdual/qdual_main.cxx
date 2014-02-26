@@ -52,7 +52,6 @@ int main(int argc, char **argv)
 	IO_TIME io_time = {0.0, 0.0};
 	IO_INFO io_info;
 	IJK::ERROR error;
-
 	try {
 
 		std::set_new_handler(memory_exhaustion);

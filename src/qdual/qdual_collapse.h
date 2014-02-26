@@ -17,10 +17,6 @@
 
 
 namespace QCOLLAPSE{
-	class Collapse_info
-	{
-
-	};
 
 	enum COLLAPSE_TYPE {FACET, EDGE, VERTEX};
 	//store information regarding collapse

@@ -169,6 +169,7 @@ namespace QDUAL {
 		//store info regarding collapses
 		bool flag_collapse_info; 
 		bool flag_collapse_debug;
+		float qdual_epsilon;
 
 	public:
 		DUALISO_DATA_FLAGS() { Init(); };
@@ -349,6 +350,24 @@ namespace QDUAL {
 		void Clear();     // clear all data
 	};
 
+	/// Information regarding restriction info for quality dual iso 
+	class QDUALISO_RESTRICTION_INFO
+	{
+	public:
+		int restriction_BList_size;
+		int restriction_CList_size;
+
+		std::vector<VERTEX_INDEX> restricted_vertex_info;
+		std::vector<std::pair<VERTEX_INDEX, int> > restricted_edges_info;
+
+		QDUALISO_RESTRICTION_INFO()
+		{
+			restriction_CList_size = 0;
+			restriction_BList_size = 0;
+		}
+		~QDUALISO_RESTRICTION_INFO(){};
+	};
+
 	// **************************************************
 	// DUALISO INFO
 	// **************************************************
@@ -362,6 +381,7 @@ namespace QDUAL {
 		SCALAR_INFO scalar;
 		DUALISO_TIME time;
 		MULTI_ISOV_INFO multi_isov;
+		QDUALISO_RESTRICTION_INFO rs_info;
 
 		DUALISO_INFO();
 		DUALISO_INFO(const int dimension);

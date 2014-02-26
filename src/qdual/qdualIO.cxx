@@ -51,7 +51,7 @@ namespace {
 	{SUBSAMPLE_PARAM, SUPERSAMPLE_PARAM, POSITION_PARAM, 
 	SINGLE_ISOV_PARAM,  MULTI_ISOV_PARAM, 
 	SPLIT_NON_MANIFOLD_PARAM, SELECT_SPLIT_PARAM,
-	SEP_NEG_PARAM, SEP_POS_PARAM,
+	SEP_NEG_PARAM, SEP_POS_PARAM, EPSILON,
 	TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_DEBUG,COLLAPSE_INFO,NO_COLLAPSE,QTMESH,
 	NO_RESTR_AB,NO_RESTR_B, NO_RESTR_C,
 	HELP_PARAM, OFF_PARAM, IV_PARAM, 
@@ -60,7 +60,7 @@ namespace {
 	const char * parameter_string[] = 
 	{"-subsample", "-supersample", "-position", 
 	"-single_isov", "-multi_isov", "-split_non_manifold", "-select_split",
-	"-sep_neg", "-sep_pos",
+	"-sep_neg", "-sep_pos","-epsilon",
 	"-trimesh", "-uniform_trimesh","-collapse_debug", "-collapse_info","-no_collapse","-qt_mesh",
 	"-no_res_AB","-no_res_B","-no_res_C",
 	"-help", "-off", "-iv", "-o", "-stdout",
@@ -173,6 +173,12 @@ void QDUAL::parse_command_line(int argc, char **argv, IO_INFO & io_info)
 
 		case QTMESH:
 			io_info.use_quad_tri_mesh = true;
+			break;
+
+		case EPSILON:
+			iarg++;
+			if (iarg >= argc) usage_error();
+			io_info.qdual_epsilon = atof(argv[iarg]);
 			break;
 
 		case UNIFORM_TRIMESH_PARAM:
@@ -367,8 +373,8 @@ void QDUAL::output_dual_isosurface
 	{
 		output_dual_tri_quad_isosurface
 			(output_info, dualiso_data, dual_isosurface.vertex_coord, 
-       dual_isosurface.tri_vert, dual_isosurface.isopoly_vert,
-       dualiso_info, io_time);
+			dual_isosurface.tri_vert, dual_isosurface.isopoly_vert,
+			dualiso_info, io_time);
 	}
 	else {
 		output_dual_isosurface
@@ -418,12 +424,12 @@ void QDUAL::output_dual_tri_quad_isosurface
 {
 	if (!output_info.use_stdout && !output_info.flag_silent) {
 		report_iso_info(output_info, dualiso_data,
-                    vertex_coord, tri_vert, quad_vert, dualiso_info);
+			vertex_coord, tri_vert, quad_vert, dualiso_info);
 	}
 
 	if (!output_info.nowrite_flag) {
 		write_dual_tri_quad_mesh
-      (output_info, vertex_coord, tri_vert, quad_vert, io_time);
+			(output_info, vertex_coord, tri_vert, quad_vert, io_time);
 	}
 }
 
@@ -695,41 +701,41 @@ void QDUAL::write_dual_tri_mesh
 
 /* OBSOLETE
 void QDUAL::write_dual_quad_tri_mesh
-	( const OUTPUT_INFO & output_info,
-	const DUALISO_DATA & dualiso_data,
-	const DUAL_ISOSURFACE & dual_isosurface
-	)
+( const OUTPUT_INFO & output_info,
+const DUALISO_DATA & dualiso_data,
+const DUAL_ISOSURFACE & dual_isosurface
+)
 {
-	const int dimension = output_info.dimension;
-	const int numv_per_simplex = output_info.num_vertices_per_isopoly;
-	const bool use_stdout = output_info.use_stdout;
-	const int numv = dual_isosurface.vertex_coord.size()/dimension;
-	const int num_tri = dual_isosurface.tri_vert.size()/dimension;
-	const int num_quad = dual_isosurface.isopoly_vert.size()/4;
-	const int tri = 3;
-	const int quad = 4;
+const int dimension = output_info.dimension;
+const int numv_per_simplex = output_info.num_vertices_per_isopoly;
+const bool use_stdout = output_info.use_stdout;
+const int numv = dual_isosurface.vertex_coord.size()/dimension;
+const int num_tri = dual_isosurface.tri_vert.size()/dimension;
+const int num_quad = dual_isosurface.isopoly_vert.size()/4;
+const int tri = 3;
+const int quad = 4;
 
-  report_iso_info(output_info, dualiso_data, 
-                  vertex_coord, slist, dualiso_info);
+report_iso_info(output_info, dualiso_data, 
+vertex_coord, slist, dualiso_info);
 
-	ofstream output_file;
-	ERROR error_mcube("write_dual_mesh");
-	string ofilename = output_info.output_filename;
-	output_file.open(ofilename.c_str(), ios::out);
-	ijkoutOFF(output_file, dimension, &(dual_isosurface.vertex_coord[0]), numv, 
-		&(dual_isosurface.tri_vert[0]), tri, num_tri,
-		&(dual_isosurface.isopoly_vert[0]), quad, num_quad);
-	output_file.close();
+ofstream output_file;
+ERROR error_mcube("write_dual_mesh");
+string ofilename = output_info.output_filename;
+output_file.open(ofilename.c_str(), ios::out);
+ijkoutOFF(output_file, dimension, &(dual_isosurface.vertex_coord[0]), numv, 
+&(dual_isosurface.tri_vert[0]), tri, num_tri,
+&(dual_isosurface.isopoly_vert[0]), quad, num_quad);
+output_file.close();
 }
 */
 
 
 void QDUAL::write_dual_tri_quad_mesh
-(const OUTPUT_INFO & output_info,
- const std::vector<COORD_TYPE> & vertex_coord, 
- const std::vector<VERTEX_INDEX> & tri_vert,
- const std::vector<VERTEX_INDEX> & quad_vert,
- IO_TIME & io_time)
+	(const OUTPUT_INFO & output_info,
+	const std::vector<COORD_TYPE> & vertex_coord, 
+	const std::vector<VERTEX_INDEX> & tri_vert,
+	const std::vector<VERTEX_INDEX> & quad_vert,
+	IO_TIME & io_time)
 {
 	const int NUM_VERT_PER_TRI(3);
 	const int NUM_VERT_PER_QUAD(4);
@@ -740,7 +746,7 @@ void QDUAL::write_dual_tri_quad_mesh
 	string ofilename = output_info.output_filename;
 	output_file.open(ofilename.c_str(), ios::out);
 	ijkoutOFF(output_file, dimension, vertex_coord,
-            tri_vert, NUM_VERT_PER_TRI, quad_vert, NUM_VERT_PER_QUAD);
+		tri_vert, NUM_VERT_PER_TRI, quad_vert, NUM_VERT_PER_QUAD);
 	output_file.close();
 }
 
@@ -896,7 +902,7 @@ void QDUAL::report_num_cubes
 }
 
 void QDUAL::report_iso_info
-(const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
+	(const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
 	const vector<COORD_TYPE> & vertex_coord, 
 	const vector<VERTEX_INDEX> & plist, 
 	const DUALISO_INFO & dualiso_info)
@@ -939,18 +945,26 @@ void QDUAL::report_iso_info
 
 	}
 
+	if (output_info.flag_collapse_info)
+	{
+		cout <<"Epsilon is set to: " << output_info.qdual_epsilon << endl;
+		cout <<"Restriction Info"<<endl;
+		cout <<"	Num elements in the Blist: "<< dualiso_info.rs_info.restriction_BList_size << endl;
+		cout <<"	Num elements in the Clist: "<< dualiso_info.rs_info.restriction_CList_size << endl;
+	}
+
 }
 
 void QDUAL::report_iso_info
-(const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
+	(const OUTPUT_INFO & output_info, const DUALISO_DATA & dualiso_data,
 	const vector<COORD_TYPE> & vertex_coord, 
 	const vector<VERTEX_INDEX> & tri_list, 
 	const vector<VERTEX_INDEX> & quad_list, 
 	const DUALISO_INFO & dualiso_info)
 {
 	const int dimension = output_info.dimension;
-  const int NUM_VERT_PER_TRI(3);
-  const int NUM_VERT_PER_QUAD(4);
+	const int NUM_VERT_PER_TRI(3);
+	const int NUM_VERT_PER_QUAD(4);
 
 	const char * indent4 = "    ";
 	string grid_element_name = "cubes";
@@ -967,10 +981,10 @@ void QDUAL::report_iso_info
 	{ percent = float(num_non_empty_cubes)/float(num_grid_cubes); }
 	int ipercent = int(100*percent);
 	cout << "  Isovalue " << output_info.isovalue[0] << ".  " 
-       << numv << " isosurface vertices.  " << endl;
-  cout << "    " << num_tri << " isosurface triangles.  "
-       << num_quad << " isosurface quadrilaterals."
-       << endl;
+		<< numv << " isosurface vertices.  " << endl;
+	cout << "    " << num_tri << " isosurface triangles.  "
+		<< num_quad << " isosurface quadrilaterals."
+		<< endl;
 
 	if (output_info.allow_multiple_iso_vertices) {
 		cout << indent4 << "# cubes with single isosurface vertex: "
@@ -988,6 +1002,12 @@ void QDUAL::report_iso_info
 				<< dualiso_info.multi_isov.num_1_2_change << endl;
 		}
 
+	}
+	if (output_info.flag_collapse_info)
+	{
+		cout <<"Restriction Info"<<endl;
+		cout <<"	Num elements in the Blist: "<< dualiso_info.rs_info.restriction_BList_size << endl;
+		cout <<"	Num elements in the Clist: "<< dualiso_info.rs_info.restriction_CList_size << endl;
 	}
 
 }

@@ -206,7 +206,6 @@ void QCOLLAPSE::setup_collapse_map(
 	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	const int num_vertex)
 {
-
 	for (int v=0; v<num_vertex; v++)
 	{
 		collapse_map[v]=v;

@@ -112,7 +112,7 @@ void QDUAL::quality_dual_contouring
 		DUALISO_INDEX_GRID first_isov;
 		first_isov.SetSize(dualiso_data.ScalarGrid());
 		first_isov.SetAll(-1);
-
+		
 		// set up first_isov
 		for (int i = iso_vlist.size()-1; i>=0; i--)
 		{
@@ -124,37 +124,30 @@ void QDUAL::quality_dual_contouring
 		//setup sep  vert
 		compute_sep_vert(dualiso_data.ScalarGrid(), iso_vlist, qdual_table);
 		
-		std::unique_ptr<RestrictionInfo> rs_info(new RestrictionInfo());
-		
 		set_restrictions (dualiso_data,  dualiso_data.ScalarGrid(), isovalue,  dual_isosurface.isopoly_vert,
 			iso_vlist, isodual_table, first_isov, qdual_table,
-			dual_isosurface.vertex_coord, rs_info);
+			dual_isosurface.vertex_coord, dualiso_info);
 
-		if (dualiso_data.flag_collapse_info)
-		{
-			cout <<"Num elements in the Blist "<< rs_info->restriction_BList_size << endl;
-			cout <<"Num elements in the Clist "<< rs_info->restriction_CList_size << endl;
-		}
 		if (dualiso_data.flag_collapse_debug)
 		{
 			using namespace std;
 			GRID_COORD_TYPE * c = new GRID_COORD_TYPE [3];
-			cout <<"Num elements in the Blist "<< rs_info->restriction_BList_size << endl;
-			for (int l=0; l<rs_info->restriction_BList_size; l++)
+			cout <<"Num elements in the Blist "<< dualiso_info.rs_info.restriction_BList_size << endl;
+			for (int l=0; l< dualiso_info.rs_info.restriction_BList_size; l++)
 			{
-				int v1 = rs_info->restricted_edges_info[l].first;
+				int v1 = dualiso_info.rs_info.restricted_edges_info[l].first;
 				int v2 = dualiso_data.ScalarGrid().NextVertex(v1,
-					rs_info->restricted_edges_info[l].second);
+					dualiso_info.rs_info.restricted_edges_info[l].second);
 				
 				dualiso_data.ScalarGrid().ComputeCoord(v1,c);
 				cout <<c[0]<<" "<<c[1]<<" "<<c[2] <<" - ";
 				dualiso_data.ScalarGrid().ComputeCoord(v2,c);
 				cout <<c[0]<<" "<<c[1]<<" "<<c[2]<<endl;
 			}
-			cout <<"Num elements in the Clist "<< rs_info->restriction_CList_size << endl;
-			for (int l=0; l < rs_info->restriction_CList_size; l++)
+			cout <<"Num elements in the Clist "<< dualiso_info.rs_info.restriction_CList_size << endl;
+			for (int l=0; l < dualiso_info.rs_info.restriction_CList_size; l++)
 			{
-				int v = rs_info->restricted_vertex_info[l];
+				int v = dualiso_info.rs_info.restricted_vertex_info[l];
 				
 				dualiso_data.ScalarGrid().ComputeCoord(v,c);
 				cout <<c[0]<<" "<<c[1]<<" "<<c[2]<<endl;
@@ -163,11 +156,8 @@ void QDUAL::quality_dual_contouring
 		}
 
 		// Collapse Function calls.
-		const float epsilon = 0.33;
-
-
 		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
-			dual_isosurface.vertex_coord, epsilon);
+			dual_isosurface.vertex_coord, dualiso_data.qdual_epsilon);
 
 		if (dualiso_data.use_quad_tri_mesh)
 		{

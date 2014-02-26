@@ -234,7 +234,6 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 				//break;
 			}
 		}
-
 		//
 		bool flag_non_degen_quad = false;
 
@@ -252,7 +251,9 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			}
 		}
 		if (num_non_degen <=2)
+		{
 			num_non_degen=0;
+		}
 
 		if ( num_non_degen == 0 )
 			continue;

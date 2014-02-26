@@ -68,6 +68,7 @@ void DUALISO_DATA_FLAGS::Init()
   flag_no_restriciton_C=false;
   flag_collapse_info = false;
   flag_collapse_debug = false;
+  qdual_epsilon = 0.33;
 
 }
 

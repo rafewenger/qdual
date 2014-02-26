@@ -14,25 +14,24 @@
 using namespace QDUAL;
 using namespace std;
 
-class RestrictionInfo
-{
-public:
-	int restriction_BList_size;
-	int restriction_CList_size;
 
-	vector<VERTEX_INDEX> restricted_vertex_info;
-	vector< pair<VERTEX_INDEX, int> > restricted_edges_info;
-
-RestrictionInfo()
-{
-	restriction_CList_size = 0;
-	restriction_BList_size = 0;
-}
-~RestrictionInfo(){};
-
-};
-
-
+//class RestrictionInfo
+//{
+//public:
+//	int restriction_BList_size;
+//	int restriction_CList_size;
+//
+//	vector<VERTEX_INDEX> restricted_vertex_info;
+//	vector< pair<VERTEX_INDEX, int> > restricted_edges_info;
+//
+//	RestrictionInfo()
+//	{
+//		restriction_CList_size = 0;
+//		restriction_BList_size = 0;
+//	}
+//	~RestrictionInfo(){};
+//
+//};
 
 void compute_restrictions_BList(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
@@ -72,6 +71,6 @@ void set_restrictions(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	std::unique_ptr<RestrictionInfo> &rs_info);
+	DUALISO_INFO & dualiso_info);
 
 #endif // !_QDUAL_RESTRICTIONS_
