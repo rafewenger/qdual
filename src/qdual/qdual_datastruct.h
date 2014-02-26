@@ -351,6 +351,7 @@ namespace QDUAL {
 	};
 
 	/// Information regarding restriction info for quality dual iso 
+	/// Restriction info
 	class QDUALISO_RESTRICTION_INFO
 	{
 	public:
@@ -367,6 +368,27 @@ namespace QDUAL {
 		}
 		~QDUALISO_RESTRICTION_INFO(){};
 	};
+	/// Information regarding permitted and not permitted collapses
+	class QDUALISO_COLLAPSE_INFO
+	{
+	public :
+		int permitted_facet_restriction;
+		int permitted_vertex_restriction;
+		int permitted_edge_restriction;
+		
+		int not_permitted_facet_restriction;
+		int not_permitted_vertex_restriction;
+		int not_permitted_edge_restriction;
+		QDUALISO_COLLAPSE_INFO()
+		{
+			not_permitted_edge_restriction=0;
+			not_permitted_facet_restriction=0;
+			not_permitted_vertex_restriction=0;
+			permitted_edge_restriction=0;
+			permitted_facet_restriction=0;
+			permitted_vertex_restriction=0;
+		}
+	};
 
 	// **************************************************
 	// DUALISO INFO
@@ -381,7 +403,8 @@ namespace QDUAL {
 		SCALAR_INFO scalar;
 		DUALISO_TIME time;
 		MULTI_ISOV_INFO multi_isov;
-		QDUALISO_RESTRICTION_INFO rs_info;
+		QDUALISO_RESTRICTION_INFO rs_info; //keep track of restriction info
+		QDUALISO_COLLAPSE_INFO col_info; // keep track of collapse info
 
 		DUALISO_INFO();
 		DUALISO_INFO(const int dimension);

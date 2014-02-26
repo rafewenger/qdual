@@ -33,7 +33,8 @@ namespace QCOLLAPSE{
 		std::vector<VERTEX_INDEX> & quad_vert,
 		const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 		const std::vector<COORD_TYPE> & vertex_coord,
-		const float epsilon
+		const float epsilon,
+		DUALISO_INFO & dualiso_info
 		);
 
 

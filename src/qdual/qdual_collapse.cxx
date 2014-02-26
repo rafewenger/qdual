@@ -255,7 +255,8 @@ void collapse_across_facets(
 	const std::vector<COORD_TYPE> & vertex_coord,
 	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	const float epsilon,
-	const bool print_info)
+	const bool print_info,
+	DUALISO_INFO & dualiso_info)
 {
 	const int num_quads = quad_vert.size()/4;
 	const int dimension = scalar_grid.Dimension();
@@ -267,8 +268,6 @@ void collapse_across_facets(
 	{
 		//for each edge
 		for ( v1 = count-1, v2 = 0; v2 < count; v1 = v2++ ) {
-
-
 			int endPt1 = quad_vert[q*4+v1];
 			int endPt2 = quad_vert[q*4+v2];
 
@@ -325,10 +324,12 @@ void collapse_across_facets(
 									print_collapse_info("collapse across facets [permitted]", 
 									endPt1, endPt2, &(facet_base_coord[0]));
 
+								dualiso_info.col_info.permitted_facet_restriction++;
 								update_collapse_edges(collapse_map,endPt1, endPt2);
 							}
 							else
 							{
+								dualiso_info.col_info.not_permitted_facet_restriction++;
 								if (print_info)
 									print_collapse_info("collapse across facets [NOT permitted]", 
 									endPt1, endPt2, &(facet_base_coord[0]));
@@ -370,10 +371,12 @@ void collapse_across_facets(
 										print_collapse_info("collapse across facets [permitted]", 
 										endPt2, endPt1, &(facet_base_coord[0]));
 
+									dualiso_info.col_info.permitted_facet_restriction++;
 									update_collapse_edges(collapse_map,endPt2, endPt1);
 
 								}
 								else{
+									dualiso_info.col_info.not_permitted_facet_restriction++;
 									if (print_info)
 										print_collapse_info("collapse across facets [NOT permitted]", 
 										endPt2, endPt1, &(facet_base_coord[0]));
@@ -397,7 +400,8 @@ void collapse_across_edges(
 	const std::vector<COORD_TYPE> & vertex_coord,
 	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	const float epsilon,
-	const bool print_info)
+	const bool print_info,
+	DUALISO_INFO & dualiso_info)
 {
 	const int num_quads = quad_vert.size()/4;
 	const int dimension = scalar_grid.Dimension();
@@ -471,10 +475,13 @@ void collapse_across_edges(
 										<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
 									cout <<"edge dir "<< closest_edge_dir <<endl;
 								}
+
+								dualiso_info.col_info.permitted_edge_restriction++;
 								update_collapse_edges(collapse_map,endPt1, endPt2);
 							}
 							else
 							{
+								dualiso_info.col_info.not_permitted_edge_restriction++;
 								if (print_info){
 									print_collapse_info("collapse across edges [NOT permitted]", 
 										endPt1, endPt2, &(edge_base_coord[0]));
@@ -522,10 +529,13 @@ void collapse_across_edges(
 											<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
 										cout <<"edge dir "<< closest_edge_dir <<endl;
 									}
+
+									dualiso_info.col_info.permitted_edge_restriction++;
 									update_collapse_edges(collapse_map,endPt2, endPt1);
 								}
 								else
 								{
+									dualiso_info.col_info.not_permitted_edge_restriction++;
 									if (print_info){
 										print_collapse_info("collapse across edges [ NOT permitted]", 
 											endPt2, endPt1, &(edge_base_coord[0]));
@@ -572,7 +582,8 @@ void collapse_across_vertices(
 	const std::vector<COORD_TYPE> & vertex_coord,
 	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	const float epsilon,
-	const bool print_info)
+	const bool print_info,
+	DUALISO_INFO & dualiso_info)
 {
 	const int num_quads = quad_vert.size()/VERT_PER_QUAD;
 	const int dimension = scalar_grid.Dimension();
@@ -626,10 +637,12 @@ void collapse_across_vertices(
 										print_collapse_info("collapse across vertex [permitted]", 
 										endPt1, endPt2, &(vertex_base_coord[0]));
 
+									dualiso_info.col_info.permitted_vertex_restriction++;
 									update_collapse_edges(collapse_map,endPt1, endPt2);
 								}
 								else
 								{
+									dualiso_info.col_info.not_permitted_vertex_restriction++;
 									if (print_info)
 										print_collapse_info("collapse across vertex [NOT permitted]", 
 										endPt1, endPt2, &(vertex_base_coord[0]));
@@ -663,7 +676,8 @@ void QCOLLAPSE::dual_collapse(
 	std::vector<VERTEX_INDEX> & quad_vert,
 	const std::vector<DUAL_ISOVERT> & iso_vlist, 
 	const std::vector<COORD_TYPE> & vertex_coord,
-	const float epsilon
+	const float epsilon,
+	DUALISO_INFO & dualiso_info
 	)
 {
 
@@ -675,11 +689,13 @@ void QCOLLAPSE::dual_collapse(
 	//Reordering QuadVert 
 	IJK::reorder_quad_vertices(quad_vert);
 	collapse_across_facets(scalar_grid, iso_vlist, quad_vert,
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug);
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+
 	collapse_across_edges(scalar_grid, iso_vlist, quad_vert,
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug);
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+
 	collapse_across_vertices(scalar_grid, iso_vlist, quad_vert, 
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug);
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
 	update_quads(collapse_map, quad_vert);
 	//reorder the quads back to the original.
 	IJK::reorder_quad_vertices(quad_vert);

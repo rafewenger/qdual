@@ -157,7 +157,7 @@ void QDUAL::quality_dual_contouring
 
 		// Collapse Function calls.
 		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
-			dual_isosurface.vertex_coord, dualiso_data.qdual_epsilon);
+			dual_isosurface.vertex_coord, dualiso_data.qdual_epsilon, dualiso_info);
 
 		if (dualiso_data.use_quad_tri_mesh)
 		{
