@@ -92,9 +92,9 @@ void QTRIANGULATE::remove_degenerate_quads(
 		}
 		else // triangle
 		{
-			for (int d=num_non_degen-1; d>=0; d--)
+			for (int k = 0; k < num_non_degen; k++)
 			{
-				tri_vert.push_back(non_degen_verts[d]);
+				tri_vert.push_back(non_degen_verts[k]);
 			}
 		}
 	}
@@ -192,9 +192,9 @@ void push_triangle(
 	const int C,
 	std::vector<VERTEX_INDEX> & tri_vert)
 {
-	tri_vert.push_back(A);
-	tri_vert.push_back(B);
 	tri_vert.push_back(C);
+	tri_vert.push_back(B);
+	tri_vert.push_back(A);
 }
 
 
@@ -224,12 +224,14 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 		int w1=0;// has the index NOT the vertex
 		bool flag_deg2 = false;
 		int vertex;
+		int num_deg2=0;
 		for (int j=0; j<VERT_PER_QUAD; j++)
 		{
 			vertex = QCOLLAPSE::find_vertex(collapse_map,non_degen_quad_vert[q*VERT_PER_QUAD+j]);
 			if (iso_vlist[vertex].ver_degree == 2)
 			{
 				w1 = j;
+				num_deg2++;
 				flag_deg2 = true;
 				//break;
 			}
@@ -264,8 +266,10 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 		}
 		else // triangle
 		{
-			for (int d=0;d<num_non_degen;d++)
+			for (int d=0; d< num_non_degen; d++)
+			{
 				tri_vert.push_back(temp_tri[d]);
+			}
 		}
 		//
 		if (flag_non_degen_quad)
@@ -306,7 +310,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			else
 				cos_min_2 = cos_min_angle_dca;
 
-			if (flag_deg2)
+			if (flag_deg2 && num_deg2 == 1)
 			{	
 				if (cos_min_1 < cos_min_2)
 				{

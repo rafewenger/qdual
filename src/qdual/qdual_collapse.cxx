@@ -77,12 +77,18 @@ bool is_permitted_collapse(
 				closest_cube_facet_1 = d+DIM3;
 				closest_cube_facet_2 = d;
 			}
-			if ( (1<<closest_cube_facet_1) & 
-				(iso_vlist[v].restricted_facets | 1<<closest_cube_facet_1))
+			
+			bool cond1 = (iso_vlist[v].restricted_facets & (1<<closest_cube_facet_1));
+			bool cond2 = (iso_vlist[v].restricted_facets & (1<<closest_cube_facet_2));
+			if ( cond1 || cond2)
 			{
 				return false;
 			}
-			break;
+			else
+			{
+				return true;
+			}
+				break;
 		}
 	case EDGE:
 		{
@@ -273,6 +279,7 @@ void collapse_across_facets(
 
 			endPt1 = find_vertex(collapse_map, endPt1);
 			endPt2 = find_vertex(collapse_map, endPt2);
+			
 			if (endPt1!=endPt2)
 			{
 				if ( vert_simple(iso_vlist[endPt2].patch_index ) 
@@ -288,7 +295,7 @@ void collapse_across_facets(
 
 				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
-
+				
 				int num_close=0; //number of close facets.
 				int closest_facet=0;// direction of the closest facet
 				IJK::ARRAY<GRID_COORD_TYPE> facet_base_coord(dimension,0); //base coord of the facet in dir d
@@ -307,11 +314,13 @@ void collapse_across_facets(
 						closest_facet_base_coord[2] = facet_base_coord[2];
 					}
 				}
-
+				
+				
 				if(num_close == 1)
 				{
 					//find the closest facet to endpt2 in direction closest_facet.
 					find_closest_facet(DIM3, endPt2_coord, closest_facet, facet_base_coord);
+
 					if ( is_epsilon_close(endPt2_coord, facet_base_coord, closest_facet, epsilon))
 					{
 						if (scalar_grid.ComputeVertexIndex(&facet_base_coord[0])

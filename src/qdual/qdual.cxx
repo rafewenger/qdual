@@ -94,18 +94,31 @@ void QDUAL::quality_dual_contouring
 
 	if (!dualiso_data.flag_NO_collapse)
 	{
-		
+		IJK::BOOL_GRID<DUALISO_GRID> boundary_grid;
+		boundary_grid.SetSize(dualiso_data.ScalarGrid());
+		boundary_grid.SetAll(false);
+		compute_boundary_grid(boundary_grid);
+
 		//set variables in iso_vlist
 		COORD_TYPE *a = new COORD_TYPE[3];
 		for (int j=0;j<iso_vlist.size();j++)
 		{
 			iso_vlist[j].ver_degree=0;
-			iso_vlist[j].restricted_facets=0;
+	
 			iso_vlist[j].flag_restrictionC = false;
 			(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index,a);
 			//Set iso_vlist[j].cube_coord
 			for (int d=0; d<DIM3; d++)
 				iso_vlist[j].cube_coord.push_back(a[d]);
+
+			if (!boundary_grid.Scalar(iso_vlist[j].cube_index))
+			{
+				iso_vlist[j].restricted_facets=0;
+			}
+			else{
+				iso_vlist[j].restricted_facets=255;
+			}
+
 		}
 		delete[] a;
 
@@ -126,7 +139,7 @@ void QDUAL::quality_dual_contouring
 		
 		set_restrictions (dualiso_data,  dualiso_data.ScalarGrid(), isovalue,  dual_isosurface.isopoly_vert,
 			iso_vlist, isodual_table, first_isov, qdual_table,
-			dual_isosurface.vertex_coord, dualiso_info);
+			dual_isosurface.vertex_coord, dualiso_info, boundary_grid);
 
 		if (dualiso_data.flag_collapse_debug)
 		{
@@ -163,7 +176,8 @@ void QDUAL::quality_dual_contouring
 		{
 			dual_isosurface.flag_has_degen_quads = triangulate_non_degen_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord);
-			IJK::reorder_quad_vertices(dual_isosurface.isopoly_vert);
+			if (dual_isosurface.flag_has_degen_quads)
+				IJK::reorder_quad_vertices(dual_isosurface.isopoly_vert);
 		}
 		else if (dualiso_data.use_triangle_mesh)
 		{

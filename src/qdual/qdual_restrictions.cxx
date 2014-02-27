@@ -169,12 +169,11 @@ void compute_restrictions_CList(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	vector<VERTEX_INDEX> &restriction_Clist)
+	vector<VERTEX_INDEX> &restriction_Clist,
+	const IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
 {
-	IJK::BOOL_GRID<DUALISO_GRID> boundary_grid;
-	boundary_grid.SetSize(scalar_grid);
-	boundary_grid.SetAll(false);
-	compute_boundary_grid(boundary_grid);
+
+
 	int numv =  scalar_grid.NumVertices();
 
 	for (VERTEX_INDEX iv = 0; iv < numv; iv++)
@@ -328,11 +327,12 @@ void set_restrictionsC(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	DUALISO_INFO & dualiso_info)
+	DUALISO_INFO & dualiso_info,
+	const IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
 {
 	vector<VERTEX_INDEX> restriction_Clist;
 	compute_restrictions_CList( scalar_grid, isovalue, iso_vlist, isodual_table, first_isov,
-		qdual_table, vertex_coord, restriction_Clist);
+		qdual_table, vertex_coord, restriction_Clist, boundary_grid);
 	//store info
 	
 	dualiso_info.rs_info.restriction_CList_size = restriction_Clist.size();
@@ -392,7 +392,8 @@ void set_restrictions(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	DUALISO_INFO & dualiso_info)
+	DUALISO_INFO & dualiso_info,
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
 {
 	if (!dualiso_data.flag_no_restriction_AB)
 	{
@@ -406,6 +407,6 @@ void set_restrictions(
 	if(!dualiso_data.flag_no_restriciton_C)
 	{
 		set_restrictionsC(scalar_grid, isovalue, quad_vert,
-			iso_vlist, isodual_table, first_isov,qdual_table, vertex_coord, dualiso_info);
+			iso_vlist, isodual_table, first_isov,qdual_table, vertex_coord, dualiso_info,boundary_grid);
 	}
 }

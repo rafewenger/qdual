@@ -71,6 +71,7 @@ void set_restrictions(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
-	DUALISO_INFO & dualiso_info);
+	DUALISO_INFO & dualiso_info,
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid);
 
 #endif // !_QDUAL_RESTRICTIONS_
