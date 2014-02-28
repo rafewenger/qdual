@@ -86,10 +86,12 @@ void QDUAL::quality_dual_contouring
 		isodual_table(dimension, flag_separate_neg, 
 		flag_always_separate_opposite);
 
+  std::vector<DIRECTION_TYPE> orth_dir;
 	dual_contouring
 		(dualiso_data.ScalarGrid(), isovalue, vpos_method, 
 		flag_select_split, flag_separate_neg,
-		dual_isosurface.isopoly_vert, dual_isosurface.vertex_coord, iso_vlist,
+    dual_isosurface.isopoly_vert, orth_dir,
+    dual_isosurface.vertex_coord, iso_vlist,
 		isodual_table, merge_data, dualiso_info);
 
 	if (!dualiso_data.flag_NO_collapse)
@@ -210,6 +212,7 @@ void QDUAL::dual_contouring
 	const bool flag_select_split,
 	const bool flag_separate_neg,
 	std::vector<VERTEX_INDEX> & quad_vert,
+  std::vector<DIRECTION_TYPE> & orth_dir,
 	std::vector<COORD_TYPE> & vertex_coord,
 	std::vector<DUAL_ISOVERT> &iso_vlist,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE & isodual_table,
@@ -239,8 +242,8 @@ void QDUAL::dual_contouring
 	//   For each vertex iv of quad iq dual to e,
 	//     Add cube containing iv to quad_cube[].
 	//     Add position of iv on quad iq to facet_vertex[].
-	extract_dual_isopoly
-		(scalar_grid, isovalue, quad_cube, facet_vertex, dualiso_info);
+	extract_dual_isoquad
+		(scalar_grid, isovalue, quad_cube, facet_vertex, orth_dir, dualiso_info);
 	t1 = clock();
 
 	// List of cubes containing isosurface vertices.
@@ -335,12 +338,13 @@ void QDUAL::dual_contouring
 	// Class DUAL_ISOVERT contains cube_index, patch_index and table_index.
 	std::vector<DUAL_ISOVERT> iso_vlist;
 	bool flag_always_separate_opposite(true);
-	IJKDUALTABLE::ISODUAL_CUBE_TABLE 
-		isodual_table(dimension, false, 
-		true);
-	dual_contouring(scalar_grid, isovalue, CENTROID_EDGE_ISO, 
-		false, true,
-		quad_vert, vertex_coord, iso_vlist, isodual_table, merge_data, dualiso_info);
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE isodual_table(dimension, false, true);
+  std::vector<DIRECTION_TYPE> orth_dir;
+
+	dual_contouring
+    (scalar_grid, isovalue, CENTROID_EDGE_ISO, false, true,
+     quad_vert, orth_dir, vertex_coord, iso_vlist, isodual_table, 
+     merge_data, dualiso_info);
 }
 
 // **************************************************

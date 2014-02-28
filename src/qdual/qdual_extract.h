@@ -70,7 +70,7 @@ namespace QDUAL {
   /// @param[out] orth_dir[i] = Direction orthgonal to quadrilateral i.
   void extract_dual_isoquad
     (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
-     const SCALAR_TYPE isovalue, std::vector<ISO_VERTEX_INDEX> & iso_poly,
+     const SCALAR_TYPE isovalue, std::vector<ISO_VERTEX_INDEX> & iso_quad,
      std::vector<FACET_VERTEX_INDEX> & facet_vertex,
      std::vector<DIRECTION_TYPE> & orth_dir,
      DUALISO_INFO & dualiso_info);

@@ -67,6 +67,7 @@ namespace QDUAL {
   ///        separate negative grid vertices.
   /// @param[out] quad_vert[] Array of quadrilateral vertices.
   ///        quad_vert[iq*4+j] is index to j'th vertex of quadrilateral iq.
+  /// @param[out] orth_dir[i] Direction orthogonal to quadrilateral i.
   /// @param[out] vertex_coord[] Array of vertex coordinates.
   ///        vertex_coord[i*dimension+j] is j'th coordinate of vertex i.
   /// @param[out] Class DUAL_ISOVERT contains cube_index, patch_index and table_index.
@@ -79,6 +80,7 @@ namespace QDUAL {
 	  const bool flag_select_split,
 	  const bool flag_separate_neg,
 	  std::vector<VERTEX_INDEX> & quad_vert, 
+    std::vector<DIRECTION_TYPE> & orth_dir,
 	  std::vector<COORD_TYPE> & vertex_coord,
 	  std::vector<DUAL_ISOVERT> &iso_vlist,
 	  IJKDUALTABLE::ISODUAL_CUBE_TABLE  & isodual_table,
