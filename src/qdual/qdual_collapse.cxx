@@ -70,17 +70,15 @@ bool is_permitted_collapse(
 			if ( AreSame<GRID_COORD_TYPE>(iso_vlist[v].cube_coord[d], base_coord[d]))
 			{
 				closest_cube_facet_1 = d;
-				closest_cube_facet_2 = d+DIM3;
+
 			}
 			else
 			{
 				closest_cube_facet_1 = d+DIM3;
-				closest_cube_facet_2 = d;
 			}
 			
 			bool cond1 = (iso_vlist[v].restricted_facets & (1<<closest_cube_facet_1));
-			bool cond2 = (iso_vlist[v].restricted_facets & (1<<closest_cube_facet_2));
-			if ( cond1 || cond2)
+			if (cond1)
 			{
 				return false;
 			}
@@ -292,7 +290,7 @@ void collapse_across_facets(
 					swap(endPt1, endPt2);
 				}
 
-
+				
 				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
 				
@@ -315,7 +313,7 @@ void collapse_across_facets(
 					}
 				}
 				
-				
+
 				if(num_close == 1)
 				{
 					//find the closest facet to endpt2 in direction closest_facet.

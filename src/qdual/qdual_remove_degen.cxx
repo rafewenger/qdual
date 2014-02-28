@@ -27,11 +27,12 @@ void QTRIANGULATE::triangulate_quads (
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<VERTEX_INDEX> & tri_vert,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
-	const std::vector<COORD_TYPE> & vertex_coord)
+	const std::vector<COORD_TYPE> & vertex_coord,
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
 {
 	bool has_non_degen_quad = triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
 	// only non degenerate quads and triangles remain
-	triangulate_quad_angle_based(quad_vert, tri_vert, iso_vlist, vertex_coord);
+	triangulate_quad_angle_based(quad_vert, tri_vert, iso_vlist, vertex_coord, boundary_grid);
 }
 
 // Remove degenerate quads
@@ -197,14 +198,41 @@ void push_triangle(
 	tri_vert.push_back(A);
 }
 
-
+//Remove the triangle duplciates
+void remove_tri_duplicates(
+	std::vector<VERTEX_INDEX> & tri_vert,
+	std::vector<VERTEX_INDEX> & tri_vert_non_dupli)
+{
+	const int size = tri_vert.size()/DIM3;
+	
+	for (int i = 0; i < size; i++)
+	{
+		bool flag_degen = false;
+		VERTEX_INDEX v1,v2=0;
+		for (  v1 =  DIM3-1,  v2 = 0; v2 <DIM3; v1 = v2++ ) 
+		{
+			if (tri_vert[DIM3*i+v1] == tri_vert[DIM3*i+v2])
+			{
+				flag_degen = true;
+				break;
+			}
+		}
+		if (!flag_degen)
+		{
+			tri_vert_non_dupli.push_back(tri_vert[DIM3*i]);
+			tri_vert_non_dupli.push_back(tri_vert[DIM3*i+1]);
+			tri_vert_non_dupli.push_back(tri_vert[DIM3*i+2]);
+		}
+	}
+}
 // Triangulate quads based on their angles
 // Param 1: set of NON_DEGENERATE quads
 void QTRIANGULATE::triangulate_quad_angle_based(
 	std::vector<VERTEX_INDEX> & non_degen_quad_vert, // only non degenerate quads
 	std::vector<VERTEX_INDEX> & tri_vert,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
-	const std::vector<COORD_TYPE> & vertex_coord
+	const std::vector<COORD_TYPE> & vertex_coord,
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid
 	)
 {
 	const int num_quad = non_degen_quad_vert.size()/VERT_PER_QUAD;
@@ -223,8 +251,10 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	{
 		int w1=0;// has the index NOT the vertex
 		bool flag_deg2 = false;
+		bool flag_boundary = false;
 		int vertex;
 		int num_deg2=0;
+		
 		for (int j=0; j<VERT_PER_QUAD; j++)
 		{
 			vertex = QCOLLAPSE::find_vertex(collapse_map,non_degen_quad_vert[q*VERT_PER_QUAD+j]);
@@ -232,12 +262,18 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			{
 				w1 = j;
 				num_deg2++;
+				if (boundary_grid.Scalar(iso_vlist[vertex].cube_index))
+				{
+					flag_boundary = true;
+				}
 				flag_deg2 = true;
 				//break;
 			}
+
 		}
-		//
+
 		bool flag_non_degen_quad = false;
+
 
 		int num_non_degen = 0;
 		VERTEX_INDEX temp_tri[3]={0};
@@ -282,8 +318,8 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			C = QCOLLAPSE::find_vertex(collapse_map,C);
 			int D = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1+1)%VERT_PER_QUAD];
 			D = QCOLLAPSE::find_vertex(collapse_map, D);
-
-
+			
+			
 			//find the 4 angles.
 
 			float cos_min_angle_abc; // min angle of triangle ABC.
@@ -310,13 +346,12 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			else
 				cos_min_2 = cos_min_angle_dca;
 
-			if (flag_deg2 && num_deg2 == 1)
+			if (flag_deg2 && !flag_boundary)
 			{	
 				if (cos_min_1 < cos_min_2)
 				{
 					push_triangle(C, B, vertex, tri_vert);
 					push_triangle(vertex, B, D, tri_vert);
-
 				}
 				else
 				{
@@ -344,7 +379,6 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 
 					push_triangle(vertex, C, B, tri_vert);
 					push_triangle(vertex, B, D, tri_vert);
-
 				}
 				else
 				{
@@ -354,7 +388,12 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			}
 		}//if	
 	}
+	
 	update_tris(collapse_map, tri_vert);
+	vector<VERTEX_INDEX> temp_tri_vert;
+	remove_tri_duplicates (tri_vert, temp_tri_vert);
+	tri_vert.clear();
+	tri_vert = temp_tri_vert;
 	//reorder back to original 
 	IJK::reorder_quad_vertices(non_degen_quad_vert);
 
