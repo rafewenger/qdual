@@ -45,7 +45,7 @@ void construct_isosurface
 
 int main(int argc, char **argv)
 {
-	time_t start_time;
+time_t start_time;
 	time(&start_time);
 
 	DUALISO_TIME dualiso_time;

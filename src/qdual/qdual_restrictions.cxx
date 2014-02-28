@@ -7,6 +7,15 @@ using namespace IJK;
 using namespace NamedConstants;
 
 
+// move the vertex "iv" away from f1 and f2 by 'd' distance
+void update_coord (const VERTEX_INDEX iv,
+				   const int f1,
+				   const int f2,
+				   const float d, 
+				   std::vector<COORD_TYPE> & vertex_coord)
+
+{
+}
 
 void check_edge_has_square_isosurface_path(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
@@ -38,7 +47,6 @@ void check_edge_has_square_isosurface_path(
 			VERTEX_INDEX f1 = (d1+ (1-d1coef[i])* DIM3) % NUM_CUBE_FACETS;
 			VERTEX_INDEX f2 = (d2+ (1-d2coef[i])* DIM3) % NUM_CUBE_FACETS;
 
-
 			int table_ind = iso_vlist[indx_iso_vlist].table_index;
 			int num_iso_verts = isodual_table.NumIsoVertices(table_ind);
 			//for each isosurface vertex in cube c
@@ -49,7 +57,7 @@ void check_edge_has_square_isosurface_path(
 				QDUAL_TABLE::DIR_BITS edge_flag = qdual_table.connectDir(it, ip);
 				bool cond1 = (edge_flag & (1<<f1));
 				bool cond2 = (edge_flag & (1<<f2));
-				//if (((edge_flag & (1<<f1)) !=0 ) && (edge_flag & (1<<f2) != 0))
+			
 				if (cond1 && cond2)
 				{
 					flag_connect = true;
@@ -193,6 +201,7 @@ void compute_restrictions_CList(
 					restriction_Clist.push_back(iv);
 			}
 		}
+
 	}
 
 }
@@ -247,6 +256,8 @@ void set_restrictionsA(
 
 void set_restrictionsB(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	std::vector<COORD_TYPE> & vertex_coord,
+	const float d, // how far to move vertices away from edges and vertices.
 	const SCALAR_TYPE isovalue,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
@@ -270,8 +281,7 @@ void set_restrictionsB(
 	for (int i=0;i < restricted_edges.size(); i++)
 	{
 		VERTEX_INDEX end0 = restricted_edges[i].first;
-		GRID_COORD_TYPE * coord = new GRID_COORD_TYPE[3];
-		scalar_grid.ComputeCoord(end0,coord);
+
 
 		int edge_dir = restricted_edges[i].second;
 		int d1 = (edge_dir + 1) % DIM3;
@@ -283,7 +293,7 @@ void set_restrictionsB(
 		{
 			VERTEX_INDEX c = c0 + d1coef[j]*scalar_grid.AxisIncrement(d1) 
 				+ d2coef[j]*scalar_grid.AxisIncrement(d2);
-			scalar_grid.ComputeCoord(c,coord);
+			
 			VERTEX_INDEX f1 = (d1 + (1-d1coef[j])*DIM3)% NUM_CUBE_FACETS;
 			VERTEX_INDEX f2 = (d2 + (1-d2coef[j])*DIM3)% NUM_CUBE_FACETS;
 
@@ -303,10 +313,28 @@ void set_restrictionsB(
 					bool cond2 = (edge_flag & (1<<f2));
 					if ( cond1 && cond2 )
 					{
-						unsigned char test_bef = iso_vlist[indx_iso_vlist+k].restricted_facets;
+						//debug
+						/*cout <<"resticted vertex " << iso_vlist[indx_iso_vlist+k].cube_coord[0]<<" "
+							<<iso_vlist[indx_iso_vlist+k].cube_coord[1]<<" "
+							<<iso_vlist[indx_iso_vlist+k].cube_coord[2]<<" "<<endl;
+						
+						cout <<"original vertex "<<vertex_coord[3*(indx_iso_vlist+k)]<<" "
+							<<vertex_coord[3*(indx_iso_vlist+k)+1]<<" "
+							<<vertex_coord[3*(indx_iso_vlist+k)+2]<<" \n";
+
+						GRID_COORD_TYPE * coord = new GRID_COORD_TYPE[3];
+						scalar_grid.ComputeCoord(end0,coord);
+						cout <<"end0= "<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<" ";
+						VERTEX_INDEX  end1 = scalar_grid.NextVertex(end0, edge_dir);
+						scalar_grid.ComputeCoord(end1,coord);
+						cout <<" end1= "<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<endl;
+						cout <<"f1 "<< f1 <<" f2 "<< f2 <<endl;*/
+						
+						update_coord(indx_iso_vlist+k, f1,f2, d, vertex_coord);
+
 						iso_vlist[indx_iso_vlist+k].restricted_facets = 
 							(iso_vlist[indx_iso_vlist+k].restricted_facets | ((1<<f1) | (1<<f2)));
-						unsigned char test_after = iso_vlist[indx_iso_vlist+k].restricted_facets;
+
 					}
 
 				}
@@ -391,7 +419,7 @@ void set_restrictions(
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
-	const std::vector<COORD_TYPE> & vertex_coord,
+	std::vector<COORD_TYPE> & vertex_coord,
 	DUALISO_INFO & dualiso_info,
 	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
 {
@@ -400,7 +428,7 @@ void set_restrictions(
 		set_restrictionsA(iso_vlist, qdual_table);
 		if (!dualiso_data.flag_no_restriciton_B)
 		{
-			set_restrictionsB(scalar_grid, isovalue, iso_vlist, isodual_table,
+			set_restrictionsB(scalar_grid, vertex_coord, dualiso_data.qdual_epsilon, isovalue, iso_vlist, isodual_table,
 				first_isov, qdual_table, dualiso_data.flag_collapse_debug, dualiso_info);
 		}
 	}

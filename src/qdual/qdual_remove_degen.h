@@ -21,7 +21,8 @@ namespace QTRIANGULATE{
 		std::vector<VERTEX_INDEX> & quad_vert,
 		std::vector<VERTEX_INDEX> & tri_vert,
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
-		const std::vector<COORD_TYPE> & vertex_coord);
+		const std::vector<COORD_TYPE> & vertex_coord,
+		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid);
 
 	// Remove degfenerate quads
 	void remove_degenerate_quads(
@@ -37,7 +38,8 @@ namespace QTRIANGULATE{
 		std::vector<VERTEX_INDEX> & non_degen_quad_vert, // only non degenerate quads
 		std::vector<VERTEX_INDEX> & tri_vert,
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
-		const std::vector<COORD_TYPE> & vertex_coord
+		const std::vector<COORD_TYPE> & vertex_coord,
+		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid
 		);
 }
 #endif // !_QDDUAL_REMOVE_DEGENERATE_

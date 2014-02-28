@@ -98,6 +98,8 @@ void QDUAL::quality_dual_contouring
 		boundary_grid.SetSize(dualiso_data.ScalarGrid());
 		boundary_grid.SetAll(false);
 		compute_boundary_grid(boundary_grid);
+		
+		flag_boundary_cubes(boundary_grid);
 
 		//set variables in iso_vlist
 		COORD_TYPE *a = new COORD_TYPE[3];
@@ -116,7 +118,7 @@ void QDUAL::quality_dual_contouring
 				iso_vlist[j].restricted_facets=0;
 			}
 			else{
-				iso_vlist[j].restricted_facets=255;
+				iso_vlist[j].restricted_facets=255; // set  boundaries to restricted
 			}
 
 		}
@@ -185,7 +187,7 @@ void QDUAL::quality_dual_contouring
 				dual_isosurface.vertex_coord);
 			// triangulate all quads
 			triangulate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
-				iso_vlist, dual_isosurface.vertex_coord);
+				iso_vlist, dual_isosurface.vertex_coord, boundary_grid);
 		}
 	}
 	// store times
