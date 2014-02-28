@@ -57,6 +57,24 @@ namespace QDUAL {
      const SCALAR_TYPE isovalue, std::vector<ISO_VERTEX_INDEX> & iso_poly,
      std::vector<FACET_VERTEX_INDEX> & facet_vertex,
      DUALISO_INFO & dualiso_info);
+
+  /// Extract isosurface quadrilaterals.
+  /// Returns list representing isosurface quadrilaterals.
+  /// Returns also list of directions orthogonal to quadrilaterals.
+  /// @param scalar_grid = scalar grid data
+  /// @param isovalue = isosurface scalar value
+  /// @param[out] iso_quad[] = vector of isosurface polygope vertices
+  ///   iso_simplices[numv_per_poly*ip+k] = 
+  ///     cube containing k'th vertex of polytope ip.
+  /// @param[out] facet_vertex[i] = Edge of cube containing iso_quad[i].
+  /// @param[out] orth_dir[i] = Direction orthgonal to quadrilateral i.
+  void extract_dual_isoquad
+    (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+     const SCALAR_TYPE isovalue, std::vector<ISO_VERTEX_INDEX> & iso_poly,
+     std::vector<FACET_VERTEX_INDEX> & facet_vertex,
+     std::vector<DIRECTION_TYPE> & orth_dir,
+     DUALISO_INFO & dualiso_info);
+
 }
 
 #endif

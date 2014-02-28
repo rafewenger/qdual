@@ -57,7 +57,9 @@ namespace QDUAL {
   typedef int AXIS_SIZE_TYPE;    ///< Axis size type.
   typedef int ISO_VERTEX_INDEX;  ///< Isosurface vertex index type.
   typedef int MERGE_INDEX;       ///< Merge index type.
-  typedef unsigned short DEGREE_TYPE; ///< DEGREE_PER_VERTEX
+  typedef unsigned short DEGREE_TYPE;   ///< DEGREE_PER_VERTEX
+  typedef unsigned char DIRECTION_TYPE; ///< Direction type.
+
 
   /// Edge index type.
   /// Vertex and edge indices must have the same type.
