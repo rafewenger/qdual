@@ -468,16 +468,20 @@ void collapse_across_edges(
 					//find the closest edge and distance for the endpt2
 					find_closest_edge_and_distance(DIM3, endPt2_coord, closest_edge_dir,
 						edge_base_coord, closest_distance);
-					if (closest_distance < epsilon)
+
+					if (closest_distance < epsilon)// end pt2 is also epislon close to the edge
 					{
 						if (scalar_grid.ComputeVertexIndex(&edge_base_coord[0])
 							== scalar_grid.ComputeVertexIndex(&closest_edge_base_coord[0]))
+						{
 							if (is_permitted_collapse(iso_vlist, endPt2,  &(edge_base_coord[0]),
 								closest_edge_dir, EDGE))
 							{ 
 								if (print_info){
 									print_collapse_info("collapse across edges [permitted]", 
 										endPt1, endPt2, &(edge_base_coord[0]));
+									cout <<"endpt2 "<< endPt2<<"("<< endPt2_coord[0]<<","<< endPt2_coord[1]<<","<< endPt2_coord[2]<<"\n";
+									cout <<"endpt1 "<< endPt1<<"("<< endPt1_coord[0]<<","<< endPt1_coord[1]<<","<< endPt1_coord[2]<<"\n";
 									cout <<"edge base "<< edge_base_coord[0]<<","
 										<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
 									cout <<"edge dir "<< closest_edge_dir <<endl;
@@ -492,12 +496,19 @@ void collapse_across_edges(
 								if (print_info){
 									print_collapse_info("collapse across edges [NOT permitted]", 
 										endPt1, endPt2, &(edge_base_coord[0]));
+									int v=0;
+									v=scalar_grid.ComputeVertexIndex(&edge_base_coord[0]);
+									cout <<"edgebase vertex index "<<v<<endl;
+
+									cout <<"endpt2 "<< endPt2<<"("<< endPt2_coord[0]<<","<< endPt2_coord[1]<<","<< endPt2_coord[2]<<"\n";
+									cout <<"endpt1 "<< endPt1<<"("<< endPt1_coord[0]<<","<< endPt1_coord[1]<<","<< endPt1_coord[2]<<"\n";
 									cout <<"edge base "<< edge_base_coord[0]<<","
 										<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
 									cout <<"edge dir "<< closest_edge_dir <<endl;
 								}
 
 							}
+						}
 					}
 				}
 				else
@@ -532,6 +543,12 @@ void collapse_across_edges(
 									if (print_info){
 										print_collapse_info("collapse across edges [permitted]", 
 											endPt2, endPt1, &(edge_base_coord[0]));
+										int v=0;
+										v=scalar_grid.ComputeVertexIndex(&edge_base_coord[0]);
+										cout <<"edgebase vertex index "<<v<<endl;
+
+										cout <<"endpt1 "<< endPt1<<"("<< endPt1_coord[0]<<","<< endPt1_coord[1]<<","<< endPt1_coord[2]<<"\n";
+
 										cout <<"edge base "<< edge_base_coord[0]<<","
 											<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
 										cout <<"edge dir "<< closest_edge_dir <<endl;
@@ -546,6 +563,8 @@ void collapse_across_edges(
 									if (print_info){
 										print_collapse_info("collapse across edges [ NOT permitted]", 
 											endPt2, endPt1, &(edge_base_coord[0]));
+										cout <<"endpt1 "<< endPt1<<"("<< endPt1_coord[0]<<","<< endPt1_coord[1]<<","<< endPt1_coord[2]<<"\n";
+										cout <<"endpt2 "<< endPt2<<"("<< endPt2_coord[0]<<","<< endPt2_coord[1]<<","<< endPt2_coord[2]<<"\n";
 										cout <<"edge base "<< edge_base_coord[0]<<","
 											<< edge_base_coord[1]<<"," << edge_base_coord[2] << endl;
 										cout <<"edge dir "<< closest_edge_dir <<endl;

@@ -170,6 +170,7 @@ namespace QDUAL {
 		bool flag_collapse_info; 
 		bool flag_collapse_debug;
 		float qdual_epsilon;
+		bool flag_move_vertices;
 
 	public:
 		DUALISO_DATA_FLAGS() { Init(); };

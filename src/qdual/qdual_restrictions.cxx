@@ -6,16 +6,87 @@ using namespace std;
 using namespace IJK;
 using namespace NamedConstants;
 
-
-// move the vertex "iv" away from f1 and f2 by 'd' distance
-void update_coord (const VERTEX_INDEX iv,
-				   const int f1,
-				   const int f2,
-				   const float d, 
-				   std::vector<COORD_TYPE> & vertex_coord)
-
+void MoveAwayFromFacetF(
+	const int vertex,
+	const int f, 
+	const float e, //epsilon
+	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	std::vector<COORD_TYPE> & vertex_coord
+	)
 {
+/*	int d1=0, d2=0;
+	float temp_d = 0.0;
+
+	if (f> DIM3-1){
+		d1 = (f+DIM3)%DIM3;
+		temp_d = -1.0*d;
+
+		if (abs(iso_vlist[vertex].cube_coord[d1] 
+		+ 1 - vertex_coord[DIM3*vertex + d1]) < d)
+		{
+			vertex_coord[DIM3*vertex+d1] = vertex_coord[DIM3*vertex + d1] + temp_d;
+		}
+	}
+	else
+	{
+		d1 = f;
+		temp_d = d;
+		if (abs( iso_vlist[vertex].cube_coord[d1] -
+			vertex_coord[DIM3*vertex + d1])  < d)
+		{
+			vertex_coord[DIM3*vertex+d1] = vertex_coord[DIM3*vertex+ d1] + temp_d;
+		}
+	}
+	*/
+	int orthoDir = (f + DIM3)%DIM3;
+	float vCoordOrthoDir = vertex_coord[DIM3*vertex+ orthoDir];
+	float facetCoordOrthoDir = iso_vlist[vertex].cube_coord[orthoDir];
+
+	if (f > DIM3-1)
+	{
+		facetCoordOrthoDir++;
+		if ((facetCoordOrthoDir-vCoordOrthoDir)<e)
+		{
+			vertex_coord[DIM3*vertex+orthoDir] = facetCoordOrthoDir-e;
+		}
+	}
+	else
+	{
+		if ((vCoordOrthoDir-facetCoordOrthoDir)<e)
+		{
+			vertex_coord[DIM3*vertex+orthoDir] = facetCoordOrthoDir+e;
+		}
+	}
+
 }
+// Move vertices away from vertex
+// vertex: Index into vertex coord
+// distance to move vertex by
+void moveAwayFromVertex(
+	const int vertex,
+	const float d)
+{
+
+}
+
+//Move away from the edge given by the facets f1,f2
+//of the cube containing the "vertex"
+void moveAwayFromEdge(
+	const int vertex,
+	const int f1,
+	const int f2,
+	const float d,
+	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	std::vector<COORD_TYPE> & vertex_coord
+	)
+{
+	MoveAwayFromFacetF(vertex, f1,
+		d, iso_vlist, vertex_coord);
+	MoveAwayFromFacetF(vertex, f2,
+		d, iso_vlist, vertex_coord);
+}
+
+
 
 void check_edge_has_square_isosurface_path(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
@@ -41,9 +112,6 @@ void check_edge_has_square_isosurface_path(
 
 		if (indx_iso_vlist != NO_ISOVERTEX_IN_CUBE)
 		{
-			GRID_COORD_TYPE * c_coord = new GRID_COORD_TYPE[3];
-			scalar_grid.ComputeCoord(c,c_coord);
-
 			VERTEX_INDEX f1 = (d1+ (1-d1coef[i])* DIM3) % NUM_CUBE_FACETS;
 			VERTEX_INDEX f2 = (d2+ (1-d2coef[i])* DIM3) % NUM_CUBE_FACETS;
 
@@ -57,7 +125,7 @@ void check_edge_has_square_isosurface_path(
 				QDUAL_TABLE::DIR_BITS edge_flag = qdual_table.connectDir(it, ip);
 				bool cond1 = (edge_flag & (1<<f1));
 				bool cond2 = (edge_flag & (1<<f2));
-			
+
 				if (cond1 && cond2)
 				{
 					flag_connect = true;
@@ -237,7 +305,7 @@ void set_restrictionsA(
 	QDUAL_TABLE & qdual_table
 	)
 {
-	
+
 	for (int i = 0; i < iso_vlist.size(); i++)
 	{
 		for (int j=0; j < NUM_CUBE_FACETS-1; j++)
@@ -264,9 +332,10 @@ void set_restrictionsB(
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
 	bool print_info,
+	bool move_vertex,
 	DUALISO_INFO & dualiso_info)
 {
-	
+
 	vector< pair<VERTEX_INDEX, int> > restricted_edges;
 
 	compute_restrictions_BList( scalar_grid, isovalue, iso_vlist, 
@@ -274,7 +343,7 @@ void set_restrictionsB(
 	//store information 
 	dualiso_info.rs_info.restriction_BList_size = restricted_edges.size();
 	dualiso_info.rs_info.restricted_edges_info = restricted_edges;
-	
+
 	int d1coef[NUM_CUBE_FACET_VERT]={0,1,0,1};
 	int d2coef[NUM_CUBE_FACET_VERT]= {0,0,1,1};
 
@@ -289,11 +358,20 @@ void set_restrictionsB(
 		VERTEX_INDEX c0 = end0 - scalar_grid.AxisIncrement(d1) - scalar_grid.AxisIncrement(d2);
 
 
+		VERTEX_INDEX  end1 = scalar_grid.NextVertex(end0, edge_dir);
+		if(print_info)
+		{
+			GRID_COORD_TYPE * coord = new GRID_COORD_TYPE[3];
+			scalar_grid.ComputeCoord(end0,coord);
+			cout <<"\n\nedge "<<end0<<"("<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<") ";
+			scalar_grid.ComputeCoord(end1,coord);
+			cout <<end1<<" ("<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<")"<<endl;
+		}
 		for (int j=0; j < NUM_CUBE_FACET_VERT; j++)
 		{
 			VERTEX_INDEX c = c0 + d1coef[j]*scalar_grid.AxisIncrement(d1) 
 				+ d2coef[j]*scalar_grid.AxisIncrement(d2);
-			
+
 			VERTEX_INDEX f1 = (d1 + (1-d1coef[j])*DIM3)% NUM_CUBE_FACETS;
 			VERTEX_INDEX f2 = (d2 + (1-d2coef[j])*DIM3)% NUM_CUBE_FACETS;
 
@@ -313,30 +391,25 @@ void set_restrictionsB(
 					bool cond2 = (edge_flag & (1<<f2));
 					if ( cond1 && cond2 )
 					{
-						//debug
-						/*cout <<"resticted vertex " << iso_vlist[indx_iso_vlist+k].cube_coord[0]<<" "
-							<<iso_vlist[indx_iso_vlist+k].cube_coord[1]<<" "
-							<<iso_vlist[indx_iso_vlist+k].cube_coord[2]<<" "<<endl;
-						
-						cout <<"original vertex "<<vertex_coord[3*(indx_iso_vlist+k)]<<" "
-							<<vertex_coord[3*(indx_iso_vlist+k)+1]<<" "
-							<<vertex_coord[3*(indx_iso_vlist+k)+2]<<" \n";
+						if (print_info){
+							cout <<"	org vertex: "<<vertex_coord[3*(indx_iso_vlist+k)]<<" "
+								<<vertex_coord[3*(indx_iso_vlist+k)+1]<<" "
+								<<vertex_coord[3*(indx_iso_vlist+k)+2]<<" ";
+						}
 
-						GRID_COORD_TYPE * coord = new GRID_COORD_TYPE[3];
-						scalar_grid.ComputeCoord(end0,coord);
-						cout <<"end0= "<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<" ";
-						VERTEX_INDEX  end1 = scalar_grid.NextVertex(end0, edge_dir);
-						scalar_grid.ComputeCoord(end1,coord);
-						cout <<" end1= "<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<endl;
-						cout <<"f1 "<< f1 <<" f2 "<< f2 <<endl;*/
-						
-						update_coord(indx_iso_vlist+k, f1,f2, d, vertex_coord);
-
+						if (move_vertex)
+						{
+							moveAwayFromEdge(indx_iso_vlist+k, f1, f2,
+								d, iso_vlist, vertex_coord);
+						}
+						if (print_info){
+							cout <<"	new vertex: "<<vertex_coord[3*(indx_iso_vlist+k)]<<" "
+								<<vertex_coord[3*(indx_iso_vlist+k)+1]<<" "
+								<<vertex_coord[3*(indx_iso_vlist+k)+2]<<" \n";
+						}
 						iso_vlist[indx_iso_vlist+k].restricted_facets = 
 							(iso_vlist[indx_iso_vlist+k].restricted_facets | ((1<<f1) | (1<<f2)));
-
 					}
-
 				}
 
 			}
@@ -345,7 +418,7 @@ void set_restrictionsB(
 }
 
 
-
+// Set restrictions C 
 void set_restrictionsC(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	const SCALAR_TYPE isovalue,
@@ -362,7 +435,7 @@ void set_restrictionsC(
 	compute_restrictions_CList( scalar_grid, isovalue, iso_vlist, isodual_table, first_isov,
 		qdual_table, vertex_coord, restriction_Clist, boundary_grid);
 	//store info
-	
+
 	dualiso_info.rs_info.restriction_CList_size = restriction_Clist.size();
 	dualiso_info.rs_info.restricted_vertex_info = restriction_Clist;
 
@@ -386,6 +459,7 @@ void set_restrictionsC(
 					if ( iso_vlist[indx_iso_vlist+k].sep_vert == restriction_Clist[v])
 					{
 						iso_vlist[indx_iso_vlist+k].flag_restrictionC = true;
+						scalar_grid.FacetVertex(v,v,v);
 					}
 				}
 			}
@@ -429,7 +503,7 @@ void set_restrictions(
 		if (!dualiso_data.flag_no_restriciton_B)
 		{
 			set_restrictionsB(scalar_grid, vertex_coord, dualiso_data.qdual_epsilon, isovalue, iso_vlist, isodual_table,
-				first_isov, qdual_table, dualiso_data.flag_collapse_debug, dualiso_info);
+				first_isov, qdual_table, dualiso_data.flag_collapse_debug, dualiso_data.flag_move_vertices, dualiso_info);
 		}
 	}
 	if(!dualiso_data.flag_no_restriciton_C)

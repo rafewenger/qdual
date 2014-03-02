@@ -5,6 +5,7 @@
 #include "qdual_datastruct.h"
 #include "ijk.txx"
 #include "ijkmesh.txx"
+#include "qdual_table.h"
 using namespace QDUAL;
 
 namespace QTRIANGULATE{
@@ -22,6 +23,7 @@ namespace QTRIANGULATE{
 		std::vector<VERTEX_INDEX> & tri_vert,
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 		const std::vector<COORD_TYPE> & vertex_coord,
+		QDUAL_TABLE & qdual_table,
 		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid);
 
 	// Remove degfenerate quads
@@ -39,7 +41,8 @@ namespace QTRIANGULATE{
 		std::vector<VERTEX_INDEX> & tri_vert,
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 		const std::vector<COORD_TYPE> & vertex_coord,
-		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid
+		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+		QDUAL_TABLE & qdual_table
 		);
 }
 #endif // !_QDDUAL_REMOVE_DEGENERATE_

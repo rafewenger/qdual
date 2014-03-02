@@ -45,7 +45,7 @@ void construct_isosurface
 
 int main(int argc, char **argv)
 {
-time_t start_time;
+	time_t start_time;
 	time(&start_time);
 
 	DUALISO_TIME dualiso_time;
@@ -114,7 +114,6 @@ void construct_isosurface
 	const int num_cube_vertices = dualiso_data.ScalarGrid().NumCubeVertices();
 	const int num_facet_vertices = dualiso_data.ScalarGrid().NumFacetVertices();
 	const int num_cubes = dualiso_data.ScalarGrid().ComputeNumCubes();
-
 	io_time.write_time = 0;
 	for (unsigned int i = 0; i < io_info.isovalue.size(); i++) {
 
@@ -139,11 +138,11 @@ void construct_isosurface
 
 		rescale_vertex_coord(grow_factor, shrink_factor, io_info.grid_spacing,
 			dual_isosurface.vertex_coord);
-		
+
 		if (dimension == 3 && dualiso_data.UseTriangleMesh() && dualiso_data.flag_NO_collapse) {
 			convert_quad_to_tri(dualiso_data, dual_isosurface);
 		}
-		
+
 		output_dual_isosurface
 			(output_info, dualiso_data, dual_isosurface, dualiso_info, io_time);
 	}

@@ -51,7 +51,7 @@ namespace {
 	{SUBSAMPLE_PARAM, SUPERSAMPLE_PARAM, POSITION_PARAM, 
 	SINGLE_ISOV_PARAM,  MULTI_ISOV_PARAM, 
 	SPLIT_NON_MANIFOLD_PARAM, SELECT_SPLIT_PARAM,
-	SEP_NEG_PARAM, SEP_POS_PARAM, EPSILON,
+	SEP_NEG_PARAM, SEP_POS_PARAM, EPSILON, MOVE_VERTEX,
 	TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_DEBUG,COLLAPSE_INFO,NO_COLLAPSE,QTMESH,
 	NO_RESTR_AB,NO_RESTR_B, NO_RESTR_C,
 	HELP_PARAM, OFF_PARAM, IV_PARAM, 
@@ -60,7 +60,7 @@ namespace {
 	const char * parameter_string[] = 
 	{"-subsample", "-supersample", "-position", 
 	"-single_isov", "-multi_isov", "-split_non_manifold", "-select_split",
-	"-sep_neg", "-sep_pos","-epsilon",
+	"-sep_neg", "-sep_pos","-epsilon","-move_vertex",
 	"-trimesh", "-uniform_trimesh","-collapse_debug", "-collapse_info","-no_collapse","-qt_mesh",
 	"-no_res_AB","-no_res_B","-no_res_C",
 	"-help", "-off", "-iv", "-o", "-stdout",
@@ -179,6 +179,10 @@ void QDUAL::parse_command_line(int argc, char **argv, IO_INFO & io_info)
 			iarg++;
 			if (iarg >= argc) usage_error();
 			io_info.qdual_epsilon = atof(argv[iarg]);
+			break;
+
+		case MOVE_VERTEX:
+			io_info.flag_move_vertices = true;
 			break;
 
 		case UNIFORM_TRIMESH_PARAM:

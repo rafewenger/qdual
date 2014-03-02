@@ -189,7 +189,7 @@ void QDUAL::quality_dual_contouring
 				dual_isosurface.vertex_coord);
 			// triangulate all quads
 			triangulate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
-				iso_vlist, dual_isosurface.vertex_coord, boundary_grid);
+				iso_vlist, dual_isosurface.vertex_coord, qdual_table, boundary_grid);
 		}
 	}
 	// store times

@@ -28,11 +28,13 @@ void QTRIANGULATE::triangulate_quads (
 	std::vector<VERTEX_INDEX> & tri_vert,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 	const std::vector<COORD_TYPE> & vertex_coord,
+	QDUAL_TABLE & qdual_table,
 	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
 {
 	bool has_non_degen_quad = triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
 	// only non degenerate quads and triangles remain
-	triangulate_quad_angle_based(quad_vert, tri_vert, iso_vlist, vertex_coord, boundary_grid);
+	triangulate_quad_angle_based(quad_vert, tri_vert, iso_vlist, 
+		vertex_coord, boundary_grid, qdual_table);
 }
 
 // Remove degenerate quads
@@ -225,6 +227,45 @@ void remove_tri_duplicates(
 		}
 	}
 }
+
+//Check if the vertex is a boundary 
+//param 1 index into isovlist
+//returns flag_boundary true if in the boundary
+void isBoundaryIsoVertex(
+	const int vertex, //index into isovlist
+	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+	QDUAL_TABLE & qdual_table,
+	bool & flag_boundary
+	)
+{
+	flag_boundary = false;
+	const VERTEX_INDEX v = iso_vlist[vertex].cube_index;
+	if (!boundary_grid.Scalar(v))
+	{
+		flag_boundary = false;
+		return;
+	}
+	for (int i = 0; i < NUM_CUBE_FACETS; i++)
+	{
+		bool flagFacetIsBoundary = false;
+		boundary_grid.IsCubeFacetOnGridBoundary(v, i, flagFacetIsBoundary);
+		if (flagFacetIsBoundary)
+		{
+			int it = iso_vlist[vertex].table_index;
+			unsigned char ip = iso_vlist[vertex].patch_index;
+			QDUAL_TABLE::DIR_BITS w_edge_flag = qdual_table.connectDir(it,ip);
+			if ((w_edge_flag & (1<<i))!=0)
+			{
+				flag_boundary = true;
+			}
+		}
+	}
+	
+
+}
+
+
 // Triangulate quads based on their angles
 // Param 1: set of NON_DEGENERATE quads
 void QTRIANGULATE::triangulate_quad_angle_based(
@@ -232,7 +273,8 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	std::vector<VERTEX_INDEX> & tri_vert,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 	const std::vector<COORD_TYPE> & vertex_coord,
-	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+	QDUAL_TABLE & qdual_table
 	)
 {
 	const int num_quad = non_degen_quad_vert.size()/VERT_PER_QUAD;
@@ -262,10 +304,14 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			{
 				w1 = j;
 				num_deg2++;
-				if (boundary_grid.Scalar(iso_vlist[vertex].cube_index))
+				//OBSOLETE.
+				/*if (boundary_grid.Scalar(iso_vlist[vertex].cube_index))
 				{
 					flag_boundary = true;
-				}
+				}*/
+				isBoundaryIsoVertex(vertex, iso_vlist, boundary_grid,
+					qdual_table, flag_boundary);
+
 				flag_deg2 = true;
 				//break;
 			}
@@ -373,7 +419,11 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 
 			}
 			else
-			{
+			{ // degree 2
+				if (flag_boundary)
+				{
+					cout <<"degree 2 and boundary" <<endl;
+				}
 				if (cos_min_1 < cos_min_2)
 				{
 
