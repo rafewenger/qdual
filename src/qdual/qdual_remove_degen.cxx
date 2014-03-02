@@ -231,7 +231,7 @@ void remove_tri_duplicates(
 //Check if the vertex is a boundary 
 //param 1 index into isovlist
 //returns flag_boundary true if in the boundary
-void isBoundaryIsoVertex(
+void  QTRIANGULATE::isBoundaryIsoVertex(
 	const int vertex, //index into isovlist
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
@@ -304,11 +304,6 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			{
 				w1 = j;
 				num_deg2++;
-				//OBSOLETE.
-				/*if (boundary_grid.Scalar(iso_vlist[vertex].cube_index))
-				{
-					flag_boundary = true;
-				}*/
 				isBoundaryIsoVertex(vertex, iso_vlist, boundary_grid,
 					qdual_table, flag_boundary);
 

@@ -110,13 +110,16 @@ bool is_permitted_collapse(
 	case VERTEX:
 		{
 			unsigned char vertex_mask = 0;
-			for (int d = 0; d < DIM3; d++)
+			for (int f = 0; f < DIM3; f++)
 			{
-				if (AreSame<GRID_COORD_TYPE> (base_coord[d], iso_vlist[v].cube_coord[d]))
-					vertex_mask = vertex_mask | (1<<d);
+				if (AreSame<GRID_COORD_TYPE> (base_coord[f], iso_vlist[v].cube_coord[f]))
+					vertex_mask = vertex_mask | (1<<f);
+				else
+                    vertex_mask = vertex_mask | (1<<(f+DIM3));
 			}
-			if (iso_vlist[v].restricted_facets & vertex_mask)
+			if (iso_vlist[v].restricted_facets & vertex_mask){
 				return false;
+			}
 			break;
 		}
 	}
@@ -654,10 +657,12 @@ void collapse_across_vertices(
 						{
 							if (scalar_grid.ComputeVertexIndex(&vertex_base_coord[0])
 								== scalar_grid.ComputeVertexIndex(&closest_vertex_base_coord[0]))
-								if (is_permitted_collapse( iso_vlist, endPt1, &(vertex_base_coord[0]),
-									1, VERTEX) && 
-									is_permitted_collapse( iso_vlist, endPt2, &(vertex_base_coord[0]),
-									1, VERTEX))
+							{	
+                                bool condEndPt1 = is_permitted_collapse( iso_vlist, endPt1, &(vertex_base_coord[0]),
+									1, VERTEX);
+                                bool condEndPt2 = is_permitted_collapse( iso_vlist, endPt2, &(vertex_base_coord[0]),
+									1, VERTEX);
+								if ( condEndPt1 && condEndPt2 )
 								{ 
 									if (print_info)
 										print_collapse_info("collapse across vertex [permitted]", 
@@ -669,10 +674,14 @@ void collapse_across_vertices(
 								else
 								{
 									dualiso_info.col_info.not_permitted_vertex_restriction++;
-									if (print_info)
+									if (print_info){
 										print_collapse_info("collapse across vertex [NOT permitted]", 
 										endPt1, endPt2, &(vertex_base_coord[0]));
+                                        
+                                        cout <<"endPt1 condition  "<< condEndPt1 <<"  endPt2 condition "<< condEndPt2 <<endl;
+									}
 								}
+							}
 						}
 					}
 				}

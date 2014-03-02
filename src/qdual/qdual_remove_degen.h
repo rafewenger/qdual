@@ -44,5 +44,16 @@ namespace QTRIANGULATE{
 		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
 		QDUAL_TABLE & qdual_table
 		);
+
+	//Check if the vertex is a boundary 
+	//param 1 index into isovlist
+	//returns flag_boundary true if in the boundary
+	void isBoundaryIsoVertex(
+		const int vertex, //index into isovlist
+		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+		QDUAL_TABLE & qdual_table,
+		bool & flag_boundary
+		);
 }
 #endif // !_QDDUAL_REMOVE_DEGENERATE_

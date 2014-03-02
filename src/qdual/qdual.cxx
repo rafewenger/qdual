@@ -96,6 +96,10 @@ void QDUAL::quality_dual_contouring
 
 	if (!dualiso_data.flag_NO_collapse)
 	{
+
+				// set up restriction conditions
+		QDUAL_TABLE qdual_table(DIM3);
+
 		IJK::BOOL_GRID<DUALISO_GRID> boundary_grid;
 		boundary_grid.SetSize(dualiso_data.ScalarGrid());
 		boundary_grid.SetAll(false);
@@ -108,21 +112,20 @@ void QDUAL::quality_dual_contouring
 		for (int j=0;j<iso_vlist.size();j++)
 		{
 			iso_vlist[j].ver_degree=0;
-	
+
 			iso_vlist[j].flag_restrictionC = false;
 			(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index,a);
 			//Set iso_vlist[j].cube_coord
 			for (int d=0; d<DIM3; d++)
 				iso_vlist[j].cube_coord.push_back(a[d]);
+			bool flag_boundary = false;
 
-			if (!boundary_grid.Scalar(iso_vlist[j].cube_index))
-			{
+			isBoundaryIsoVertex(j, iso_vlist, boundary_grid,
+				qdual_table, flag_boundary);
+			if (flag_boundary)
+				iso_vlist[j].restricted_facets=255;
+			else
 				iso_vlist[j].restricted_facets=0;
-			}
-			else{
-				iso_vlist[j].restricted_facets=255; // set  boundaries to restricted
-			}
-
 		}
 		delete[] a;
 
@@ -136,8 +139,7 @@ void QDUAL::quality_dual_contouring
 			first_isov.Set(iso_vlist[i].cube_index, i);
 		}
 
-		// set up restriction conditions
-		QDUAL_TABLE qdual_table(DIM3);
+
 		//setup sep  vert
 		compute_sep_vert(dualiso_data.ScalarGrid(), iso_vlist, qdual_table);
 		

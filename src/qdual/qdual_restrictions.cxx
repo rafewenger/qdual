@@ -277,17 +277,21 @@ void compute_sep_vert(
 
 	IJKDUALTABLE::TABLE_INDEX it;
 	unsigned char ip;
-	for (int i = 0; i < iso_vlist.size(); i++)
+	int i=0;
+	for (i = 0; i < iso_vlist.size(); i++)
 	{
 		it = iso_vlist[i].table_index;
 		ip = iso_vlist[i].patch_index;
 		VERTEX_INDEX icube = iso_vlist[i].cube_index;
 		VERTEX_INDEX icorner = qdual_table.V1(it,ip);
+
 		if (icorner !=255 )
 		{
 			iso_vlist[i].sep_vert = scalar_grid.CubeVertex(icube, icorner);
-			scalar_grid.ComputeCoord(i, c);
-			scalar_grid.ComputeCoord(iso_vlist[i].sep_vert , c);
+		}
+		else
+		{
+			iso_vlist[i].sep_vert = scalar_grid.NumVertices();
 		}
 	}
 }
