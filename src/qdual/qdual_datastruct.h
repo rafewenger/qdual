@@ -390,6 +390,18 @@ namespace QDUAL {
 			permitted_vertex_restriction=0;
 		}
 	};
+	/// Move vertices information 
+	class MOVE_VERTICES_INFO
+	{
+	public:
+		int moveFromEdges;
+		int moveFromVertices;
+		MOVE_VERTICES_INFO()
+		{
+			moveFromEdges=0;
+			moveFromVertices=0;
+		}
+	};
 
 	// **************************************************
 	// DUALISO INFO
@@ -406,7 +418,7 @@ namespace QDUAL {
 		MULTI_ISOV_INFO multi_isov;
 		QDUALISO_RESTRICTION_INFO rs_info; //keep track of restriction info
 		QDUALISO_COLLAPSE_INFO col_info; // keep track of collapse info
-
+		MOVE_VERTICES_INFO mv_info; //move vertices info
 		DUALISO_INFO();
 		DUALISO_INFO(const int dimension);
 

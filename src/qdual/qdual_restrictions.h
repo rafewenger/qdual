@@ -15,24 +15,6 @@ using namespace QDUAL;
 using namespace std;
 
 
-//class RestrictionInfo
-//{
-//public:
-//	int restriction_BList_size;
-//	int restriction_CList_size;
-//
-//	vector<VERTEX_INDEX> restricted_vertex_info;
-//	vector< pair<VERTEX_INDEX, int> > restricted_edges_info;
-//
-//	RestrictionInfo()
-//	{
-//		restriction_CList_size = 0;
-//		restriction_BList_size = 0;
-//	}
-//	~RestrictionInfo(){};
-//
-//};
-
 void compute_restrictions_BList(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	const SCALAR_TYPE isovalue,	
@@ -43,6 +25,8 @@ void compute_restrictions_BList(
 	);
 void compute_restrictions_CList(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	const float e,
+	const bool moveVertex,
 	const SCALAR_TYPE isovalue,
 	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,

@@ -953,16 +953,22 @@ void QDUAL::report_iso_info
 	{
 		cout <<"Epsilon is set to: " << output_info.qdual_epsilon << endl;
 		cout <<"Restriction Info"<<endl;
-		cout <<"	Num elements in the Blist:			"<< dualiso_info.rs_info.restriction_BList_size << endl;
-		cout <<"	Num elements in the Clist:			"<< dualiso_info.rs_info.restriction_CList_size << endl;
+		cout <<"	Num elements in the Blist: "<< dualiso_info.rs_info.restriction_BList_size << endl;
+		cout <<"	Num elements in the Clist: "<< dualiso_info.rs_info.restriction_CList_size << endl;
 		cout <<"\nCollapse info" << endl;
-		cout <<"	Permitted facet restriction		 "<<dualiso_info.col_info.permitted_facet_restriction<<endl;
-		cout <<"	Permitted edge	restriction		 "<<dualiso_info.col_info.permitted_edge_restriction<<endl;
-		cout <<"	Permitted vertex restriction	 "<<dualiso_info.col_info.permitted_vertex_restriction<<endl;
-		cout <<"	Not permitted facet restriction	 "<<dualiso_info.col_info.not_permitted_facet_restriction<<endl;
-		cout <<"	Not permitted edge restriction	 "<<dualiso_info.col_info.not_permitted_edge_restriction<<endl;
-		cout <<"	Not permitted vertex restriction "<< dualiso_info.col_info.not_permitted_vertex_restriction<<endl;
+		cout <<"	Permitted facet restriction: "<<dualiso_info.col_info.permitted_facet_restriction<<endl;
+		cout <<"	Permitted edge	restriction: "<<dualiso_info.col_info.permitted_edge_restriction<<endl;
+		cout <<"	Permitted vertex restriction: "<<dualiso_info.col_info.permitted_vertex_restriction<<endl;
+		cout <<"	Not permitted facet restriction: "<<dualiso_info.col_info.not_permitted_facet_restriction<<endl;
+		cout <<"	Not permitted edge restriction: "<<dualiso_info.col_info.not_permitted_edge_restriction<<endl;
+		cout <<"	Not permitted vertex restriction: "<< dualiso_info.col_info.not_permitted_vertex_restriction<<endl;
 
+	}
+	if (output_info.flag_move_vertices)
+	{
+		cout <<"Move Vertices Info"<<endl;
+		cout <<"	Moved from edges: "<<dualiso_info.mv_info.moveFromEdges<<endl;
+		cout <<"	Moved from vertices: "<<dualiso_info.mv_info.moveFromVertices<<endl;
 	}
 
 }
@@ -1021,7 +1027,12 @@ void QDUAL::report_iso_info
 		cout <<"	Num elements in the Blist: "<< dualiso_info.rs_info.restriction_BList_size << endl;
 		cout <<"	Num elements in the Clist: "<< dualiso_info.rs_info.restriction_CList_size << endl;
 	}
-
+	if (output_info.flag_move_vertices)
+	{
+		cout <<"Move Vertices Info"<<endl;
+		cout <<"	Moved from edges: "<<dualiso_info.mv_info.moveFromEdges<<endl;
+		cout <<"	Moved from vertices: "<<dualiso_info.mv_info.moveFromVertices<<endl;
+	}
 }
 
 // **************************************************
@@ -1087,6 +1098,7 @@ namespace {
 		cerr << "[-sep_neg | -sep_pos] [-select_split]" << endl;
 		cerr << "[-trimesh | -uniform_trimesh]" << endl;
 		cerr <<	"[-no_collapse | -qt_mesh]" << endl;
+		cerr << "[-move_vertex]"<<endl;
 		cerr <<" [-no_res_AB | -no_res_B | -no_res_C]"<< endl;
 		cerr <<" [-collapse_info]"<<endl;
 		cerr << "[-off|-iv] [-o {output_filename}] [-stdout]" 

@@ -6,7 +6,7 @@ using namespace std;
 using namespace IJK;
 using namespace NamedConstants;
 
-void MoveAwayFromFacetF(
+bool moveAwayFromFacetF(
 	const int vertex,
 	const int f, 
 	const float e, //epsilon
@@ -14,30 +14,7 @@ void MoveAwayFromFacetF(
 	std::vector<COORD_TYPE> & vertex_coord
 	)
 {
-/*	int d1=0, d2=0;
-	float temp_d = 0.0;
-
-	if (f> DIM3-1){
-		d1 = (f+DIM3)%DIM3;
-		temp_d = -1.0*d;
-
-		if (abs(iso_vlist[vertex].cube_coord[d1] 
-		+ 1 - vertex_coord[DIM3*vertex + d1]) < d)
-		{
-			vertex_coord[DIM3*vertex+d1] = vertex_coord[DIM3*vertex + d1] + temp_d;
-		}
-	}
-	else
-	{
-		d1 = f;
-		temp_d = d;
-		if (abs( iso_vlist[vertex].cube_coord[d1] -
-			vertex_coord[DIM3*vertex + d1])  < d)
-		{
-			vertex_coord[DIM3*vertex+d1] = vertex_coord[DIM3*vertex+ d1] + temp_d;
-		}
-	}
-	*/
+	bool isMoved = false;
 	int orthoDir = (f + DIM3)%DIM3;
 	float vCoordOrthoDir = vertex_coord[DIM3*vertex+ orthoDir];
 	float facetCoordOrthoDir = iso_vlist[vertex].cube_coord[orthoDir];
@@ -48,6 +25,7 @@ void MoveAwayFromFacetF(
 		if ((facetCoordOrthoDir-vCoordOrthoDir)<e)
 		{
 			vertex_coord[DIM3*vertex+orthoDir] = facetCoordOrthoDir-e;
+			isMoved = true;
 		}
 	}
 	else
@@ -55,18 +33,28 @@ void MoveAwayFromFacetF(
 		if ((vCoordOrthoDir-facetCoordOrthoDir)<e)
 		{
 			vertex_coord[DIM3*vertex+orthoDir] = facetCoordOrthoDir+e;
+			isMoved = true;
 		}
 	}
-
+	return isMoved;
 }
 // Move vertices away from vertex
 // vertex: Index into vertex coord
-// distance to move vertex by
+// e: distance to move vertex by
 void moveAwayFromVertex(
 	const int vertex,
-	const float d)
+	const float e, //epsilon
+	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	std::vector<COORD_TYPE> & vertex_coord, 
+	DUALISO_INFO & dualiso_info
+	)
 {
-
+	for (int orthoDir = 0; orthoDir < NUM_CUBE_FACETS; orthoDir++)
+	{
+		bool  isMoved = moveAwayFromFacetF(vertex,orthoDir,e,iso_vlist, vertex_coord);
+		if (isMoved)
+			dualiso_info.mv_info.moveFromVertices++;
+	}
 }
 
 //Move away from the edge given by the facets f1,f2
@@ -75,15 +63,21 @@ void moveAwayFromEdge(
 	const int vertex,
 	const int f1,
 	const int f2,
-	const float d,
+	const float e,//epsilon
 	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
-	std::vector<COORD_TYPE> & vertex_coord
+	std::vector<COORD_TYPE> & vertex_coord,
+	DUALISO_INFO & dualiso_info
 	)
 {
-	MoveAwayFromFacetF(vertex, f1,
-		d, iso_vlist, vertex_coord);
-	MoveAwayFromFacetF(vertex, f2,
-		d, iso_vlist, vertex_coord);
+	bool isMoved = moveAwayFromFacetF(vertex, f1,
+		e, iso_vlist, vertex_coord);
+	if (isMoved)
+		dualiso_info.mv_info.moveFromEdges++;
+
+	isMoved =  moveAwayFromFacetF(vertex, f2,
+		e, iso_vlist, vertex_coord);
+	if (isMoved)
+		dualiso_info.mv_info.moveFromEdges++;
 }
 
 
@@ -322,10 +316,11 @@ void set_restrictionsA(
 	}
 }
 
+// Set Restrictions B
 void set_restrictionsB(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	std::vector<COORD_TYPE> & vertex_coord,
-	const float d, // how far to move vertices away from edges and vertices.
+	const float e, // how far to move vertices away from edges and vertices.
 	const SCALAR_TYPE isovalue,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
@@ -400,7 +395,7 @@ void set_restrictionsB(
 						if (move_vertex)
 						{
 							moveAwayFromEdge(indx_iso_vlist+k, f1, f2,
-								d, iso_vlist, vertex_coord);
+								e, iso_vlist, vertex_coord, dualiso_info);
 						}
 						if (print_info){
 							cout <<"	new vertex: "<<vertex_coord[3*(indx_iso_vlist+k)]<<" "
@@ -421,13 +416,15 @@ void set_restrictionsB(
 // Set restrictions C 
 void set_restrictionsC(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	const float e, //epsilon to move vertices.
+	const bool moveVertex,
 	const SCALAR_TYPE isovalue,
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 	DUALISO_INDEX_GRID & first_isov,
 	QDUAL_TABLE & qdual_table,
-	const std::vector<COORD_TYPE> & vertex_coord,
+	std::vector<COORD_TYPE> & vertex_coord,
 	DUALISO_INFO & dualiso_info,
 	const IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
 {
@@ -459,7 +456,11 @@ void set_restrictionsC(
 					if ( iso_vlist[indx_iso_vlist+k].sep_vert == restriction_Clist[v])
 					{
 						iso_vlist[indx_iso_vlist+k].flag_restrictionC = true;
-						scalar_grid.FacetVertex(v,v,v);
+						if (moveVertex)
+						{
+							moveAwayFromVertex(indx_iso_vlist+k,
+								e, iso_vlist, vertex_coord, dualiso_info);
+						}		
 					}
 				}
 			}
@@ -508,7 +509,7 @@ void set_restrictions(
 	}
 	if(!dualiso_data.flag_no_restriciton_C)
 	{
-		set_restrictionsC(scalar_grid, isovalue, quad_vert,
+		set_restrictionsC(scalar_grid, dualiso_data.qdual_epsilon, dualiso_data.flag_move_vertices, isovalue, quad_vert,
 			iso_vlist, isodual_table, first_isov,qdual_table, vertex_coord, dualiso_info,boundary_grid);
 	}
 }
