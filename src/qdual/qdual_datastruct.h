@@ -96,6 +96,9 @@ namespace QDUAL {
 		/// List of vertex coordinates.
 		COORD_ARRAY vertex_coord;
 
+		/// Orthogonal directions for each quad
+		std::vector<DIRECTION_TYPE> orth_dir;
+
 		/// List of vertices of each triangle in triangle mesh.
 		/// Only for 2D surface embedded in 3D.
 		/// Not always set.
@@ -171,6 +174,7 @@ namespace QDUAL {
 		bool flag_collapse_debug;
 		float qdual_epsilon;
 		bool flag_move_vertices;
+		bool flag_cap_col;// cap collapse
 
 	public:
 		DUALISO_DATA_FLAGS() { Init(); };
@@ -402,6 +406,18 @@ namespace QDUAL {
 			moveFromVertices=0;
 		}
 	};
+	/// Cap quad information 
+	class CAP_QUAD_INFO
+	{
+	public:
+		int numCapQuad;
+		int moved2Edge;
+		CAP_QUAD_INFO()
+		{
+			numCapQuad=0;
+			moved2Edge=0;
+		}
+	};
 
 	// **************************************************
 	// DUALISO INFO
@@ -419,6 +435,7 @@ namespace QDUAL {
 		QDUALISO_RESTRICTION_INFO rs_info; //keep track of restriction info
 		QDUALISO_COLLAPSE_INFO col_info; // keep track of collapse info
 		MOVE_VERTICES_INFO mv_info; //move vertices info
+		CAP_QUAD_INFO cp_info;
 		DUALISO_INFO();
 		DUALISO_INFO(const int dimension);
 

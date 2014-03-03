@@ -1,4 +1,5 @@
 #include "qdual_collapse.h"
+#include "qdual_remove_degen.h" // for the count degree function 
 
 using namespace QCOLLAPSE;
 using namespace std;
@@ -76,7 +77,7 @@ bool is_permitted_collapse(
 			{
 				closest_cube_facet_1 = d+DIM3;
 			}
-			
+
 			bool cond1 = (iso_vlist[v].restricted_facets & (1<<closest_cube_facet_1));
 			if (cond1)
 			{
@@ -86,7 +87,7 @@ bool is_permitted_collapse(
 			{
 				return true;
 			}
-				break;
+			break;
 		}
 	case EDGE:
 		{
@@ -115,7 +116,7 @@ bool is_permitted_collapse(
 				if (AreSame<GRID_COORD_TYPE> (base_coord[f], iso_vlist[v].cube_coord[f]))
 					vertex_mask = vertex_mask | (1<<f);
 				else
-                    vertex_mask = vertex_mask | (1<<(f+DIM3));
+					vertex_mask = vertex_mask | (1<<(f+DIM3));
 			}
 			if (iso_vlist[v].restricted_facets & vertex_mask){
 				return false;
@@ -269,18 +270,17 @@ void collapse_across_facets(
 	const int dimension = scalar_grid.Dimension();
 
 	COORD_TYPE * a = new COORD_TYPE[3];
-	int count = 4;
 	int v1,v2;
 	for (int q=0; q<num_quads; q++)
 	{
 		//for each edge
-		for ( v1 = count-1, v2 = 0; v2 < count; v1 = v2++ ) {
+		for ( v1 = VERT_PER_QUAD-1, v2 = 0; v2 < VERT_PER_QUAD; v1 = v2++ ) {
 			int endPt1 = quad_vert[q*4+v1];
 			int endPt2 = quad_vert[q*4+v2];
 
 			endPt1 = find_vertex(collapse_map, endPt1);
 			endPt2 = find_vertex(collapse_map, endPt2);
-			
+
 			if (endPt1!=endPt2)
 			{
 				if ( vert_simple(iso_vlist[endPt2].patch_index ) 
@@ -293,10 +293,10 @@ void collapse_across_facets(
 					swap(endPt1, endPt2);
 				}
 
-				
+
 				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
-				
+
 				int num_close=0; //number of close facets.
 				int closest_facet=0;// direction of the closest facet
 				IJK::ARRAY<GRID_COORD_TYPE> facet_base_coord(dimension,0); //base coord of the facet in dir d
@@ -315,7 +315,7 @@ void collapse_across_facets(
 						closest_facet_base_coord[2] = facet_base_coord[2];
 					}
 				}
-				
+
 
 				if(num_close == 1)
 				{
@@ -658,9 +658,9 @@ void collapse_across_vertices(
 							if (scalar_grid.ComputeVertexIndex(&vertex_base_coord[0])
 								== scalar_grid.ComputeVertexIndex(&closest_vertex_base_coord[0]))
 							{	
-                                bool condEndPt1 = is_permitted_collapse( iso_vlist, endPt1, &(vertex_base_coord[0]),
+								bool condEndPt1 = is_permitted_collapse( iso_vlist, endPt1, &(vertex_base_coord[0]),
 									1, VERTEX);
-                                bool condEndPt2 = is_permitted_collapse( iso_vlist, endPt2, &(vertex_base_coord[0]),
+								bool condEndPt2 = is_permitted_collapse( iso_vlist, endPt2, &(vertex_base_coord[0]),
 									1, VERTEX);
 								if ( condEndPt1 && condEndPt2 )
 								{ 
@@ -676,9 +676,9 @@ void collapse_across_vertices(
 									dualiso_info.col_info.not_permitted_vertex_restriction++;
 									if (print_info){
 										print_collapse_info("collapse across vertex [NOT permitted]", 
-										endPt1, endPt2, &(vertex_base_coord[0]));
-                                        
-                                        cout <<"endPt1 condition  "<< condEndPt1 <<"  endPt2 condition "<< condEndPt2 <<endl;
+											endPt1, endPt2, &(vertex_base_coord[0]));
+
+										cout <<"endPt1 condition  "<< condEndPt1 <<"  endPt2 condition "<< condEndPt2 <<endl;
 									}
 								}
 							}
@@ -688,6 +688,211 @@ void collapse_across_vertices(
 			}//for each edge
 }
 
+void intersectQuadAndEdgeAndMoveVert
+	(
+	const int v,
+	const int q, //qth quad
+	std::vector<VERTEX_INDEX> & quad_vert,
+	IJK::ARRAY<GRID_COORD_TYPE> &edgeBase,
+	int & edgeDir,
+	std::vector<COORD_TYPE> & vertex_coord,
+	DUALISO_INFO & dualiso_info
+	)
+{
+	const int d1 = (edgeDir+1+DIM3)%DIM3;
+	const int d2 = (edgeDir+2+DIM3)%DIM3;
+	vertex_coord[DIM3*v+d1]=edgeBase[d1];
+	vertex_coord[DIM3*v+d2]=edgeBase[d2];
+}
+
+
+// Collapse vertices of cap quad q to a vertex on edge e
+void collapseToEdge(
+	const int v,
+	const int q, //qth quad
+	std::vector<VERTEX_INDEX> & quad_vert,
+	std::vector<COORD_TYPE> & vertex_coord,
+	const std::vector<DUAL_ISOVERT> & iso_vlist,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
+	IJK::ARRAY<GRID_COORD_TYPE> &edgeBase,
+	int & edgeDir,
+	DUALISO_INFO & dualiso_info
+	)
+{
+	for (int i = 0; i < VERT_PER_QUAD; i++)
+	{
+		int v2 = quad_vert[VERT_PER_QUAD*q+i];
+		if (iso_vlist[v2].ver_degree == 3
+			&& v2 != v)
+		{
+			dualiso_info.col_info.permitted_edge_restriction++;
+			update_collapse_edges(collapse_map, v, v2);
+		}
+	}
+	intersectQuadAndEdgeAndMoveVert(v, q, quad_vert, edgeBase,
+		edgeDir, vertex_coord, dualiso_info );
+}
+
+void capQuadComputation(
+	const VERTEX_INDEX d1, 
+	const VERTEX_INDEX d2, // is the diagonal vertex which determines the cube.
+	COORD_TYPE * d1Coord,
+	COORD_TYPE * d2Coord,
+	const int q, //qth quad
+	std::vector<VERTEX_INDEX> & quad_vert,
+	std::vector<COORD_TYPE> & vertex_coord,
+	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	const float epsilon,
+	const int notDegreeThree,
+	const std::vector<DUAL_ISOVERT> & iso_vlist,
+	IJK::ARRAY<GRID_COORD_TYPE> &edgeBase,
+	int & d,
+	bool &capQuad,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
+	DUALISO_INFO & dualiso_info
+	)
+{
+
+	if (iso_vlist[d1].sep_vert == iso_vlist[d2].sep_vert
+		&& iso_vlist[d1].ver_degree == 3 && iso_vlist[d2].ver_degree == 3)
+	{ 
+		//CAP QUAD 
+		float closestDistance=0;
+		IJK::ARRAY<GRID_COORD_TYPE> d2EdgeBase(DIM3,0);
+		IJK::ARRAY<GRID_COORD_TYPE> d1EdgeBase(DIM3,0);
+		//close to an edge and not to a vertex
+		int numClose = 0;
+		for (int k = 0; k < DIM3; k++)
+		{
+			find_closest_edge_and_distance(DIM3, d2Coord, d, d2EdgeBase, closestDistance);
+			if(closestDistance <epsilon)
+				numClose++;
+		}
+
+		if (numClose == 1)
+		{
+			if (scalar_grid.ComputeVertexIndex(&d2EdgeBase[0])
+				== scalar_grid.ComputeVertexIndex(&edgeBase[0]))
+			{
+				if (is_permitted_collapse(iso_vlist, d2,  &(d2EdgeBase[0]),
+					d, EDGE))
+				{
+					collapseToEdge(d2, q, quad_vert, vertex_coord, iso_vlist
+						,collapse_map, edgeBase, d, dualiso_info);
+                    dualiso_info.cp_info.moved2Edge++;
+				}
+			}
+		}
+		else
+		{
+			numClose=0;
+			for (int k = 0; k < DIM3; k++)
+			{
+				find_closest_edge_and_distance(DIM3, d1Coord, d, d1EdgeBase, closestDistance);
+				if(closestDistance <epsilon)
+					numClose++;
+			}
+			if (numClose==1)
+			{
+				if (scalar_grid.ComputeVertexIndex(&d1EdgeBase[0])
+					== scalar_grid.ComputeVertexIndex(&edgeBase[0]))
+				{
+					if (is_permitted_collapse(iso_vlist, d1,  &(d1EdgeBase[0]),
+						d, EDGE))
+					{
+						collapseToEdge(d1, q, quad_vert, vertex_coord, iso_vlist
+							,collapse_map, edgeBase, d, dualiso_info);
+                        dualiso_info.cp_info.moved2Edge++;
+					}
+				}
+			}
+		}
+        dualiso_info.cp_info.numCapQuad++;
+		capQuad = true;
+
+	}
+	else
+		capQuad = false;
+}
+
+/// Compute the edge dual to the quad q
+void computeEdgeDual2q(
+	const VERTEX_INDEX q, // q th quad
+	const VERTEX_INDEX C,
+	const std::vector<DUAL_ISOVERT> & iso_vlist,
+	const std::vector<DIRECTION_TYPE> & orth_dir,
+	IJK::ARRAY<GRID_COORD_TYPE> &edgeBase,
+	int & d)
+{
+	edgeBase[0] = iso_vlist[C].cube_coord[0];
+	edgeBase[1] = iso_vlist[C].cube_coord[1];
+	edgeBase[2] = iso_vlist[C].cube_coord[2];
+	d = (int)orth_dir[q];
+}
+
+/// Collapse caps
+void collapse_caps (
+	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	std::vector<COORD_TYPE> & vertex_coord,
+	const std::vector<DIRECTION_TYPE> & orth_dir,
+	const float epsilon,
+	std::vector<DUAL_ISOVERT> & iso_vlist,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
+	DUALISO_INFO & dualiso_info, 
+    const bool printInfo
+	)
+{
+	const int numQuads = quad_vert.size()/4;
+	const int notDegreeThree = scalar_grid.NumVertices(); // Notdegree3
+
+	QTRIANGULATE::compute_degree_per_vertex(VERT_PER_QUAD, quad_vert, iso_vlist);
+
+	for (int q = 0; q < numQuads; q++)
+	{
+		// the diagonals are given by AB and CD
+		VERTEX_INDEX A = quad_vert[VERT_PER_QUAD*q];
+		VERTEX_INDEX B = quad_vert[VERT_PER_QUAD*q+2];
+		VERTEX_INDEX C = quad_vert[VERT_PER_QUAD*q+1];
+		VERTEX_INDEX D = quad_vert[VERT_PER_QUAD*q+3];
+		//update vertices
+		A = find_vertex(collapse_map,A);
+		B = find_vertex(collapse_map,B);
+		C = find_vertex(collapse_map,C);
+		D = find_vertex(collapse_map,D);
+		bool flagCapQuad = false;
+
+
+		IJK::ARRAY<GRID_COORD_TYPE> edgeBase(DIM3,0);
+		COORD_TYPE * BCoord = new COORD_TYPE[3];
+		scalar_grid.ComputeCoord(B, BCoord);
+		COORD_TYPE * ACoord = new COORD_TYPE[3];
+		scalar_grid.ComputeCoord(A, ACoord);
+		int d = -1;
+
+		computeEdgeDual2q( q, B, iso_vlist, orth_dir, edgeBase, d);
+		capQuadComputation(A,B, ACoord,BCoord, q, quad_vert, vertex_coord,
+			scalar_grid, epsilon, notDegreeThree, iso_vlist, 
+			edgeBase, d, flagCapQuad, collapse_map, dualiso_info);
+
+		if (flagCapQuad && printInfo)
+		{
+			cout <<"capquad ["<<A <<" "<<B<<"] "<<C<<" "<<D<<endl;
+		}
+
+		capQuadComputation(C,D, ACoord,BCoord, q, quad_vert, vertex_coord,
+			scalar_grid, epsilon, notDegreeThree, iso_vlist, 
+			edgeBase, d, flagCapQuad, collapse_map, dualiso_info);
+
+		if (flagCapQuad && printInfo)
+		{
+			cout <<"capquad "<<A <<" "<<B<<" ["<<C<<" "<<D<<"] "<<endl;
+		}
+	}
+
+
+}
+
 //Update the collapses in "collapse_map" in "quad_vert"
 void update_quads(
 	const IJK::ARRAY<VERTEX_INDEX> & collapse_map,
@@ -695,7 +900,6 @@ void update_quads(
 	)
 {
 	const int quad_vert_size = quad_vert.size();
-
 	for (int v=0; v<quad_vert_size; v++)
 	{
 		int k = quad_vert[v];
@@ -709,8 +913,9 @@ void QCOLLAPSE::dual_collapse(
 	const DUALISO_DATA & dualiso_data,
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	std::vector<VERTEX_INDEX> & quad_vert,
-	const std::vector<DUAL_ISOVERT> & iso_vlist, 
-	const std::vector<COORD_TYPE> & vertex_coord,
+	std::vector<DUAL_ISOVERT> & iso_vlist, 
+	std::vector<COORD_TYPE> & vertex_coord,
+	const std::vector<DIRECTION_TYPE> &orth_dir,
 	const float epsilon,
 	DUALISO_INFO & dualiso_info
 	)
@@ -723,14 +928,20 @@ void QCOLLAPSE::dual_collapse(
 	setup_collapse_map(collapse_map, num_vertex);
 	//Reordering QuadVert 
 	IJK::reorder_quad_vertices(quad_vert);
+
+    if (dualiso_data.flag_cap_col)
+	collapse_caps(scalar_grid, quad_vert, vertex_coord, orth_dir, 
+		epsilon, iso_vlist, collapse_map, dualiso_info, dualiso_data.flag_collapse_debug);
+	/*
 	collapse_across_facets(scalar_grid, iso_vlist, quad_vert,
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
 
 	collapse_across_edges(scalar_grid, iso_vlist, quad_vert,
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
 
 	collapse_across_vertices(scalar_grid, iso_vlist, quad_vert, 
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	*/
 	update_quads(collapse_map, quad_vert);
 	//reorder the quads back to the original.
 	IJK::reorder_quad_vertices(quad_vert);

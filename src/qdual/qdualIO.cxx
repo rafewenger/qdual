@@ -52,7 +52,8 @@ namespace {
 	SINGLE_ISOV_PARAM,  MULTI_ISOV_PARAM, 
 	SPLIT_NON_MANIFOLD_PARAM, SELECT_SPLIT_PARAM,
 	SEP_NEG_PARAM, SEP_POS_PARAM, EPSILON, MOVE_VERTEX,
-	TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_DEBUG,COLLAPSE_INFO,NO_COLLAPSE,QTMESH,
+	TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_DEBUG,COLLAPSE_INFO,
+	NO_COLLAPSE, NO_CAPCOL, QTMESH,
 	NO_RESTR_AB,NO_RESTR_B, NO_RESTR_C,
 	HELP_PARAM, OFF_PARAM, IV_PARAM, 
 	OUTPUT_FILENAME_PARAM, STDOUT_PARAM, 
@@ -61,7 +62,8 @@ namespace {
 	{"-subsample", "-supersample", "-position", 
 	"-single_isov", "-multi_isov", "-split_non_manifold", "-select_split",
 	"-sep_neg", "-sep_pos","-epsilon","-move_vertex",
-	"-trimesh", "-uniform_trimesh","-collapse_debug", "-collapse_info","-no_collapse","-qt_mesh",
+	"-trimesh", "-uniform_trimesh","-collapse_debug", "-collapse_info",
+	"-no_collapse","-no_capcol","-qt_mesh",
 	"-no_res_AB","-no_res_B","-no_res_C",
 	"-help", "-off", "-iv", "-o", "-stdout",
 	"-nowrite", "-s", "-time", "-unknown"};
@@ -183,6 +185,10 @@ void QDUAL::parse_command_line(int argc, char **argv, IO_INFO & io_info)
 
 		case MOVE_VERTEX:
 			io_info.flag_move_vertices = true;
+			break;
+
+		case NO_CAPCOL:
+			io_info.flag_cap_col = false;
 			break;
 
 		case UNIFORM_TRIMESH_PARAM:
@@ -970,6 +976,12 @@ void QDUAL::report_iso_info
 		cout <<"	Moved from edges: "<<dualiso_info.mv_info.moveFromEdges<<endl;
 		cout <<"	Moved from vertices: "<<dualiso_info.mv_info.moveFromVertices<<endl;
 	}
+	if(output_info.flag_cap_col)
+	{
+		cout <<"Cap Collapse Iinfo:"<<endl;
+		cout <<"	Number of move to edge "<<dualiso_info.cp_info.moved2Edge <<endl;
+		cout <<"	Number of cap quad "<<dualiso_info.cp_info.numCapQuad<<endl;
+	}
 
 }
 
@@ -1026,12 +1038,6 @@ void QDUAL::report_iso_info
 		cout <<"Restriction Info"<<endl;
 		cout <<"	Num elements in the Blist: "<< dualiso_info.rs_info.restriction_BList_size << endl;
 		cout <<"	Num elements in the Clist: "<< dualiso_info.rs_info.restriction_CList_size << endl;
-	}
-	if (output_info.flag_move_vertices)
-	{
-		cout <<"Move Vertices Info"<<endl;
-		cout <<"	Moved from edges: "<<dualiso_info.mv_info.moveFromEdges<<endl;
-		cout <<"	Moved from vertices: "<<dualiso_info.mv_info.moveFromVertices<<endl;
 	}
 }
 

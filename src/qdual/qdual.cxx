@@ -86,25 +86,23 @@ void QDUAL::quality_dual_contouring
 		isodual_table(dimension, flag_separate_neg, 
 		flag_always_separate_opposite);
 
-  std::vector<DIRECTION_TYPE> orth_dir;
 	dual_contouring
 		(dualiso_data.ScalarGrid(), isovalue, vpos_method, 
 		flag_select_split, flag_separate_neg,
-    dual_isosurface.isopoly_vert, orth_dir,
-    dual_isosurface.vertex_coord, iso_vlist,
+		dual_isosurface.isopoly_vert, dual_isosurface.orth_dir,
+		dual_isosurface.vertex_coord, iso_vlist,
 		isodual_table, merge_data, dualiso_info);
 
 	if (!dualiso_data.flag_NO_collapse)
 	{
-
-				// set up restriction conditions
+		// set up restriction conditions
 		QDUAL_TABLE qdual_table(DIM3);
 
 		IJK::BOOL_GRID<DUALISO_GRID> boundary_grid;
 		boundary_grid.SetSize(dualiso_data.ScalarGrid());
 		boundary_grid.SetAll(false);
 		compute_boundary_grid(boundary_grid);
-		
+
 		flag_boundary_cubes(boundary_grid);
 
 		//set variables in iso_vlist
@@ -132,7 +130,7 @@ void QDUAL::quality_dual_contouring
 		DUALISO_INDEX_GRID first_isov;
 		first_isov.SetSize(dualiso_data.ScalarGrid());
 		first_isov.SetAll(-1);
-		
+
 		// set up first_isov
 		for (int i = iso_vlist.size()-1; i>=0; i--)
 		{
@@ -140,9 +138,9 @@ void QDUAL::quality_dual_contouring
 		}
 
 
-		//setup sep  vert
+		// Setup sep  vert
 		compute_sep_vert(dualiso_data.ScalarGrid(), iso_vlist, qdual_table);
-		
+
 		set_restrictions (dualiso_data,  dualiso_data.ScalarGrid(), isovalue,  dual_isosurface.isopoly_vert,
 			iso_vlist, isodual_table, first_isov, qdual_table,
 			dual_isosurface.vertex_coord, dualiso_info, boundary_grid);
@@ -157,7 +155,7 @@ void QDUAL::quality_dual_contouring
 				int v1 = dualiso_info.rs_info.restricted_edges_info[l].first;
 				int v2 = dualiso_data.ScalarGrid().NextVertex(v1,
 					dualiso_info.rs_info.restricted_edges_info[l].second);
-				
+
 				dualiso_data.ScalarGrid().ComputeCoord(v1,c);
 				cout <<c[0]<<" "<<c[1]<<" "<<c[2] <<" - ";
 				dualiso_data.ScalarGrid().ComputeCoord(v2,c);
@@ -167,7 +165,7 @@ void QDUAL::quality_dual_contouring
 			for (int l=0; l < dualiso_info.rs_info.restriction_CList_size; l++)
 			{
 				int v = dualiso_info.rs_info.restricted_vertex_info[l];
-				
+
 				dualiso_data.ScalarGrid().ComputeCoord(v,c);
 				cout <<c[0]<<" "<<c[1]<<" "<<c[2]<<endl;
 			}
@@ -176,7 +174,7 @@ void QDUAL::quality_dual_contouring
 
 		// Collapse Function calls.
 		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
-			dual_isosurface.vertex_coord, dualiso_data.qdual_epsilon, dualiso_info);
+			dual_isosurface.vertex_coord, dual_isosurface.orth_dir, dualiso_data.qdual_epsilon, dualiso_info);
 
 		if (dualiso_data.use_quad_tri_mesh)
 		{
@@ -189,7 +187,7 @@ void QDUAL::quality_dual_contouring
 		{
 			dual_isosurface.flag_has_degen_quads =  triangulate_non_degen_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord);
-			// triangulate all quads
+			// Triangulate all quads
 			triangulate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				iso_vlist, dual_isosurface.vertex_coord, qdual_table, boundary_grid);
 		}
@@ -214,7 +212,7 @@ void QDUAL::dual_contouring
 	const bool flag_select_split,
 	const bool flag_separate_neg,
 	std::vector<VERTEX_INDEX> & quad_vert,
-  std::vector<DIRECTION_TYPE> & orth_dir,
+	std::vector<DIRECTION_TYPE> & orth_dir,
 	std::vector<COORD_TYPE> & vertex_coord,
 	std::vector<DUAL_ISOVERT> &iso_vlist,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE & isodual_table,
@@ -247,7 +245,6 @@ void QDUAL::dual_contouring
 	extract_dual_isoquad
 		(scalar_grid, isovalue, quad_cube, facet_vertex, orth_dir, dualiso_info);
 	t1 = clock();
-
 	// List of cubes containing isosurface vertices.
 	std::vector<ISO_VERTEX_INDEX> cube_list;
 
@@ -341,12 +338,12 @@ void QDUAL::dual_contouring
 	std::vector<DUAL_ISOVERT> iso_vlist;
 	bool flag_always_separate_opposite(true);
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE isodual_table(dimension, false, true);
-  std::vector<DIRECTION_TYPE> orth_dir;
+	std::vector<DIRECTION_TYPE> orth_dir;
 
 	dual_contouring
-    (scalar_grid, isovalue, CENTROID_EDGE_ISO, false, true,
-     quad_vert, orth_dir, vertex_coord, iso_vlist, isodual_table, 
-     merge_data, dualiso_info);
+		(scalar_grid, isovalue, CENTROID_EDGE_ISO, false, true,
+		quad_vert, orth_dir, vertex_coord, iso_vlist, isodual_table, 
+		merge_data, dualiso_info);
 }
 
 // **************************************************

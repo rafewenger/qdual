@@ -55,5 +55,15 @@ namespace QTRIANGULATE{
 		QDUAL_TABLE & qdual_table,
 		bool & flag_boundary
 		);
+
+	// Compute degree of each vertex
+	// Only for non degenerate poly
+	// param 1 : num vertex in the poly.
+	// param 2 : non degenerate polys
+	void compute_degree_per_vertex(
+		const int vert_per_poly,
+		std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
+		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
+		);
 }
 #endif // !_QDDUAL_REMOVE_DEGENERATE_

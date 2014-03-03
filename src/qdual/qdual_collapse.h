@@ -31,8 +31,9 @@ namespace QCOLLAPSE{
 		const DUALISO_DATA & dualiso_data,
 		const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 		std::vector<VERTEX_INDEX> & quad_vert,
-		const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
-		const std::vector<COORD_TYPE> & vertex_coord,
+		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
+		std::vector<COORD_TYPE> & vertex_coord,
+        const std::vector<DIRECTION_TYPE> & orth_dir,
 		const float epsilon,
 		DUALISO_INFO & dualiso_info
 		);
@@ -51,7 +52,7 @@ namespace QCOLLAPSE{
 	void setup_collapse_map(
 		IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 		const int num_vertex);
-	
+
 	//Update vertex from the collapse map
 	int find_vertex(
 		IJK::ARRAY<VERTEX_INDEX> &collapse_map,
