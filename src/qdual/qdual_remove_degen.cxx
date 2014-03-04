@@ -52,7 +52,7 @@ void QTRIANGULATE::triangulate_quads (
 	bool has_non_degen_quad = triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
 
     std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  diagonalMap;
-    hashQuadsDual2GridEdge(diagonalMap, quad_vert, orth_dir);
+    //hashQuadsDual2GridEdge(diagonalMap, quad_vert, orth_dir);
 
 	// only non degenerate quads and triangles remain
 	triangulate_quad_angle_based(quad_vert, tri_vert, iso_vlist, 
