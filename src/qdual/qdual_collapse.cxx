@@ -699,10 +699,17 @@ void intersectQuadAndEdgeAndMoveVert
 	DUALISO_INFO & dualiso_info
 	)
 {
-	const int d1 = (edgeDir+1+DIM3)%DIM3;
+    const int d1 = (edgeDir+1+DIM3)%DIM3;
 	const int d2 = (edgeDir+2+DIM3)%DIM3;
-	vertex_coord[DIM3*v+d1]=edgeBase[d1];
+    vertex_coord[DIM3*v+d1]=edgeBase[d1];
 	vertex_coord[DIM3*v+d2]=edgeBase[d2];
+    COORD_TYPE c = 0;
+	for (int i = 0; i < VERT_PER_QUAD; i++)
+	{
+        int qi = quad_vert[VERT_PER_QUAD*q+i];
+        c=c+ vertex_coord[DIM3*qi+edgeDir];
+	}
+    vertex_coord[DIM3*v+edgeDir]=c/4.0;
 }
 
 
@@ -736,8 +743,8 @@ void collapseToEdge(
 void capQuadComputation(
 	const VERTEX_INDEX d1, 
 	const VERTEX_INDEX d2, // is the diagonal vertex which determines the cube.
-	COORD_TYPE * d1Coord,
-	COORD_TYPE * d2Coord,
+	IJK::ARRAY<COORD_TYPE> & d1Coord,
+	IJK::ARRAY<COORD_TYPE> & d2Coord,
 	const int q, //qth quad
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<COORD_TYPE> & vertex_coord,
@@ -746,10 +753,11 @@ void capQuadComputation(
 	const int notDegreeThree,
 	const std::vector<DUAL_ISOVERT> & iso_vlist,
 	IJK::ARRAY<GRID_COORD_TYPE> &edgeBase,
-	int & d,
+	int & edgeDir,
 	bool &capQuad,
 	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
-	DUALISO_INFO & dualiso_info
+	DUALISO_INFO & dualiso_info,
+    bool printInfo
 	)
 {
 
@@ -760,54 +768,65 @@ void capQuadComputation(
 		float closestDistance=0;
 		IJK::ARRAY<GRID_COORD_TYPE> d2EdgeBase(DIM3,0);
 		IJK::ARRAY<GRID_COORD_TYPE> d1EdgeBase(DIM3,0);
-		//close to an edge and not to a vertex
-		int numClose = 0;
-		for (int k = 0; k < DIM3; k++)
-		{
-			find_closest_edge_and_distance(DIM3, d2Coord, d, d2EdgeBase, closestDistance);
-			if(closestDistance <epsilon)
-				numClose++;
-		}
 
-		if (numClose == 1)
+		find_closest_edge_and_distance(DIM3, &(d2Coord[0]), edgeDir, d2EdgeBase, closestDistance);
+		if(closestDistance < epsilon)
 		{
 			if (scalar_grid.ComputeVertexIndex(&d2EdgeBase[0])
 				== scalar_grid.ComputeVertexIndex(&edgeBase[0]))
 			{
 				if (is_permitted_collapse(iso_vlist, d2,  &(d2EdgeBase[0]),
-					d, EDGE))
+					edgeDir, EDGE))
 				{
 					collapseToEdge(d2, q, quad_vert, vertex_coord, iso_vlist
-						,collapse_map, edgeBase, d, dualiso_info);
-                    dualiso_info.cp_info.moved2Edge++;
+						,collapse_map, edgeBase, edgeDir, dualiso_info);
+				
+					dualiso_info.cp_info.moved2Edge++;
+					if ( printInfo)
+					{
+						cout <<"capquad "
+							<<quad_vert[VERT_PER_QUAD*q] <<" "
+							<<quad_vert[VERT_PER_QUAD*q+1] <<" "
+                            <<quad_vert[VERT_PER_QUAD*q+2] <<" "
+                            <<quad_vert[VERT_PER_QUAD*q+3] << endl;
+                        cout <<"edgebase "
+                            <<edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
+                        cout <<"dir "<< edgeDir <<endl;
+					}
 				}
 			}
 		}
 		else
 		{
-			numClose=0;
-			for (int k = 0; k < DIM3; k++)
-			{
-				find_closest_edge_and_distance(DIM3, d1Coord, d, d1EdgeBase, closestDistance);
-				if(closestDistance <epsilon)
-					numClose++;
-			}
-			if (numClose==1)
+			find_closest_edge_and_distance(DIM3, &(d1Coord[0]), edgeDir, d1EdgeBase, closestDistance);
+			if (closestDistance <   epsilon)
 			{
 				if (scalar_grid.ComputeVertexIndex(&d1EdgeBase[0])
 					== scalar_grid.ComputeVertexIndex(&edgeBase[0]))
 				{
 					if (is_permitted_collapse(iso_vlist, d1,  &(d1EdgeBase[0]),
-						d, EDGE))
+						edgeDir, EDGE))
 					{
 						collapseToEdge(d1, q, quad_vert, vertex_coord, iso_vlist
-							,collapse_map, edgeBase, d, dualiso_info);
-                        dualiso_info.cp_info.moved2Edge++;
+							,collapse_map, edgeBase, edgeDir, dualiso_info);
+					
+						dualiso_info.cp_info.moved2Edge++;
+						if ( printInfo)
+						{
+							cout <<"capquad "
+								<<quad_vert[VERT_PER_QUAD*q] <<" "
+								<<quad_vert[VERT_PER_QUAD*q+1] <<" "
+								<<quad_vert[VERT_PER_QUAD*q+2] <<" "
+								<<quad_vert[VERT_PER_QUAD*q+3] << endl;
+							cout <<"edgebase "
+								<<edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
+							cout <<"dir "<< edgeDir <<endl;
+						}
 					}
 				}
 			}
 		}
-        dualiso_info.cp_info.numCapQuad++;
+		dualiso_info.cp_info.numCapQuad++;
 		capQuad = true;
 
 	}
@@ -864,30 +883,26 @@ void collapse_caps (
 
 
 		IJK::ARRAY<GRID_COORD_TYPE> edgeBase(DIM3,0);
-		COORD_TYPE * BCoord = new COORD_TYPE[3];
-		scalar_grid.ComputeCoord(B, BCoord);
-		COORD_TYPE * ACoord = new COORD_TYPE[3];
-		scalar_grid.ComputeCoord(A, ACoord);
-		int d = -1;
-
-		computeEdgeDual2q( q, B, iso_vlist, orth_dir, edgeBase, d);
-		capQuadComputation(A,B, ACoord,BCoord, q, quad_vert, vertex_coord,
-			scalar_grid, epsilon, notDegreeThree, iso_vlist, 
-			edgeBase, d, flagCapQuad, collapse_map, dualiso_info);
-
-		if (flagCapQuad && printInfo)
+		IJK::ARRAY<COORD_TYPE> BCoord(DIM3,0);
+		IJK::ARRAY<COORD_TYPE> ACoord(DIM3,0);
+		
+		for (int d=0;d<DIM3;d++)
 		{
-			cout <<"capquad ["<<A <<" "<<B<<"] "<<C<<" "<<D<<endl;
+            ACoord[d]=vertex_coord[DIM3*A+d];
+            BCoord[d]=vertex_coord[DIM3*B+d];
 		}
+		int edgeDir = -1;
+
+		computeEdgeDual2q( q, B, iso_vlist, orth_dir, edgeBase, edgeDir);
+
+		capQuadComputation(A,B, ACoord, BCoord, q, quad_vert, vertex_coord,
+			scalar_grid, epsilon, notDegreeThree, iso_vlist, 
+			edgeBase, edgeDir, flagCapQuad, collapse_map, dualiso_info, printInfo);
+
 
 		capQuadComputation(C,D, ACoord,BCoord, q, quad_vert, vertex_coord,
 			scalar_grid, epsilon, notDegreeThree, iso_vlist, 
-			edgeBase, d, flagCapQuad, collapse_map, dualiso_info);
-
-		if (flagCapQuad && printInfo)
-		{
-			cout <<"capquad "<<A <<" "<<B<<" ["<<C<<" "<<D<<"] "<<endl;
-		}
+			edgeBase, edgeDir, flagCapQuad, collapse_map, dualiso_info, printInfo);
 	}
 
 
@@ -932,7 +947,7 @@ void QCOLLAPSE::dual_collapse(
     if (dualiso_data.flag_cap_col)
 	collapse_caps(scalar_grid, quad_vert, vertex_coord, orth_dir, 
 		epsilon, iso_vlist, collapse_map, dualiso_info, dualiso_data.flag_collapse_debug);
-	/*
+	
 	collapse_across_facets(scalar_grid, iso_vlist, quad_vert,
 	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
 
@@ -941,11 +956,77 @@ void QCOLLAPSE::dual_collapse(
 
 	collapse_across_vertices(scalar_grid, iso_vlist, quad_vert, 
 	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
-	*/
+	
 	update_quads(collapse_map, quad_vert);
 	//reorder the quads back to the original.
 	IJK::reorder_quad_vertices(quad_vert);
 }
 
+void QCOLLAPSE::delIsolated(
+    std::vector<VERTEX_INDEX> & quad_vert,
+	vector<VERTEX_INDEX> isolatedList,
+	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	DUALISO_INDEX_GRID & first_isov,
+    IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
+    bool printInfo
+	)
+{
+    const int sizeDelIsolated = isolatedList.size();
+	for (int v = 0; v < sizeDelIsolated; v++)
+	{
+        VERTEX_INDEX iv0 = isolatedList[v] - scalar_grid.CubeVertexIncrement(NUM_CUBE_VERT-1);
+		for (int j = 0; j < NUM_CUBE_VERT; j++)
+		{
+            VERTEX_INDEX c = scalar_grid.CubeVertex(iv0,j);
+
+			VERTEX_INDEX indx_iso_vlist = first_isov.Scalar(c);
+			if (indx_iso_vlist !=-1)
+			{
+				int table_ind = iso_vlist[indx_iso_vlist].table_index;
+				int num_iso_verts = isodual_table.NumIsoVertices(table_ind);
+				//for each isosurface vertex in cube c
+				for (int k = 0; k < num_iso_verts; k++)
+				{
+					if ( iso_vlist[indx_iso_vlist+k].sep_vert == isolatedList[v])
+					{
+                        iso_vlist[indx_iso_vlist+k].flag_isolated = true;
+					}
+				}
+			}
+		}
+	}
+
+    vector<VERTEX_INDEX>  local_quad_vert;
+	const int num_quads = quad_vert.size()/NUM_CUBE_FACET_VERT;
+	for (int i = 0; i < num_quads; i++)
+	{
+		bool flag_temp_isolated = false;
+		for (int j = 0; j < VERT_PER_QUAD; j++)
+		{
+			VERTEX_INDEX v = quad_vert[NUM_CUBE_FACET_VERT*i +j];
+			if (iso_vlist[v].flag_isolated)
+			{
+				flag_temp_isolated = true;
+			}
+		}
+
+		if (!flag_temp_isolated)
+		{
+			for (int j = 0; j < VERT_PER_QUAD; j++)
+			{
+				VERTEX_INDEX v = quad_vert[NUM_CUBE_FACET_VERT*i +j];
+				local_quad_vert.push_back(v);
+			}    
+		}
+	}
+   if (printInfo)
+   {
+    cout <<"Isolated list size: "<< sizeDelIsolated <<endl;
+    cout <<"Number of quads decimated: "<< (quad_vert.size() - local_quad_vert.size()) / 4 <<endl;
+   }
+	quad_vert.clear();
+    quad_vert = local_quad_vert;
+}
 
 

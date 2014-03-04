@@ -190,7 +190,8 @@ bool  check_vertex_has_box_around (
 	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 	DUALISO_INDEX_GRID & first_isov,
-	QDUAL_TABLE & qdual_table
+	QDUAL_TABLE & qdual_table,
+	vector<VERTEX_INDEX> &isolatedList
 	)
 {
 	QDUAL_TABLE::DIR_BITS edgeFlag=0;
@@ -223,6 +224,10 @@ bool  check_vertex_has_box_around (
 			}
 		}
 	}
+	if (count == 8 && edgeFlag == 63)
+	{
+		isolatedList.push_back(iv);
+	}
 	if (count >=3 && edgeFlag == 63)
 	{
 		return true;
@@ -240,10 +245,9 @@ void compute_restrictions_CList(
 	QDUAL_TABLE & qdual_table,
 	const std::vector<COORD_TYPE> & vertex_coord,
 	vector<VERTEX_INDEX> &restriction_Clist,
-	const IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
+	const IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+	vector<VERTEX_INDEX> &isolatedList)
 {
-
-
 	int numv =  scalar_grid.NumVertices();
 
 	for (VERTEX_INDEX iv = 0; iv < numv; iv++)
@@ -257,8 +261,7 @@ void compute_restrictions_CList(
 			{
 				bool flag_box = check_vertex_has_box_around 
 					(scalar_grid, iv, iso_vlist, isodual_table,
-					first_isov, qdual_table);
-
+					first_isov, qdual_table, isolatedList);
 				if (flag_box)
 					restriction_Clist.push_back(iv);
 			}
@@ -430,11 +433,12 @@ void set_restrictionsC(
 	QDUAL_TABLE & qdual_table,
 	std::vector<COORD_TYPE> & vertex_coord,
 	DUALISO_INFO & dualiso_info,
-	const IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
+	const IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+	vector<VERTEX_INDEX> &isolatedList)
 {
 	vector<VERTEX_INDEX> restriction_Clist;
 	compute_restrictions_CList( scalar_grid, isovalue, iso_vlist, isodual_table, first_isov,
-		qdual_table, vertex_coord, restriction_Clist, boundary_grid);
+		qdual_table, vertex_coord, restriction_Clist, boundary_grid, isolatedList);
 	//store info
 
 	dualiso_info.rs_info.restriction_CList_size = restriction_Clist.size();
@@ -500,7 +504,8 @@ void set_restrictions(
 	QDUAL_TABLE & qdual_table,
 	std::vector<COORD_TYPE> & vertex_coord,
 	DUALISO_INFO & dualiso_info,
-	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+	vector<VERTEX_INDEX> &isolatedList)
 {
 	if (!dualiso_data.flag_no_restriction_AB)
 	{
@@ -514,6 +519,7 @@ void set_restrictions(
 	if(!dualiso_data.flag_no_restriciton_C)
 	{
 		set_restrictionsC(scalar_grid, dualiso_data.qdual_epsilon, dualiso_data.flag_move_vertices, isovalue, quad_vert,
-			iso_vlist, isodual_table, first_isov,qdual_table, vertex_coord, dualiso_info,boundary_grid);
+			iso_vlist, isodual_table, first_isov,qdual_table, 
+			vertex_coord, dualiso_info, boundary_grid, isolatedList);
 	}
 }

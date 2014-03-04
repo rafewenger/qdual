@@ -1,6 +1,7 @@
 #include "qdual_remove_degen.h"
 #include "qdual_collapse.h"
 
+
 #include <cmath>
 
 using namespace std;
@@ -22,6 +23,22 @@ bool QTRIANGULATE::triangulate_non_degen_quads (
 		return true;
 }
 
+
+void hashQuadsDual2GridEdge(
+	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	const std::vector<DIRECTION_TYPE> &orth_dir)
+{
+	const int numQuads = quad_vert.size() / VERT_PER_QUAD;
+	IJK::reorder_quad_vertices(quad_vert);
+	for (int q = 0; q < numQuads; q++)
+	{
+		VERTEX_INDEX B = quad_vert[VERT_PER_QUAD*q+2];
+		int edgeDir = (int)orth_dir[q];
+		int index = DIM3*B + edgeDir;
+		diagonalMap.insert(make_pair(index, q));
+	}
+}
 // Triangulate all quads
 void QTRIANGULATE::triangulate_quads (
 	std::vector<VERTEX_INDEX> & quad_vert,
@@ -29,12 +46,17 @@ void QTRIANGULATE::triangulate_quads (
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 	const std::vector<COORD_TYPE> & vertex_coord,
 	QDUAL_TABLE & qdual_table,
-	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid)
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+	const std::vector<DIRECTION_TYPE> &orth_dir)
 {
 	bool has_non_degen_quad = triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
+
+    std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  diagonalMap;
+    hashQuadsDual2GridEdge(diagonalMap, quad_vert, orth_dir);
+
 	// only non degenerate quads and triangles remain
 	triangulate_quad_angle_based(quad_vert, tri_vert, iso_vlist, 
-		vertex_coord, boundary_grid, qdual_table);
+		vertex_coord, boundary_grid, qdual_table, diagonalMap);
 }
 
 // Remove degenerate quads
@@ -274,7 +296,8 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 	const std::vector<COORD_TYPE> & vertex_coord,
 	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
-	QDUAL_TABLE & qdual_table
+	QDUAL_TABLE & qdual_table,
+    std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap
 	)
 {
 	const int num_quad = non_degen_quad_vert.size()/VERT_PER_QUAD;

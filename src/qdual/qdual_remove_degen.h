@@ -1,6 +1,6 @@
 #ifndef _QDDUAL_REMOVE_DEGENERATE_
 #define _QDDUAL_REMOVE_DEGENERATE_
-
+#include <unordered_map>
 #include "qdual_types.h"
 #include "qdual_datastruct.h"
 #include "ijk.txx"
@@ -24,7 +24,8 @@ namespace QTRIANGULATE{
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 		const std::vector<COORD_TYPE> & vertex_coord,
 		QDUAL_TABLE & qdual_table,
-		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid);
+		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+		const std::vector<DIRECTION_TYPE> &orth_dir);
 
 	// Remove degfenerate quads
 	void remove_degenerate_quads(
@@ -42,7 +43,8 @@ namespace QTRIANGULATE{
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 		const std::vector<COORD_TYPE> & vertex_coord,
 		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
-		QDUAL_TABLE & qdual_table
+		QDUAL_TABLE & qdual_table,
+		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap
 		);
 
 	//Check if the vertex is a boundary 

@@ -56,6 +56,7 @@ void set_restrictions(
 	QDUAL_TABLE & qdual_table,
 	std::vector<COORD_TYPE> & vertex_coord,
 	DUALISO_INFO & dualiso_info,
-	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid);
+	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+	vector<VERTEX_INDEX> &isolatedList);
 
 #endif // !_QDUAL_RESTRICTIONS_

@@ -991,6 +991,7 @@ namespace IJK {
 	SV_TYPE  sep_vert;
 	PI_TYPE restricted_facets;
 	bool flag_restrictionC;
+	bool flag_isolated;
 	std::vector<COORD_TYPE> cube_coord; 
   };
 

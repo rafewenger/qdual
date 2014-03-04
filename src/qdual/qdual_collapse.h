@@ -57,5 +57,16 @@ namespace QCOLLAPSE{
 	int find_vertex(
 		IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 		int endpt);
+    
+	///Delete isolated vertices
+	void delIsolated(
+		std::vector<VERTEX_INDEX> & quad_vert,
+		vector<VERTEX_INDEX> isolatedList,
+		const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+		DUALISO_INDEX_GRID & first_isov,
+		IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
+        bool printInfo
+		);
 }
 #endif // !_QDUAL_COLLAPSE_
