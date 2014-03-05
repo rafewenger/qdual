@@ -67,5 +67,10 @@ namespace QTRIANGULATE{
 		std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
 		);
+	void reset_degree_per_vertex(
+		const int vert_per_poly,
+		std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
+		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
+		);
 }
 #endif // !_QDDUAL_REMOVE_DEGENERATE_

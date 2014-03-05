@@ -16,6 +16,7 @@ bool QTRIANGULATE::triangulate_non_degen_quads (
 
 	std::vector<VERTEX_INDEX> non_degen_quad_vert;
 	remove_degenerate_quads(quad_vert, non_degen_quad_vert, tri_vert, vertex_coord);
+    quad_vert.clear();
 	quad_vert = non_degen_quad_vert;
 	if (tri_vert.size() == 0 )
 		return false;
@@ -23,11 +24,12 @@ bool QTRIANGULATE::triangulate_non_degen_quads (
 		return true;
 }
 
-
+//Setup the hashmap to find quads which share diagonals
 void hashQuadsDual2GridEdge(
 	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
 	std::vector<VERTEX_INDEX> & quad_vert,
-	const std::vector<DIRECTION_TYPE> &orth_dir)
+	const std::vector<DIRECTION_TYPE> &orth_dir,
+	const std::vector<COORD_TYPE> & vertex_coord)
 {
 	const int numQuads = quad_vert.size() / VERT_PER_QUAD;
 	IJK::reorder_quad_vertices(quad_vert);
@@ -37,7 +39,13 @@ void hashQuadsDual2GridEdge(
 		int edgeDir = (int)orth_dir[q];
 		int index = DIM3*B + edgeDir;
 		diagonalMap.insert(make_pair(index, q));
+	//debug
+        cout <<"q "<< q << endl;
+        cout <<"B "<< B;
+        cout <<vertex_coord[DIM3*B];
 	}
+    IJK::reorder_quad_vertices(quad_vert);
+
 }
 // Triangulate all quads
 void QTRIANGULATE::triangulate_quads (
@@ -52,7 +60,7 @@ void QTRIANGULATE::triangulate_quads (
 	bool has_non_degen_quad = triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
 
     std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  diagonalMap;
-    //hashQuadsDual2GridEdge(diagonalMap, quad_vert, orth_dir);
+    //hashQuadsDual2GridEdge(diagonalMap, quad_vert, orth_dir, vertex_coord);
 
 	// only non degenerate quads and triangles remain
 	triangulate_quad_angle_based(quad_vert, tri_vert, iso_vlist, 
@@ -140,7 +148,6 @@ void QTRIANGULATE::compute_degree_per_vertex(
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
 	)
 {
-
 	const int num_poly = poly_vert.size()/vert_per_poly;
 	for (int q=0; q<num_poly; q++)
 	{
@@ -151,6 +158,21 @@ void QTRIANGULATE::compute_degree_per_vertex(
 	}
 }
 
+void QTRIANGULATE::reset_degree_per_vertex(
+	const int vert_per_poly,
+	std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
+	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
+	)
+{
+	const int num_poly = poly_vert.size()/vert_per_poly;
+	for (int q=0; q<num_poly; q++)
+	{
+		for (int d=0;d<vert_per_poly;d++){
+			VERTEX_INDEX v = poly_vert[vert_per_poly*q+d];
+			iso_vlist[v].ver_degree=0;
+		}
+	}
+}
 
 //Compute the length of the side of a triangle 
 //given the vertex index of the endpts and the vertexCoord
@@ -302,7 +324,6 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 {
 	const int num_quad = non_degen_quad_vert.size()/VERT_PER_QUAD;
 	IJK::reorder_quad_vertices(non_degen_quad_vert);
-
 	compute_degree_per_vertex(4, non_degen_quad_vert, iso_vlist);
 	compute_degree_per_vertex(3, tri_vert, iso_vlist);
 
@@ -374,16 +395,16 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 		//
 		if (flag_non_degen_quad)
 		{
-			vertex = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1)%VERT_PER_QUAD];
-			vertex = QCOLLAPSE::find_vertex(collapse_map,vertex);
+			vertex = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1)%VERT_PER_QUAD];	
 			int B = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1+2)%VERT_PER_QUAD];
-			B = QCOLLAPSE::find_vertex(collapse_map,B);
 			int C = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1+3)%VERT_PER_QUAD];
-			C = QCOLLAPSE::find_vertex(collapse_map,C);
 			int D = non_degen_quad_vert[q*VERT_PER_QUAD+ (w1+1)%VERT_PER_QUAD];
+			
+			
+            vertex = QCOLLAPSE::find_vertex(collapse_map,vertex);
+			B = QCOLLAPSE::find_vertex(collapse_map,B);
+            C = QCOLLAPSE::find_vertex(collapse_map,C);
 			D = QCOLLAPSE::find_vertex(collapse_map, D);
-			
-			
 			//find the 4 angles.
 
 			float cos_min_angle_abc; // min angle of triangle ABC.
@@ -410,6 +431,8 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			else
 				cos_min_2 = cos_min_angle_dca;
 
+
+           
 			if (flag_deg2 && !flag_boundary)
 			{	
 				if (cos_min_1 < cos_min_2)
@@ -419,7 +442,6 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 				}
 				else
 				{
-
 					if (length_of_side(vertex, C, vertex_coord) <
 						length_of_side(vertex, D, vertex_coord))
 					{
@@ -438,13 +460,8 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			}
 			else
 			{ // degree 2
-				if (flag_boundary)
-				{
-					cout <<"degree 2 and boundary" <<endl;
-				}
 				if (cos_min_1 < cos_min_2)
 				{
-
 					push_triangle(vertex, C, B, tri_vert);
 					push_triangle(vertex, B, D, tri_vert);
 				}

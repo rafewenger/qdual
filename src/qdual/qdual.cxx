@@ -153,7 +153,7 @@ void QDUAL::quality_dual_contouring
 		{
 			using namespace std;
 			GRID_COORD_TYPE * c = new GRID_COORD_TYPE [3];
-			cout <<"Num elements in the Blist "<< dualiso_info.rs_info.restriction_BList_size << endl;
+			cout <<"Num isosurface loops "<< dualiso_info.rs_info.restriction_BList_size << endl;
 			for (int l=0; l< dualiso_info.rs_info.restriction_BList_size; l++)
 			{
 				int v1 = dualiso_info.rs_info.restricted_edges_info[l].first;
@@ -165,7 +165,7 @@ void QDUAL::quality_dual_contouring
 				dualiso_data.ScalarGrid().ComputeCoord(v2,c);
 				cout <<c[0]<<" "<<c[1]<<" "<<c[2]<<endl;
 			}
-			cout <<"Num elements in the Clist "<< dualiso_info.rs_info.restriction_CList_size << endl;
+			cout <<"Num isosurface boxes "<< dualiso_info.rs_info.restriction_CList_size << endl;
 			for (int l=0; l < dualiso_info.rs_info.restriction_CList_size; l++)
 			{
 				int v = dualiso_info.rs_info.restricted_vertex_info[l];
@@ -180,7 +180,7 @@ void QDUAL::quality_dual_contouring
 		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
 			dual_isosurface.vertex_coord, dual_isosurface.orth_dir, dualiso_data.qdual_epsilon, dualiso_info);
 
-
+            // Delete Isolated vertices
 		delIsolated(dual_isosurface.isopoly_vert, isolatedList, dualiso_data.ScalarGrid(),
 			iso_vlist, first_isov, isodual_table, dualiso_data.flag_collapse_debug);
 
@@ -196,6 +196,7 @@ void QDUAL::quality_dual_contouring
 			dual_isosurface.flag_has_degen_quads =  triangulate_non_degen_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord);
 			// Triangulate all quads
+
 			triangulate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				iso_vlist, dual_isosurface.vertex_coord, qdual_table, boundary_grid, dual_isosurface.orth_dir);
 		}

@@ -784,13 +784,31 @@ void capQuadComputation(
 					dualiso_info.cp_info.moved2Edge++;
 					if ( printInfo)
 					{
-						cout <<"capquad "
+						cout <<"***CapQuad**** "
 							<<quad_vert[VERT_PER_QUAD*q] <<" "
-							<<quad_vert[VERT_PER_QUAD*q+1] <<" "
-                            <<quad_vert[VERT_PER_QUAD*q+2] <<" "
-                            <<quad_vert[VERT_PER_QUAD*q+3] << endl;
-                        cout <<"edgebase "
-                            <<edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
+							<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q]]
+						<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q]+1]
+						<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q]+2]
+
+						<<"\n"<<quad_vert[VERT_PER_QUAD*q+1] <<" "
+							<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+1]]
+						<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+1]+1]
+						<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+1]+2]
+
+						<<"\n"<<quad_vert[VERT_PER_QUAD*q+2] <<" "
+							<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+2]]
+						<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+2]+1]
+						<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+2]+2]
+
+
+
+							<<"\n"<<quad_vert[VERT_PER_QUAD*q+3] <<" "
+							<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+3]]
+							<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+3]+1]
+							<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+3]+2]<< endl;
+
+						cout <<"edgebase "
+							<<edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
                         cout <<"dir "<< edgeDir <<endl;
 					}
 				}
@@ -813,7 +831,7 @@ void capQuadComputation(
 						dualiso_info.cp_info.moved2Edge++;
 						if ( printInfo)
 						{
-							cout <<"capquad "
+							cout <<"***CapQuad*** "
 								<<quad_vert[VERT_PER_QUAD*q] <<" "
 								<<quad_vert[VERT_PER_QUAD*q+1] <<" "
 								<<quad_vert[VERT_PER_QUAD*q+2] <<" "
@@ -874,6 +892,7 @@ void collapse_caps (
 		VERTEX_INDEX B = quad_vert[VERT_PER_QUAD*q+2];
 		VERTEX_INDEX C = quad_vert[VERT_PER_QUAD*q+1];
 		VERTEX_INDEX D = quad_vert[VERT_PER_QUAD*q+3];
+
 		//update vertices
 		A = find_vertex(collapse_map,A);
 		B = find_vertex(collapse_map,B);
@@ -885,11 +904,11 @@ void collapse_caps (
 		IJK::ARRAY<GRID_COORD_TYPE> edgeBase(DIM3,0);
 		IJK::ARRAY<COORD_TYPE> BCoord(DIM3,0);
 		IJK::ARRAY<COORD_TYPE> ACoord(DIM3,0);
-		
+
 		for (int d=0;d<DIM3;d++)
 		{
-            ACoord[d]=vertex_coord[DIM3*A+d];
-            BCoord[d]=vertex_coord[DIM3*B+d];
+			ACoord[d]=vertex_coord[DIM3*A+d];
+			BCoord[d]=vertex_coord[DIM3*B+d];
 		}
 		int edgeDir = -1;
 
@@ -905,7 +924,7 @@ void collapse_caps (
 			edgeBase, edgeDir, flagCapQuad, collapse_map, dualiso_info, printInfo);
 	}
 
-
+	QTRIANGULATE::reset_degree_per_vertex(VERT_PER_QUAD, quad_vert, iso_vlist);
 }
 
 //Update the collapses in "collapse_map" in "quad_vert"
@@ -944,6 +963,7 @@ void QCOLLAPSE::dual_collapse(
 	//Reordering QuadVert 
 	IJK::reorder_quad_vertices(quad_vert);
 
+    //CYCLIC ORDER
     if (dualiso_data.flag_cap_col)
 	collapse_caps(scalar_grid, quad_vert, vertex_coord, orth_dir, 
 		epsilon, iso_vlist, collapse_map, dualiso_info, dualiso_data.flag_collapse_debug);

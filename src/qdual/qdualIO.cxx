@@ -959,12 +959,12 @@ void QDUAL::report_iso_info
 	{
 		cout <<"Epsilon is set to: " << output_info.qdual_epsilon << endl;
 		cout <<"Restriction Info"<<endl;
-		cout <<"	Num elements in the Blist: "<< dualiso_info.rs_info.restriction_BList_size << endl;
-		cout <<"	Num elements in the Clist: "<< dualiso_info.rs_info.restriction_CList_size << endl;
+		cout <<"	Num isosurface loops: "<< dualiso_info.rs_info.restriction_BList_size << endl;
+		cout <<"	Num isosurface boxes: "<< dualiso_info.rs_info.restriction_CList_size << endl;
 		cout <<"\nCollapse info" << endl;
-		cout <<"	Permitted facet restriction: "<<dualiso_info.col_info.permitted_facet_restriction<<endl;
-		cout <<"	Permitted edge	restriction: "<<dualiso_info.col_info.permitted_edge_restriction<<endl;
-		cout <<"	Permitted vertex restriction: "<<dualiso_info.col_info.permitted_vertex_restriction<<endl;
+		cout <<"	Collapse across facets: "<<dualiso_info.col_info.permitted_facet_restriction<<endl;
+		cout <<"	Collapse around edges: "<<dualiso_info.col_info.permitted_edge_restriction<<endl;
+		cout <<"	Collapse around vertices: "<<dualiso_info.col_info.permitted_vertex_restriction<<endl;
 		cout <<"	Not permitted facet restriction: "<<dualiso_info.col_info.not_permitted_facet_restriction<<endl;
 		cout <<"	Not permitted edge restriction: "<<dualiso_info.col_info.not_permitted_edge_restriction<<endl;
 		cout <<"	Not permitted vertex restriction: "<< dualiso_info.col_info.not_permitted_vertex_restriction<<endl;
@@ -1032,12 +1032,6 @@ void QDUAL::report_iso_info
 				<< dualiso_info.multi_isov.num_1_2_change << endl;
 		}
 
-	}
-	if (output_info.flag_collapse_info)
-	{
-		cout <<"Restriction Info"<<endl;
-		cout <<"	Num elements in the Blist: "<< dualiso_info.rs_info.restriction_BList_size << endl;
-		cout <<"	Num elements in the Clist: "<< dualiso_info.rs_info.restriction_CList_size << endl;
 	}
 }
 
