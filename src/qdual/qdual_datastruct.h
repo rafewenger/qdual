@@ -139,7 +139,7 @@ namespace QDUAL {
 		VERTEX_POSITION_METHOD vertex_position_method;
 		bool use_triangle_mesh;
 		bool use_quad_tri_mesh;
-	
+    RANDOM_SEED_TYPE random_seed;
 
 		QUAD_TRI_METHOD quad_tri_method;
 

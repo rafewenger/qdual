@@ -55,6 +55,7 @@ namespace {
 	TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_DEBUG,COLLAPSE_INFO,
 	NO_COLLAPSE, NO_CAPCOL, QTMESH,
 	NO_RESTR_AB,NO_RESTR_B, NO_RESTR_C,
+  SEED_PARAM,
 	HELP_PARAM, OFF_PARAM, IV_PARAM, 
 	OUTPUT_FILENAME_PARAM, STDOUT_PARAM, 
 	NOWRITE_PARAM, SILENT_PARAM, TIME_PARAM, UNKNOWN_PARAM} PARAMETER;
@@ -65,6 +66,7 @@ namespace {
 	"-trimesh", "-uniform_trimesh","-collapse_debug", "-collapse_info",
 	"-no_collapse","-no_capcol","-qt_mesh",
 	"-no_res_AB","-no_res_B","-no_res_C",
+  "-seed",
 	"-help", "-off", "-iv", "-o", "-stdout",
 	"-nowrite", "-s", "-time", "-unknown"};
 
@@ -107,6 +109,9 @@ namespace {
 		else if (str == "centroid") {
 			method = CENTROID_EDGE_ISO;
 		}
+    else if (str == "random") {
+			method = RANDOM_POS;
+    }
 		else {
 			cerr << "Error in input parameter -position.  Illegal position method: " 
 				<< str << "." << endl;
@@ -189,6 +194,12 @@ void QDUAL::parse_command_line(int argc, char **argv, IO_INFO & io_info)
 
 		case NO_CAPCOL:
 			io_info.flag_cap_col = false;
+			break;
+
+    case SEED_PARAM:
+      iarg++;
+			if (iarg >= argc) usage_error();
+			io_info.random_seed = atoi(argv[iarg]);
 			break;
 
 		case UNIFORM_TRIMESH_PARAM:
