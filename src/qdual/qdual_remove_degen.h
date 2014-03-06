@@ -19,6 +19,7 @@ namespace QTRIANGULATE{
 
 	// Triangulate all quads
 	void triangulate_quads (
+		const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 		std::vector<VERTEX_INDEX> & quad_vert,
 		std::vector<VERTEX_INDEX> & tri_vert,
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
@@ -38,13 +39,15 @@ namespace QTRIANGULATE{
 
 	// Triangulate quads based on their angles
 	void triangulate_quad_angle_based(
+		const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 		std::vector<VERTEX_INDEX> & non_degen_quad_vert, // only non degenerate quads
 		std::vector<VERTEX_INDEX> & tri_vert,
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 		const std::vector<COORD_TYPE> & vertex_coord,
 		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
 		QDUAL_TABLE & qdual_table,
-		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap
+		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
+		const std::vector<DIRECTION_TYPE> &orth_dir
 		);
 
 	//Check if the vertex is a boundary 
