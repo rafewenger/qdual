@@ -111,6 +111,24 @@ namespace QDUAL {
    const std::vector<DUAL_ISOVERT> & iso_vlist,
    const COORD_TYPE offset,
    std::vector<COORD_TYPE> & coord);
+
+  /// Position dual isosurface vertices at random location in cube.
+  /// @param seed Random generator seed.
+  void position_dual_isovertices_random
+  (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+   const std::vector<DUAL_ISOVERT> & iso_vlist,
+   const RANDOM_SEED_TYPE seed,
+   COORD_TYPE * coord);
+
+  /// Position dual isosurface vertices at random location in cube.
+  /// @param seed Random generator seed.
+  /// C++ STL vector format for array coord[].
+  void position_dual_isovertices_random
+  (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+   const std::vector<DUAL_ISOVERT> & iso_vlist,
+   const RANDOM_SEED_TYPE seed,
+   std::vector<COORD_TYPE> & coord);
+
 };
 
 #endif

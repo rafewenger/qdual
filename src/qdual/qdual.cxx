@@ -310,14 +310,21 @@ void QDUAL::dual_contouring
 		position_dual_isovertices_near_cube_center_multi
 			(scalar_grid, isodual_table, isovalue, iso_vlist, center_offset, 
 			vertex_coord);
-	}
-	else {
+	}  
+  else if (vertex_position_method == RANDOM_POS) {
+    // *** SHOULD BE INPUT PARAMETER ***
+    RANDOM_SEED_TYPE seed(123);
+    position_dual_isovertices_random
+			(scalar_grid, iso_vlist, seed, vertex_coord);
+  }	
+  else {
 		// Compute the coordinates of each isosurface vertex iv in iso_vlist[]
 		//   as the centroid of the intersection points of the quadrilaterals
 		//   incident on vertex iv and the cube edges.
 		position_dual_isovertices_centroid_multi
 			(scalar_grid, isodual_table, isovalue, iso_vlist, vertex_coord);
 	}
+
 
 	t3 = clock();
 

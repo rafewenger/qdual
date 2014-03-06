@@ -59,6 +59,7 @@ namespace QDUAL {
   typedef int MERGE_INDEX;       ///< Merge index type.
   typedef unsigned short DEGREE_TYPE;   ///< DEGREE_PER_VERTEX
   typedef unsigned char DIRECTION_TYPE; ///< Direction type.
+  typedef unsigned int RANDOM_SEED_TYPE; ///< Random seed type.
 
 
   /// Edge index type.
@@ -94,7 +95,9 @@ namespace QDUAL {
   /// CUBE_CENTER: Position isosurface vertices at cube centers.
   /// CENTROID_EDGE_ISO: Position isosurface vertices at the centroid
   ///                    of the edge isosurface intersections.
-  typedef enum { CUBE_CENTER, CENTROID_EDGE_ISO } VERTEX_POSITION_METHOD;
+  /// RANDOM_POS: Generate random position in cube. (For testing.)
+  typedef enum { CUBE_CENTER, CENTROID_EDGE_ISO, RANDOM_POS } 
+  VERTEX_POSITION_METHOD;
 
   /// Quadrilateral triangulation method.
   typedef enum { UNDEFINED_TRI, UNIFORM_TRI, SPLIT_MAX_ANGLE }
