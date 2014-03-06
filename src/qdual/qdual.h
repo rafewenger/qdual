@@ -86,6 +86,21 @@ namespace QDUAL {
 	  IJKDUALTABLE::ISODUAL_CUBE_TABLE  & isodual_table,
 	  MERGE_DATA & merge_data, DUALISO_INFO & dualiso_info);
 
+  /// Extract isosurface using Dual Contouring algorithm
+  /// Returns list of isosurface simplex vertices
+  ///  and list of isosurface vertex coordinates
+  void dual_contouring
+  (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+   const SCALAR_TYPE isovalue, 
+   const DUALISO_DATA_FLAGS & dualiso_data_flags,
+   std::vector<VERTEX_INDEX> & quad_vert,
+   std::vector<DIRECTION_TYPE> & orth_dir,
+   std::vector<COORD_TYPE> & vertex_coord,
+   std::vector<DUAL_ISOVERT> &iso_vlist,
+   IJKDUALTABLE::ISODUAL_CUBE_TABLE & isodual_table,
+   MERGE_DATA & merge_data, 
+   DUALISO_INFO & dualiso_info);
+
   // **************************************************
   // CONVERT QUADRILATERALS TO TRIANGLES
   // **************************************************

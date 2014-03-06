@@ -306,3 +306,48 @@ void QDUAL::position_dual_isovertices_near_cube_center_multi
   position_dual_isovertices_near_cube_center_multi
     (scalar_grid, isodual_table, isovalue, iso_vlist, offset, &(coord.front()));
 }
+
+
+// **************************************************
+// GENERATE RANDOM POSITION (FOR TESTING)
+// **************************************************
+
+/// Position dual isosurface vertices at random location in cube.
+void QDUAL::position_dual_isovertices_random
+(const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+ const std::vector<DUAL_ISOVERT> & iso_vlist,
+ const RANDOM_SEED_TYPE seed,
+ COORD_TYPE * coord)
+{
+  const int dimension = scalar_grid.Dimension();
+  ARRAY<COORD_TYPE> cube_coord(dimension);
+  const int NUM_INTERVALS(1000);
+
+  srand(seed);
+
+  for (ISO_VERTEX_INDEX i = 0; i < iso_vlist.size(); i++) {
+    VERTEX_INDEX icube = iso_vlist[i].cube_index;
+
+    scalar_grid.ComputeCoord(icube, cube_coord.Ptr());
+
+    for (int d = 0; d < dimension; d++) {
+      COORD_TYPE x = rand()%(NUM_INTERVALS+1);
+      x = x/NUM_INTERVALS;
+      coord[i*dimension+d] = cube_coord[d] + x;
+    }
+  }
+}
+
+/// Position dual isosurface vertices at random location in cube.
+void QDUAL::position_dual_isovertices_random
+(const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+ const std::vector<DUAL_ISOVERT> & iso_vlist,
+ const RANDOM_SEED_TYPE seed,
+ std::vector<COORD_TYPE> & coord)
+{
+  const int dimension = scalar_grid.Dimension();
+
+  coord.resize(iso_vlist.size()*dimension);
+  position_dual_isovertices_random
+    (scalar_grid, iso_vlist, seed, &(coord.front()));
+}
