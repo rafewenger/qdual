@@ -197,7 +197,7 @@ void QDUAL::quality_dual_contouring
 				dual_isosurface.vertex_coord);
 			// Triangulate all quads
 
-			triangulate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
+			triangulate_quads (dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				iso_vlist, dual_isosurface.vertex_coord, qdual_table, boundary_grid, dual_isosurface.orth_dir);
 		}
 	}
