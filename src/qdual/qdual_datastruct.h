@@ -176,6 +176,12 @@ namespace QDUAL {
 		bool flag_move_vertices;
 		bool flag_cap_col;// cap collapse
 
+    /// flag_V1w_close Controls generation of random vertex positions.
+    ///   If true, isosurface vertices with degree dimension
+    ///       are placed 1/3 from the corner grid vertex.
+    bool flag_V1w_close;
+
+
 	public:
 		DUALISO_DATA_FLAGS() { Init(); };
 		~DUALISO_DATA_FLAGS() { Init(); };

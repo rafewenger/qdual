@@ -30,6 +30,7 @@
 
 #include "qdual_types.h"
 #include "qdual_datastruct.h"
+#include "qdual_table.h"
 
 
 namespace QDUAL {
@@ -127,6 +128,30 @@ namespace QDUAL {
   (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
    const std::vector<DUAL_ISOVERT> & iso_vlist,
    const RANDOM_SEED_TYPE seed,
+   std::vector<COORD_TYPE> & coord);
+
+  /// Position dual isosurface vertices at random location in cube.
+  /// Don't position near restricted facets.
+  /// @param seed Seed for random number generator.
+  /// @param flag_V1w_close If true, isosurface vertices with degree dimension
+  ///                       are placed 1/3 from the corner grid vertex.
+  void position_dual_isovertices_random
+  (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+   const QDUAL_TABLE & qdual_table,
+   const std::vector<DUAL_ISOVERT> & iso_vlist,
+   const RANDOM_SEED_TYPE seed,
+   const bool flag_V1w_close,
+   COORD_TYPE * coord);
+
+  /// Position dual isosurface vertices at random location in cube.
+  /// Don't position near restricted facets.
+  /// C++ STL vector format for array coord[].
+  void position_dual_isovertices_random
+  (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+   const QDUAL_TABLE & qdual_table,
+   const std::vector<DUAL_ISOVERT> & iso_vlist,
+   const RANDOM_SEED_TYPE seed,
+   const bool flag_V1w_close,
    std::vector<COORD_TYPE> & coord);
 
 };

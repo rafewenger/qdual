@@ -19,7 +19,7 @@ os.system(qdual_command_line)
 ijkmeshinfo_command_line = 'ijkmeshinfo -manifold -terse out.off'
 os.system(ijkmeshinfo_command_line)
 
-ijkmeshinfo_command_line = 'ijkmeshinfo out.off'
+ijkmeshinfo_command_line = 'ijkmeshinfo -out_min_angle out.off'
 os.system(ijkmeshinfo_command_line)
 
 

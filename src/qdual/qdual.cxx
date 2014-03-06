@@ -323,9 +323,14 @@ void QDUAL::dual_contouring
 			vertex_coord);
 	}  
   else if (vertex_position_method == RANDOM_POS) {
+		// set up restriction conditions
+		QDUAL_TABLE qdual_table(DIM3);
+
     RANDOM_SEED_TYPE seed = dualiso_data_flags.random_seed;
+    bool flag_V1w_close = dualiso_data_flags.flag_V1w_close;
     position_dual_isovertices_random
-			(scalar_grid, iso_vlist, seed, vertex_coord);
+			(scalar_grid, qdual_table, iso_vlist, seed, 
+       flag_V1w_close, vertex_coord);
   }	
   else {
 		// Compute the coordinates of each isosurface vertex iv in iso_vlist[]
