@@ -75,6 +75,15 @@ namespace QDUAL {
      std::vector<DIRECTION_TYPE> & orth_dir,
      DUALISO_INFO & dualiso_info);
 
+  // Specialized version of extract.
+  // First quad vertex is always lowest/leftmost.
+  void extract_dual_isoquad_around_bipolar_edge
+  (const DUALISO_SCALAR_GRID_BASE & scalar_grid, 
+   const SCALAR_TYPE isovalue, 
+   const VERTEX_INDEX iend0, const DIRECTION_TYPE edge_dir,
+   std::vector<ISO_VERTEX_INDEX> & isoquad,
+   std::vector<FACET_VERTEX_INDEX> & facet_vertex);
+
 }
 
 #endif
