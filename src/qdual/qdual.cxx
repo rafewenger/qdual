@@ -86,20 +86,41 @@ void QDUAL::quality_dual_contouring
 		isodual_table(dimension, flag_separate_neg, 
 		flag_always_separate_opposite);
 
-  /* DEPRACATED
+	/* DEPRACATED
 	dual_contouring
-		(dualiso_data.ScalarGrid(), isovalue, vpos_method, 
-		flag_select_split, flag_separate_neg,
-		dual_isosurface.isopoly_vert, dual_isosurface.orth_dir,
-		dual_isosurface.vertex_coord, iso_vlist,
-		isodual_table, merge_data, dualiso_info);
-  */
+	(dualiso_data.ScalarGrid(), isovalue, vpos_method, 
+	flag_select_split, flag_separate_neg,
+	dual_isosurface.isopoly_vert, dual_isosurface.orth_dir,
+	dual_isosurface.vertex_coord, iso_vlist,
+	isodual_table, merge_data, dualiso_info);
+	*/
 
 	dual_contouring
 		(dualiso_data.ScalarGrid(), isovalue, dualiso_data,
 		dual_isosurface.isopoly_vert, dual_isosurface.orth_dir,
 		dual_isosurface.vertex_coord, iso_vlist,
 		isodual_table, merge_data, dualiso_info);
+
+
+	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  diagonalMap;
+	/*cout <<"before quad angle based"<<endl;
+	for (int i=0;i<8;i++)
+	{
+		cout <<" "<< dual_isosurface.isopoly_vert[VERT_PER_QUAD*30+i];
+	}
+	cout <<"\n";
+
+
+	hashQuadsDual2GridEdge(diagonalMap, dual_isosurface.isopoly_vert,
+		dual_isosurface.orth_dir, iso_vlist, dual_isosurface.vertex_coord);
+
+	
+	cout <<"original set"<<endl;
+	for (int i=0;i<dual_isosurface.isopoly_vert.size();i++)
+	{
+		cout <<" "<< dual_isosurface.isopoly_vert[i];
+	}
+	cout <<"\n";*/
 
 	if (!dualiso_data.flag_NO_collapse)
 	{
@@ -120,7 +141,7 @@ void QDUAL::quality_dual_contouring
 			iso_vlist[j].ver_degree=0;
 
 			iso_vlist[j].flag_restrictionC = false;
-            iso_vlist[j].flag_isolated = false;
+			iso_vlist[j].flag_isolated = false;
 			(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index,a);
 			//Set iso_vlist[j].cube_coord
 			for (int d=0; d<DIM3; d++)
@@ -149,7 +170,7 @@ void QDUAL::quality_dual_contouring
 
 		// Setup sep  vert
 		compute_sep_vert(dualiso_data.ScalarGrid(), iso_vlist, qdual_table);
-	
+
 		vector<VERTEX_INDEX> isolatedList; // keep track of the isolated vertices.
 
 		set_restrictions (dualiso_data,  dualiso_data.ScalarGrid(), isovalue,  dual_isosurface.isopoly_vert,
@@ -184,11 +205,15 @@ void QDUAL::quality_dual_contouring
 			delete[] c;
 		}
 
+
+
+		
+
 		// Collapse Function calls.
 		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
 			dual_isosurface.vertex_coord, dual_isosurface.orth_dir, dualiso_data.qdual_epsilon, dualiso_info);
 
-            // Delete Isolated vertices
+		// Delete Isolated vertices
 		delIsolated(dual_isosurface.isopoly_vert, isolatedList, dualiso_data.ScalarGrid(),
 			iso_vlist, first_isov, isodual_table, dualiso_data.flag_collapse_debug);
 
@@ -206,7 +231,8 @@ void QDUAL::quality_dual_contouring
 			// Triangulate all quads
 
 			triangulate_quads (dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
-				iso_vlist, dual_isosurface.vertex_coord, qdual_table, boundary_grid, dual_isosurface.orth_dir);
+				iso_vlist, dual_isosurface.vertex_coord, qdual_table,
+				boundary_grid, dual_isosurface.orth_dir, diagonalMap);
 		}
 	}
 	// store times
@@ -223,22 +249,22 @@ void QDUAL::quality_dual_contouring
 // Returns list of isosurface simplex vertices
 //   and list of isosurface vertex coordinates
 void QDUAL::dual_contouring
-(const DUALISO_SCALAR_GRID_BASE & scalar_grid,
- const SCALAR_TYPE isovalue, 
- const DUALISO_DATA_FLAGS & dualiso_data_flags,
- std::vector<VERTEX_INDEX> & quad_vert,
- std::vector<DIRECTION_TYPE> & orth_dir,
- std::vector<COORD_TYPE> & vertex_coord,
- std::vector<DUAL_ISOVERT> &iso_vlist,
- IJKDUALTABLE::ISODUAL_CUBE_TABLE & isodual_table,
- MERGE_DATA & merge_data, 
- DUALISO_INFO & dualiso_info)
+	(const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	const SCALAR_TYPE isovalue, 
+	const DUALISO_DATA_FLAGS & dualiso_data_flags,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	std::vector<DIRECTION_TYPE> & orth_dir,
+	std::vector<COORD_TYPE> & vertex_coord,
+	std::vector<DUAL_ISOVERT> &iso_vlist,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE & isodual_table,
+	MERGE_DATA & merge_data, 
+	DUALISO_INFO & dualiso_info)
 {
 	const int dimension = scalar_grid.Dimension();
-  const VERTEX_POSITION_METHOD vertex_position_method
-    = dualiso_data_flags.vertex_position_method;
-  const bool flag_select_split = dualiso_data_flags.flag_select_split;
-  const bool flag_separate_neg = dualiso_data_flags.flag_separate_neg;
+	const VERTEX_POSITION_METHOD vertex_position_method
+		= dualiso_data_flags.vertex_position_method;
+	const bool flag_select_split = dualiso_data_flags.flag_select_split;
+	const bool flag_separate_neg = dualiso_data_flags.flag_separate_neg;
 	const COORD_TYPE center_offset = 0.1;
 	PROCEDURE_ERROR error("dual_contouring");
 	clock_t t0, t1, t2, t3;
@@ -322,12 +348,12 @@ void QDUAL::dual_contouring
 			(scalar_grid, isodual_table, isovalue, iso_vlist, center_offset, 
 			vertex_coord);
 	}  
-  else if (vertex_position_method == RANDOM_POS) {
-    RANDOM_SEED_TYPE seed = dualiso_data_flags.random_seed;
-    position_dual_isovertices_random
+	else if (vertex_position_method == RANDOM_POS) {
+		RANDOM_SEED_TYPE seed = dualiso_data_flags.random_seed;
+		position_dual_isovertices_random
 			(scalar_grid, iso_vlist, seed, vertex_coord);
-  }	
-  else {
+	}	
+	else {
 		// Compute the coordinates of each isosurface vertex iv in iso_vlist[]
 		//   as the centroid of the intersection points of the quadrilaterals
 		//   incident on vertex iv and the cube edges.
@@ -446,13 +472,13 @@ void QDUAL::dual_contouring
 			(scalar_grid, isodual_table, isovalue, iso_vlist, center_offset, 
 			vertex_coord);
 	}  
-  else if (vertex_position_method == RANDOM_POS) {
-    // *** SHOULD BE INPUT PARAMETER ***
-    RANDOM_SEED_TYPE seed(123);
-    position_dual_isovertices_random
+	else if (vertex_position_method == RANDOM_POS) {
+		// *** SHOULD BE INPUT PARAMETER ***
+		RANDOM_SEED_TYPE seed(123);
+		position_dual_isovertices_random
 			(scalar_grid, iso_vlist, seed, vertex_coord);
-  }	
-  else {
+	}	
+	else {
 		// Compute the coordinates of each isosurface vertex iv in iso_vlist[]
 		//   as the centroid of the intersection points of the quadrilaterals
 		//   incident on vertex iv and the cube edges.

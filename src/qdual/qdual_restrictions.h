@@ -49,7 +49,7 @@ void set_restrictions(
 	const DUALISO_DATA & dualiso_data,
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	const SCALAR_TYPE isovalue,
-	std::vector<VERTEX_INDEX> & quad_vert,
+	const std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 	DUALISO_INDEX_GRID & first_isov,

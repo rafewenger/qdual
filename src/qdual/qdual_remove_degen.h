@@ -26,7 +26,8 @@ namespace QTRIANGULATE{
 		const std::vector<COORD_TYPE> & vertex_coord,
 		QDUAL_TABLE & qdual_table,
 		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
-		const std::vector<DIRECTION_TYPE> &orth_dir);
+		const std::vector<DIRECTION_TYPE> &orth_dir,
+		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  &diagonalMap);
 
 	// Remove degfenerate quads
 	void remove_degenerate_quads(
@@ -60,6 +61,15 @@ namespace QTRIANGULATE{
 		QDUAL_TABLE & qdual_table,
 		bool & flag_boundary
 		);
+
+
+	//Setup the hashmap to find quads which share diagonals
+	void hashQuadsDual2GridEdge(
+		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
+		std::vector<VERTEX_INDEX> & quad_vert,
+		const std::vector<DIRECTION_TYPE> &orth_dir,
+		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+		const std::vector<COORD_TYPE> & vertex_coord);
 
 	// Compute degree of each vertex
 	// Only for non degenerate poly

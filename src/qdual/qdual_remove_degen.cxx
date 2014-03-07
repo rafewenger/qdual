@@ -86,58 +86,89 @@ bool sharesOppositeVerticesComputations
 	(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	const VERTEX_INDEX q, //qth quad
+	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
 	const std::vector<DIRECTION_TYPE> &orth_dir,
 	vector< VERTEX_INDEX> & v
 	)
 {
-	VERTEX_INDEX ie = (int)orth_dir[q];
+	if (diagonalMap.empty())
+		return false; 
+
+	//VERTEX_INDEX ie = (int)orth_dir[q];
+	VERTEX_INDEX B = iso_vlist [quad_vert[VERT_PER_QUAD*q+2]].cube_index;
+	VERTEX_INDEX tempEdgeDir = (int)orth_dir[q];
+	VERTEX_INDEX ie = DIM3*B + tempEdgeDir;
+	
 	VERTEX_INDEX edgeDir = ie%DIM3;
 	VERTEX_INDEX iend = (ie-edgeDir)/DIM3;
 	IJK::ARRAY<GRID_COORD_TYPE> edgeBase(DIM3,0);
 	scalar_grid.ComputeCoord(iend, &(edgeBase[0]));
-
-
+	cout<< "\n checking q "<< q 
+		<<" index "<< ie <<endl;
+	cout <<"edgebase "<< edgeBase[0]<<" "<< edgeBase[1]<<" "<<edgeBase[2]<<endl;
+	cout <<"edgeDir "<< edgeDir	<<" axix size "<<(scalar_grid.AxisSize(edgeDir)-1) <<endl;
+	
 	if (edgeBase[edgeDir]!=0)
 	{
 		VERTEX_INDEX iprev = scalar_grid.PrevVertex(iend, edgeDir );
 		VERTEX_INDEX ie2 = iprev*DIM3 + edgeDir;
-		VERTEX_INDEX q2 = diagonalMap.at(ie2);
-		if (doQuadsShareDiagVertices(q, q2, quad_vert,v))
+		std::unordered_map<VERTEX_INDEX, VERTEX_INDEX>::iterator ind 
+			= diagonalMap.find(ie2);
+		cout <<"compare with index1 "<< ie2 <<endl;
+		if (ind  != diagonalMap.end())
 		{
-			//debug 
-			cout <<"quad q "<< q << " "
-				<< "ie "<< ie <<endl;
-			cout <<"iend "<<iend <<" ";
-			cout <<"coord "<< edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
-			cout <<"ie2 "<< ie2 <<endl;
-			cout <<"the second quad is "<< q2<<endl;
-			return true;
+			VERTEX_INDEX q2 = diagonalMap.at(ie2);
+
+			cout<<" which is quad " << q2 << endl;
+			if (doQuadsShareDiagVertices(q, q2, quad_vert,v))
+			{
+				//debug 
+				cout <<"quad q "<< q << " "
+					<< "ie "<< ie <<endl;
+				cout <<"iend "<<iend <<" ";
+				cout <<"coord "<< edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
+				cout <<"ie2 "<< ie2 <<endl;
+				cout <<"the second quad is "<< q2<<endl;
+				return true;
+			}
 		}
 	}
-	if (edgeBase[edgeDir]!= (scalar_grid.AxisSize(edgeDir)-1))
+	const AXIS_SIZE_TYPE * axis_size = scalar_grid.AxisSize();
+	cout <<"edgedir "<<edgeDir<<endl; 
+	if (edgeBase[edgeDir] != (axis_size[edgeDir]-1))
 	{
 		VERTEX_INDEX inext = scalar_grid.NextVertex(iend, edgeDir);
 		VERTEX_INDEX ie2 = inext*DIM3 + edgeDir;
-		VERTEX_INDEX q2 = diagonalMap.at(ie2);
-		if (doQuadsShareDiagVertices(q, q2, quad_vert,v))
+
+		std::unordered_map<VERTEX_INDEX, VERTEX_INDEX>::iterator ind 
+			= diagonalMap.find(ie2);
+		cout <<"compare with index2 "<< ie2 <<endl;
+		if (ind  == diagonalMap.end())
+			return false;
+		else
 		{
-			//debug 
-			cout <<"quad q "<< q << " "
-				<< "ie "<< ie <<endl;
-			cout <<"iend "<<iend <<" ";
-			cout <<"coord "<< edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
-			cout <<"ie2 "<< ie2 <<endl;
-			cout <<"the second quad is "<< q2<<endl;
-			return true;
+			VERTEX_INDEX q2 = diagonalMap.at(ie2);
+			cout <<" which is quad " << q2 << endl;
+			if (doQuadsShareDiagVertices(q, q2, quad_vert,v))
+			{
+				//debug 
+				cout <<"quad q "<< q << " "
+					<< "ie "<< ie <<endl;
+				cout <<"iend "<<iend <<" ";
+				cout <<"coord "<< edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
+				cout <<"ie2 "<< ie2 <<endl;
+				cout <<"the second quad is "<< q2<<endl;
+				return true;
+			}
 		}
 	}
 	return false;
 }
 
 //Setup the hashmap to find quads which share diagonals
-void hashQuadsDual2GridEdge(
+void QTRIANGULATE::hashQuadsDual2GridEdge(
 	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
 	std::vector<VERTEX_INDEX> & quad_vert,
 	const std::vector<DIRECTION_TYPE> &orth_dir,
@@ -146,6 +177,13 @@ void hashQuadsDual2GridEdge(
 {
 	const int numQuads = quad_vert.size() / VERT_PER_QUAD;
 	IJK::reorder_quad_vertices(quad_vert);
+
+	cout <<"after reordering"<<endl;
+	for (int i=0;i<8;i++)
+	{
+		cout <<" "<< quad_vert[VERT_PER_QUAD*30+i];
+	}
+	cout <<"\n";
 	for (int q = 0; q < numQuads; q++)
 	{
 		VERTEX_INDEX B = iso_vlist [quad_vert[VERT_PER_QUAD*q+2]].cube_index;
@@ -155,9 +193,39 @@ void hashQuadsDual2GridEdge(
 	//debug
         cout <<"q "<< q << endl;
         cout <<"B(cube index) "<< B<<" ";
-        cout <<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+2]];
-        cout <<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+2]+1];
-        cout <<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q+2]+2];
+		VERTEX_INDEX temp = quad_vert[VERT_PER_QUAD*q+2];
+		cout <<" issovertex index [" << temp <<"]  coord [";
+        cout <<vertex_coord[DIM3*temp]<<" ";
+        cout <<vertex_coord[DIM3*temp+1]<<" ";
+        cout <<vertex_coord[DIM3*temp+2]<<"] "<<endl;
+		cout <<"quad vert  "<< quad_vert[VERT_PER_QUAD*q]<<" : " <<iso_vlist [quad_vert[VERT_PER_QUAD*q]].cube_coord[0]<<" "
+			<<iso_vlist [quad_vert[VERT_PER_QUAD*q]].cube_coord[1]<<" "
+			<<iso_vlist [quad_vert[VERT_PER_QUAD*q]].cube_coord[2]<<
+			" cubeindex "<< iso_vlist [quad_vert[VERT_PER_QUAD*q]].cube_index <<endl;
+
+		cout <<"quad vert  "<< quad_vert[VERT_PER_QUAD*q+1]<<" : " <<iso_vlist [quad_vert[VERT_PER_QUAD*q+1]].cube_coord[0]<<" "
+			<<iso_vlist [quad_vert[VERT_PER_QUAD*q+1]].cube_coord[1]<<" "
+			<<iso_vlist [quad_vert[VERT_PER_QUAD*q+1]].cube_coord[2]<<
+		" cubeindex "<< iso_vlist [quad_vert[VERT_PER_QUAD*q+1]].cube_index <<endl;
+
+
+		cout <<"quad vert  "<< quad_vert[VERT_PER_QUAD*q+2]<<" : " <<iso_vlist [quad_vert[VERT_PER_QUAD*q+2]].cube_coord[0]<<" "
+			<<iso_vlist [quad_vert[VERT_PER_QUAD*q+2]].cube_coord[1]<<" "
+			<<iso_vlist [quad_vert[VERT_PER_QUAD*q+2]].cube_coord[2]<<
+		" cubeindex "<< iso_vlist [quad_vert[VERT_PER_QUAD*q+2]].cube_index <<endl;
+		
+		
+		cout <<"quad vert "<< quad_vert[VERT_PER_QUAD*q+3]<<" : " <<iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_coord[0]<<" "
+			<<iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_coord[1]<<" "
+			<<iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_coord[2]<<
+		" cubeindex "<< iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_index <<endl;
+
+
+		cout <<"other vertices "<<endl;
+		cout <<quad_vert[VERT_PER_QUAD*q] <<" "<<quad_vert[VERT_PER_QUAD*q+1]<<" "
+			<<quad_vert[VERT_PER_QUAD*q+3]<<endl;
+		cout <<"edgeDir "<< edgeDir <<endl;
+		cout <<"index "<< index <<endl;
 
 	}
     IJK::reorder_quad_vertices(quad_vert);
@@ -172,12 +240,21 @@ void QTRIANGULATE::triangulate_quads (
 	const std::vector<COORD_TYPE> & vertex_coord,
 	QDUAL_TABLE & qdual_table,
 	IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
-	const std::vector<DIRECTION_TYPE> &orth_dir)
+	const std::vector<DIRECTION_TYPE> &orth_dir,
+	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  &diagonalMap)
 {
-	bool has_non_degen_quad = triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
 
-    std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  diagonalMap;
-    //hashQuadsDual2GridEdge(diagonalMap, quad_vert, orth_dir, iso_vlist, vertex_coord);
+
+	bool has_non_degen_quad = triangulate_non_degen_quads(quad_vert, tri_vert, vertex_coord);
+	// OBSOLETE
+	//std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  diagonalMap;
+	//cout <<"before quad angle based"<<endl;
+	//for (int i=0;i<8;i++)
+	//{
+	//	cout <<" "<< quad_vert[VERT_PER_QUAD*30+i];
+	//}
+	//cout <<"\n";
+	//hashQuadsDual2GridEdge(diagonalMap, quad_vert, orth_dir, iso_vlist, vertex_coord);
 
 	// only non degenerate quads and triangles remain
 	triangulate_quad_angle_based(scalar_grid, quad_vert, tri_vert, iso_vlist, 
@@ -579,11 +656,12 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 
 			}
             //shares opposite vertices
-		/*	else if (sharesOppositeVerticesComputations
-				(scalar_grid, q, non_degen_quad_vert, diagonalMap,
-                orth_dir, quadIndices) && diagonalMap.size()>0 )
+			
+			else if ( sharesOppositeVerticesComputations
+				(scalar_grid, q, iso_vlist, non_degen_quad_vert, diagonalMap,
+                orth_dir, quadIndices) )
 			{
-
+				cout <<"test"<<endl;
                 cout <<"shares vertices"<<endl;
 				int a = QCOLLAPSE::find_vertex(collapse_map, 
 					non_degen_quad_vert[q*VERT_PER_QUAD+quadIndices[0]]);
@@ -597,7 +675,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 
 				push_triangle( a, c, d, tri_vert);
 				push_triangle(d, c, b, tri_vert);
-			}*/
+			}
 			else
 			{ // degree 2
 				if (cos_min_1 < cos_min_2)
