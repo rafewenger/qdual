@@ -71,7 +71,7 @@ void DUALISO_DATA_FLAGS::Init()
   qdual_epsilon = 0.33;
   flag_move_vertices = false;
   flag_cap_col = true; 
-
+  flag_V1w_close = true;
 }
 
 
