@@ -16,11 +16,13 @@ def runqdual():
     ijkgenscalar_command_line = 'ijkgenscalar -s -dim 3 -asize ' + str(axisSize) + ' -field randomint -bzero -seed ' + str(seed) + ' -maxval ' + str(maxVal) + ' random.nrrd';
 
     print 'Executing: ', ijkgenscalar_command_line;
+    sys.stdout.flush()
     os.system(ijkgenscalar_command_line);
 
     qdual_command_line = 'qdual -s -trimesh -move_vertex -o ' + offFile + ' ' + str(isovalue) + ' random.nrrd';
     
     print 'Executing: ', qdual_command_line;
+    sys.stdout.flush()
     ret_code = os.system(qdual_command_line);
     if (ret_code != 0):
         print 'qdual return code: ', ret_code
