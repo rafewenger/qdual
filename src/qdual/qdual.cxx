@@ -114,7 +114,7 @@ void QDUAL::quality_dual_contouring
 		boundary_grid.SetAll(false);
 		compute_boundary_grid(boundary_grid);
 
-		flag_boundary_cubes(boundary_grid);
+		//flag_boundary_cubes(boundary_grid);
 
 		//set variables in iso_vlist
 		COORD_TYPE *a = new COORD_TYPE[3];
@@ -207,7 +207,8 @@ void QDUAL::quality_dual_contouring
 			dualiso_data.qdual_epsilon,  collapse_map, dualiso_info);
 
 		// Delete Isolated vertices
-		delIsolated(dual_isosurface.isopoly_vert, isolatedList, dualiso_data.ScalarGrid(),
+		if(dualiso_data.flag_delete_isolate)
+			delIsolated(dual_isosurface.isopoly_vert, isolatedList, dualiso_data.ScalarGrid(),
 			iso_vlist, first_isov, isodual_table, dualiso_data.flag_collapse_debug);
 
 		//Keep track of the quad indices when collapsing,

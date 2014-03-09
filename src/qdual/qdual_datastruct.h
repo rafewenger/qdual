@@ -175,6 +175,7 @@ namespace QDUAL {
 		float qdual_epsilon;
 		bool flag_move_vertices;
 		bool flag_cap_col;// cap collapse
+		bool flag_delete_isolate;
 
     /// flag_V1w_close Controls generation of random vertex positions.
     ///   If true, isosurface vertices with degree dimension
