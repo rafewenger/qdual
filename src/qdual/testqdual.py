@@ -39,10 +39,10 @@ def runqdual():
 
 # main routine
 if (len(sys.argv) > 1) :
-    numTest = sys.argv[1]
+    numTest = int(sys.argv[1]);
 
 for i in range(numTest):
-    seed = seed+10*i;
+    seed = seed+10;
     runqdual();
 
 
