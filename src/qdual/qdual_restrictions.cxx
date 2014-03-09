@@ -195,8 +195,11 @@ bool  check_vertex_has_box_around (
 	)
 {
 	QDUAL_TABLE::DIR_BITS edgeFlag=0;
-	int count =0;
+
+	int count = 0;
 	VERTEX_INDEX iv0 = iv - scalar_grid.CubeVertexIncrement(NUM_CUBE_VERT-1);
+
+
 	for (int j = 0; j < NUM_CUBE_VERT; j++)
 	{
 		VERTEX_INDEX icube = scalar_grid.CubeVertex(iv0,j);
@@ -217,9 +220,6 @@ bool  check_vertex_has_box_around (
 					unsigned char ip = iso_vlist[indx_iso_vlist+k].patch_index;
 					QDUAL_TABLE::DIR_BITS w_edge_flag = qdual_table.connectDir(it,ip);
 					edgeFlag = edgeFlag | w_edge_flag;
-
-					COORD_TYPE *a = new COORD_TYPE[3];
-					scalar_grid.ComputeCoord(iso_vlist[indx_iso_vlist+k].cube_index ,a);
 				}
 			}
 		}
@@ -255,9 +255,7 @@ void compute_restrictions_CList(
 		if (!boundary_grid.Scalar(iv)) 
 		{
 			VERTEX_INDEX indx_iso_vlist_iv = first_isov.Scalar(iv);
-			if (indx_iso_vlist_iv ==-1)
-				continue;
-			else
+			if (indx_iso_vlist_iv != -1)
 			{
 				bool flag_box = check_vertex_has_box_around 
 					(scalar_grid, iv, iso_vlist, isodual_table,
@@ -266,7 +264,6 @@ void compute_restrictions_CList(
 					restriction_Clist.push_back(iv);
 			}
 		}
-
 	}
 
 }
