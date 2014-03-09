@@ -56,7 +56,8 @@ namespace QTRIANGULATE{
 		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
 		const std::vector<DIRECTION_TYPE> &orth_dir,
 		std::unordered_map<QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
-		IJK::ARRAY<VERTEX_INDEX> &collapse_map
+		IJK::ARRAY<VERTEX_INDEX> &collapse_map,
+		const bool printInfo
 		);
 
 	//Check if the vertex is a boundary 
