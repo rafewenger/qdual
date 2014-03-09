@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 
-
+#include <unordered_map>
 #include "ijkisopoly.txx"
 #include "ijkmesh.txx"
 #include "ijkmesh_geom.txx"
@@ -103,24 +103,6 @@ void QDUAL::quality_dual_contouring
 
 
 	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  diagonalMap;
-	/*cout <<"before quad angle based"<<endl;
-	for (int i=0;i<8;i++)
-	{
-		cout <<" "<< dual_isosurface.isopoly_vert[VERT_PER_QUAD*30+i];
-	}
-	cout <<"\n";
-
-
-	hashQuadsDual2GridEdge(diagonalMap, dual_isosurface.isopoly_vert,
-		dual_isosurface.orth_dir, iso_vlist, dual_isosurface.vertex_coord);
-
-	
-	cout <<"original set"<<endl;
-	for (int i=0;i<dual_isosurface.isopoly_vert.size();i++)
-	{
-		cout <<" "<< dual_isosurface.isopoly_vert[i];
-	}
-	cout <<"\n";*/
 
 	if (!dualiso_data.flag_NO_collapse)
 	{
@@ -156,6 +138,13 @@ void QDUAL::quality_dual_contouring
 				iso_vlist[j].restricted_facets=0;
 		}
 		delete[] a;
+
+
+		hashQuadsDual2GridEdge(diagonalMap, dual_isosurface.isopoly_vert,
+		dual_isosurface.orth_dir, iso_vlist, dual_isosurface.vertex_coord);
+		//store the original quads 
+		vector <QUAD_INDEX> origQuadVert = dual_isosurface.isopoly_vert;
+		IJK::reorder_quad_vertices(origQuadVert);
 
 		DUALISO_INDEX_GRID first_isov;
 		first_isov.SetSize(dualiso_data.ScalarGrid());
@@ -205,34 +194,44 @@ void QDUAL::quality_dual_contouring
 			delete[] c;
 		}
 
-
-
-		
+		//
+		//set up the vertex collapse map
+		const int numVertex = dual_isosurface.vertex_coord.size();
+		IJK::ARRAY<VERTEX_INDEX> collapse_map(numVertex,0);
+		//setup collapse_map.
+		setup_collapse_map(collapse_map, numVertex);
 
 		// Collapse Function calls.
 		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
-			dual_isosurface.vertex_coord, dual_isosurface.orth_dir, dualiso_data.qdual_epsilon, dualiso_info);
+			dual_isosurface.vertex_coord, dual_isosurface.orth_dir, 
+			dualiso_data.qdual_epsilon,  collapse_map, dualiso_info);
 
 		// Delete Isolated vertices
 		delIsolated(dual_isosurface.isopoly_vert, isolatedList, dualiso_data.ScalarGrid(),
 			iso_vlist, first_isov, isodual_table, dualiso_data.flag_collapse_debug);
 
+		//Keep track of the quad indices when collapsing,
+		//used by function triangulate_degenerate_quads
+		//and for keeping track of quads that share diagonal vertices.
+		unordered_map<QUAD_INDEX, QUAD_INDEX> track_quad_indices;
+
 		if (dualiso_data.use_quad_tri_mesh)
 		{
-			dual_isosurface.flag_has_degen_quads = triangulate_non_degen_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
-				dual_isosurface.vertex_coord);
+			dual_isosurface.flag_has_degen_quads = 
+				triangulate_degenerate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
+				dual_isosurface.vertex_coord, track_quad_indices);
 			if (dual_isosurface.flag_has_degen_quads)
 				IJK::reorder_quad_vertices(dual_isosurface.isopoly_vert);
 		}
 		else if (dualiso_data.use_triangle_mesh)
 		{
-			dual_isosurface.flag_has_degen_quads =  triangulate_non_degen_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
-				dual_isosurface.vertex_coord);
-			// Triangulate all quads
-
-			triangulate_quads (dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
-				iso_vlist, dual_isosurface.vertex_coord, qdual_table,
-				boundary_grid, dual_isosurface.orth_dir, diagonalMap);
+			dual_isosurface.flag_has_degen_quads =  triangulate_degenerate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
+				dual_isosurface.vertex_coord, track_quad_indices);
+		
+			triangulate_quad_angle_based(dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert,
+				origQuadVert, dual_isosurface.tri_vert, iso_vlist, 
+				dual_isosurface.vertex_coord, boundary_grid, qdual_table, 
+				diagonalMap, dual_isosurface.orth_dir, track_quad_indices, collapse_map);
 		}
 	}
 	// store times

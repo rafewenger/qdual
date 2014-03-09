@@ -35,16 +35,9 @@ namespace QCOLLAPSE{
 		std::vector<COORD_TYPE> & vertex_coord,
         const std::vector<DIRECTION_TYPE> & orth_dir,
 		const float epsilon,
+		IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 		DUALISO_INFO & dualiso_info
 		);
-
-
-	//// Triangulate quads based on their angles
-	//void triangulate_quad_angle_based(
-	//	std::vector<VERTEX_INDEX> & non_degen_quad_vert, // only non degenerate quads
-	//	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
-	//	const std::vector<COORD_TYPE> & vertex_coord
-	//	);
 
 	//Setup the COLLAPSE MAP
 	//param 1 : collapse map

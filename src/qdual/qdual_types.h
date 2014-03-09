@@ -60,6 +60,7 @@ namespace QDUAL {
   typedef unsigned short DEGREE_TYPE;   ///< DEGREE_PER_VERTEX
   typedef unsigned char DIRECTION_TYPE; ///< Direction type.
   typedef unsigned int RANDOM_SEED_TYPE; ///< Random seed type.
+  typedef int QUAD_INDEX; /// iso_quad index type
 
 
   /// Edge index type.

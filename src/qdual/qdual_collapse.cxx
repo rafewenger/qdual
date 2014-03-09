@@ -784,7 +784,7 @@ void capQuadComputation(
 					dualiso_info.cp_info.moved2Edge++;
 					if ( printInfo)
 					{
-						cout <<"***CapQuad**** "
+						cout <<"*** CapQuad **** "
 							<<quad_vert[VERT_PER_QUAD*q] <<" "
 							<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q]]
 						<<" "<<vertex_coord[DIM3*quad_vert[VERT_PER_QUAD*q]+1]
@@ -831,7 +831,7 @@ void capQuadComputation(
 						dualiso_info.cp_info.moved2Edge++;
 						if ( printInfo)
 						{
-							cout <<"***CapQuad*** "
+							cout <<"*** CapQuad *** "
 								<<quad_vert[VERT_PER_QUAD*q] <<" "
 								<<quad_vert[VERT_PER_QUAD*q+1] <<" "
 								<<quad_vert[VERT_PER_QUAD*q+2] <<" "
@@ -943,6 +943,8 @@ void update_quads(
 
 // dual collapse main function
 // NOTE:quads are reordered at the start and again at the end.
+// RETURNS:
+// *The collpase map.
 void QCOLLAPSE::dual_collapse(
 	const DUALISO_DATA & dualiso_data,
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
@@ -951,15 +953,10 @@ void QCOLLAPSE::dual_collapse(
 	std::vector<COORD_TYPE> & vertex_coord,
 	const std::vector<DIRECTION_TYPE> &orth_dir,
 	const float epsilon,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	DUALISO_INFO & dualiso_info
 	)
 {
-
-	//set up the vertex collapse map
-	int num_vertex = vertex_coord.size();
-	IJK::ARRAY<VERTEX_INDEX> collapse_map(num_vertex,0);
-	//setup collapse_map.
-	setup_collapse_map(collapse_map, num_vertex);
 	//Reordering QuadVert 
 	IJK::reorder_quad_vertices(quad_vert);
 
