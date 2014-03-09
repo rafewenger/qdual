@@ -604,9 +604,15 @@ void  QTRIANGULATE::isBoundaryIsoVertex(
 	for (int i = 0; i < NUM_CUBE_FACETS; i++)
 	{
 		bool flagFacetIsBoundary = false;
-		flagFacetIsBoundary = ( 
-			boundary_grid.IsCubeFacetOnGridBoundary(v, i, true)
-			||boundary_grid.IsCubeFacetOnGridBoundary(v, i, false));
+		int orthDir = i%DIM3;
+		if (i<DIM3)
+		{
+			flagFacetIsBoundary = boundary_grid.IsCubeFacetOnGridBoundary(v, orthDir, false);
+		}
+		else
+		{
+			flagFacetIsBoundary = boundary_grid.IsCubeFacetOnGridBoundary(v, orthDir, true);
+		}
 		if (flagFacetIsBoundary)
 		{
 			int it = iso_vlist[vertex].table_index;
@@ -635,7 +641,8 @@ void QTRIANGULATE::triangulate_quad_angle_based(
     std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
     const std::vector<DIRECTION_TYPE> &orth_dir,
 	unordered_map< QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
-	IJK::ARRAY<VERTEX_INDEX> & origCollapse_map
+	IJK::ARRAY<VERTEX_INDEX> & origCollapse_map,
+	const bool printInfo
 	)
 {
 	const int num_quad = quadVert.size()/VERT_PER_QUAD;
@@ -662,12 +669,12 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 		for (int j=0; j<VERT_PER_QUAD; j++)
 		{
 			vertex = QCOLLAPSE::find_vertex(collapse_map,quadVert[q*VERT_PER_QUAD+j]);
-
-			//cout <<"q "<< q<<" j "<<j<< " " <<quadVert[q*VERT_PER_QUAD+j];
-			//cout <<" mappped to "<< vertex << " degree "<< iso_vlist[vertex].ver_degree <<endl;
-			//cout <<"cube_coord "<<iso_vlist[vertex].cube_coord[0]<<" "<<iso_vlist[vertex].cube_coord[1]
-			//<<" "<<iso_vlist[vertex].cube_coord[2]<<endl;
-			
+			if(printInfo){
+				cout <<"q "<< q<<" j "<<j<< " " <<quadVert[q*VERT_PER_QUAD+j];
+				cout <<" mappped to "<< vertex << " degree "<< iso_vlist[vertex].ver_degree <<endl;
+				cout <<"cube_coord "<<iso_vlist[vertex].cube_coord[0]<<" "<<iso_vlist[vertex].cube_coord[1]
+				<<" "<<iso_vlist[vertex].cube_coord[2]<<endl;
+			}
 
 			if (iso_vlist[vertex].ver_degree == 2)
 			{
@@ -677,6 +684,9 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 					qdual_table, flag_boundary);
 				flag_deg2 = true;
 				//break;
+				if(printInfo){
+					cout <<"vertex "<<vertex <<" boundary "<< flag_boundary <<endl;
+				}
 			}
 		}
 
@@ -756,9 +766,10 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 
             //degree 2 and not boundary   
 			if (flag_deg2 && !flag_boundary)
-			{	
-				//cout <<"flag_deg2 && !flag_boundary "<< endl;
-
+			{
+				if(printInfo){
+					cout <<"flag_deg2 && !flag_boundary "<< endl;
+				}
 				if (cos_min_1 < cos_min_2)
 				{
 					push_triangle(C, B, vertex, tri_vert);
@@ -771,13 +782,17 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 					{
 						// MAP vertex to C.
 						collapse_map[vertex] = C;
-						//cout <<vertex<<" mapped to " << C <<endl;
+						if(printInfo){
+							cout <<vertex<<" mapped to " << C <<endl;
+						}
 					}
 					else
 					{
 						// MAP vertex to D
 						collapse_map[vertex] = D;
-						//cout <<vertex<<" mapped to " << D <<endl;
+						if(printInfo){
+							cout <<vertex<<" mapped to " << D <<endl;
+						}
 					}
 
 					push_triangle(D, C, B, tri_vert);
@@ -796,10 +811,15 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 				{
 					push_triangle( quadIndices[0], quadIndices[2], quadIndices[3], tri_vert);
 					push_triangle(quadIndices[3], quadIndices[2], quadIndices[1], tri_vert);
+					if(printInfo){
+						cout <<"diagonal "<<endl;
+					}
 				}
 				else
 				{ // degree 2
-					//cout <<"generic angle based"<<endl;
+					if(printInfo){
+						cout <<"generic angle based"<<endl;
+					}
 					if (cos_min_1 < cos_min_2)
 					{
 						push_triangle(vertex, C, B, tri_vert);

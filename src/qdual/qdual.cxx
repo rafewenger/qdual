@@ -132,6 +132,7 @@ void QDUAL::quality_dual_contouring
 
 			isBoundaryIsoVertex(j, iso_vlist, boundary_grid,
 				qdual_table, flag_boundary);
+
 			if (flag_boundary)
 				iso_vlist[j].restricted_facets=255;
 			else
@@ -216,6 +217,8 @@ void QDUAL::quality_dual_contouring
 		//and for keeping track of quads that share diagonal vertices.
 		unordered_map<QUAD_INDEX, QUAD_INDEX> track_quad_indices;
 
+		
+
 		if (dualiso_data.use_quad_tri_mesh)
 		{
 			dual_isosurface.flag_has_degen_quads = 
@@ -228,11 +231,13 @@ void QDUAL::quality_dual_contouring
 		{
 			dual_isosurface.flag_has_degen_quads =  triangulate_degenerate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord, track_quad_indices);
-		
+
+			flag_boundary_cubes(boundary_grid);
 			triangulate_quad_angle_based(dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert,
 				origQuadVert, dual_isosurface.tri_vert, iso_vlist, 
 				dual_isosurface.vertex_coord, boundary_grid, qdual_table, 
-				diagonalMap, dual_isosurface.orth_dir, track_quad_indices, collapse_map);
+				diagonalMap, dual_isosurface.orth_dir, track_quad_indices, collapse_map,
+				dualiso_data.flag_collapse_debug);
 		}
 	}
 	// store times
