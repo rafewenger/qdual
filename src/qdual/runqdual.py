@@ -14,7 +14,11 @@ qdual_command_line = 'qdual -s -trimesh -move_vertex -o ' + offFile + ' ' + qdua
 
 print 'Executing: ', qdual_command_line
 
-os.system(qdual_command_line)
+ret_code = os.system(qdual_command_line)
+if (ret_code != 0):
+    print 'qdual return code: ', ret_code
+    print 'Exiting ', sys.argv[0]
+    exit(ret_code)
 
 ijkmeshinfo_command_line = 'ijkmeshinfo -manifold -terse out.off'
 os.system(ijkmeshinfo_command_line)
