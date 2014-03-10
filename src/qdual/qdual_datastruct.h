@@ -140,6 +140,7 @@ namespace QDUAL {
 		bool use_triangle_mesh;
 		bool use_quad_tri_mesh;
     RANDOM_SEED_TYPE random_seed;
+    int random_num_intervals;
 
 		QUAD_TRI_METHOD quad_tri_method;
 

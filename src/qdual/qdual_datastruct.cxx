@@ -73,6 +73,9 @@ void DUALISO_DATA_FLAGS::Init()
   flag_cap_col = true; 
   flag_V1w_close = true;
   flag_delete_isolate = false;
+
+  random_seed = 10;
+  random_num_intervals = 1000;
 }
 
 
