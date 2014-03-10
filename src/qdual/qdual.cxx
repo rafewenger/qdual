@@ -124,6 +124,7 @@ void QDUAL::quality_dual_contouring
 
 			iso_vlist[j].flag_restrictionC = false;
 			iso_vlist[j].flag_isolated = false;
+			iso_vlist[j].flag_fixed = false;
 			(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index,a);
 			//Set iso_vlist[j].cube_coord
 			for (int d=0; d<DIM3; d++)

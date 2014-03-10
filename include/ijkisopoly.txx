@@ -992,6 +992,7 @@ namespace IJK {
 	PI_TYPE restricted_facets;
 	bool flag_restrictionC;
 	bool flag_isolated;
+	bool flag_fixed;
 	std::vector<COORD_TYPE> cube_coord; 
   };
 

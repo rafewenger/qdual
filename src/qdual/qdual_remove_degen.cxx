@@ -535,7 +535,6 @@ void update_tris(
 	)
 {
 	const int tri_vert_size = tri_vert.size();
-
 	for (int v=0; v<tri_vert_size; v++)
 	{
 		int k = tri_vert[v];
@@ -655,7 +654,6 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	IJK::ARRAY<VERTEX_INDEX> collapse_map(num_vertex,0);
 	//setup collapse_map.
 	QCOLLAPSE::setup_collapse_map(collapse_map, num_vertex);
-
 
     vector <QUAD_INDEX> quadIndices;
 	for (int q=0; q < num_quad; q++)
@@ -783,7 +781,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 						// MAP vertex to C.
 						collapse_map[vertex] = C;
 						if(printInfo){
-							cout <<vertex<<" mapped to " << C <<endl;
+							cout <<vertex<<" mapped2 to " << C <<endl;
 						}
 					}
 					else
@@ -791,7 +789,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 						// MAP vertex to D
 						collapse_map[vertex] = D;
 						if(printInfo){
-							cout <<vertex<<" mapped to " << D <<endl;
+							cout <<vertex<<" mapped2 to " << D <<endl;
 						}
 					}
 
@@ -824,11 +822,19 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 					{
 						push_triangle(vertex, C, B, tri_vert);
 						push_triangle(vertex, B, D, tri_vert);
+						if(printInfo){
+							cout <<vertex<<" "<<C<<" "<<B<<endl;
+							cout <<vertex<<" "<<B<<" "<<D<<endl;
+						}
 					}
 					else
 					{
 						push_triangle(D, C, B, tri_vert);
 						push_triangle(vertex, C, D, tri_vert);
+						if(printInfo){
+							cout <<D<<" "<<C<<" "<<B<<endl;
+							cout <<vertex<<" "<<C<<" "<<D<<endl;
+						}
 					}
 				}
 			}

@@ -478,11 +478,14 @@ void collapse_across_edges(
 							== scalar_grid.ComputeVertexIndex(&closest_edge_base_coord[0]))
 						{
 							if (is_permitted_collapse(iso_vlist, endPt2,  &(edge_base_coord[0]),
-								closest_edge_dir, EDGE))
+								closest_edge_dir, EDGE)
+								&& (iso_vlist[endPt2].flag_fixed == false))
 							{ 
 								if (print_info){
 									print_collapse_info("collapse across edges [permitted]", 
 										endPt1, endPt2, &(edge_base_coord[0]));
+									cout <<"endPt1 "<< endPt1<<" "<< iso_vlist[endPt1].flag_fixed <<endl;
+										cout <<"endPt2 "<< endPt2<<" "<< iso_vlist[endPt2].flag_fixed <<endl;
 									cout <<"endpt2 "<< endPt2<<"("<< endPt2_coord[0]<<","<< endPt2_coord[1]<<","<< endPt2_coord[2]<<"\n";
 									cout <<"endpt1 "<< endPt1<<"("<< endPt1_coord[0]<<","<< endPt1_coord[1]<<","<< endPt1_coord[2]<<"\n";
 									cout <<"edge base "<< edge_base_coord[0]<<","
@@ -541,11 +544,14 @@ void collapse_across_edges(
 							if (scalar_grid.ComputeVertexIndex(&edge_base_coord[0])
 								== scalar_grid.ComputeVertexIndex(&closest_edge_base_coord[0]))
 								if (is_permitted_collapse(iso_vlist, endPt1,  &(edge_base_coord[0]),
-									closest_edge_dir, EDGE))
+									closest_edge_dir, EDGE) 
+									&& (iso_vlist[endPt1].flag_fixed == false))
 								{ 
 									if (print_info){
 										print_collapse_info("collapse across edges [permitted]", 
 											endPt2, endPt1, &(edge_base_coord[0]));
+										cout <<"endPt1 "<< endPt1<<" "<< iso_vlist[endPt1].flag_fixed <<endl;
+										cout <<"endPt2 "<< endPt2<<" "<< iso_vlist[endPt2].flag_fixed <<endl;
 										int v=0;
 										v=scalar_grid.ComputeVertexIndex(&edge_base_coord[0]);
 										cout <<"edgebase vertex index "<<v<<endl;
@@ -719,7 +725,7 @@ void collapseToEdge(
 	const int q, //qth quad
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<COORD_TYPE> & vertex_coord,
-	const std::vector<DUAL_ISOVERT> & iso_vlist,
+	std::vector<DUAL_ISOVERT> & iso_vlist,
 	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	IJK::ARRAY<GRID_COORD_TYPE> &edgeBase,
 	int & edgeDir,
@@ -736,6 +742,8 @@ void collapseToEdge(
 			update_collapse_edges(collapse_map, v, v2);
 		}
 	}
+	iso_vlist[v].flag_fixed = true;
+	
 	intersectQuadAndEdgeAndMoveVert(v, q, quad_vert, edgeBase,
 		edgeDir, vertex_coord, dualiso_info );
 }
@@ -751,7 +759,7 @@ void capQuadComputation(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	const float epsilon,
 	const int notDegreeThree,
-	const std::vector<DUAL_ISOVERT> & iso_vlist,
+	std::vector<DUAL_ISOVERT> & iso_vlist,
 	IJK::ARRAY<GRID_COORD_TYPE> &edgeBase,
 	int & edgeDir,
 	bool &capQuad,
