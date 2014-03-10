@@ -388,8 +388,9 @@ void QDUAL::position_dual_isovertices_random
     for (int d = 0; d < dimension; d++) {
       COORD_TYPE x = rand()%(num_intervals+1);
 
-      xmin = 0.0;
-      xmax = 1.0;
+      // Vertices are not on the boundary of the cubes.
+      xmin = 0.0001;
+      xmax = 0.9999;
 
       if (num_connect == dimension) {
         mask = (1 << d);
