@@ -361,11 +361,11 @@ void QDUAL::position_dual_isovertices_random
  const std::vector<DUAL_ISOVERT> & iso_vlist,
  const RANDOM_SEED_TYPE seed,
  const bool flag_V1w_close,
+ const int num_intervals,
  COORD_TYPE * coord)
 {
   const int dimension = scalar_grid.Dimension();
   ARRAY<COORD_TYPE> cube_coord(dimension);
-  const int NUM_INTERVALS(1000);
   COORD_TYPE xmin, xmax;
   QDUAL_TABLE::DIR_BITS mask;
 
@@ -386,10 +386,11 @@ void QDUAL::position_dual_isovertices_random
     }
 
     for (int d = 0; d < dimension; d++) {
-      COORD_TYPE x = rand()%(NUM_INTERVALS+1);
+      COORD_TYPE x = rand()%(num_intervals+1);
 
-      xmin = 0.0;
-      xmax = 1.0;
+      // Vertices are not on the boundary of the cubes.
+      xmin = 0.0001;
+      xmax = 0.9999;
 
       if (num_connect == dimension) {
         mask = (1 << d);
@@ -406,7 +407,7 @@ void QDUAL::position_dual_isovertices_random
         if ((mask & connect_dir) != 0) { xmin = 1.0/3.0; }
       }
 
-      x = (x/NUM_INTERVALS)*(xmax-xmin) + xmin;
+      x = (x/num_intervals)*(xmax-xmin) + xmin;
       coord[i*dimension+d] = cube_coord[d] + x;
     }
   }
@@ -421,12 +422,13 @@ void QDUAL::position_dual_isovertices_random
  const std::vector<DUAL_ISOVERT> & iso_vlist,
  const RANDOM_SEED_TYPE seed,
  const bool flag_V1w_close,
+ const int num_intervals,
  std::vector<COORD_TYPE> & coord)
 {
   const int dimension = scalar_grid.Dimension();
 
   coord.resize(iso_vlist.size()*dimension);
   position_dual_isovertices_random
-    (scalar_grid, qdual_table, iso_vlist, seed, flag_V1w_close,
+    (scalar_grid, qdual_table, iso_vlist, seed, flag_V1w_close, num_intervals,
      &(coord.front()));
 }

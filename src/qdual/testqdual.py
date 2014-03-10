@@ -9,6 +9,7 @@ axisSize = 20
 maxVal = 5
 isovalue = 2.1
 seed = 12345
+epsilon = 0.3
 
 # Function runqdual
 def runqdual():
@@ -19,7 +20,10 @@ def runqdual():
     sys.stdout.flush()
     os.system(ijkgenscalar_command_line);
 
-    qdual_command_line = 'qdual -s -trimesh -move_vertex -o ' + offFile + ' ' + str(isovalue) + ' random.nrrd';
+    qdual_command_line = 'qdual -s -trimesh -move_vertex ' + \
+                         '-epsilon ' + str(epsilon) + \
+                         ' -o ' + offFile + ' ' + str(isovalue) + \
+                         ' random.nrrd';
     
     print 'Executing: ', qdual_command_line;
     sys.stdout.flush()
@@ -39,10 +43,13 @@ def runqdual():
 
 # main routine
 if (len(sys.argv) > 1) :
-    numTest = sys.argv[1]
+    numTest = int(sys.argv[1]);
+
+if (len(sys.argv) > 2) :
+    seed = int(sys.argv[2]);
 
 for i in range(numTest):
-    seed = seed+10*i;
+    seed = seed+10;
     runqdual();
 
 

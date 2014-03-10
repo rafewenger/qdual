@@ -360,10 +360,11 @@ void QDUAL::dual_contouring
 		QDUAL_TABLE qdual_table(DIM3);
 
     RANDOM_SEED_TYPE seed = dualiso_data_flags.random_seed;
+    int num_intervals = dualiso_data_flags.random_num_intervals;
     bool flag_V1w_close = dualiso_data_flags.flag_V1w_close;
     position_dual_isovertices_random
-			(scalar_grid, qdual_table, iso_vlist, seed, 
-       flag_V1w_close, vertex_coord);
+			(scalar_grid, qdual_table, iso_vlist, seed, flag_V1w_close, 
+       num_intervals, vertex_coord);
   }	
   else {
 

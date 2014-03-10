@@ -141,6 +141,7 @@ namespace QDUAL {
    const std::vector<DUAL_ISOVERT> & iso_vlist,
    const RANDOM_SEED_TYPE seed,
    const bool flag_V1w_close,
+   const int num_intervals,
    COORD_TYPE * coord);
 
   /// Position dual isosurface vertices at random location in cube.
@@ -152,6 +153,7 @@ namespace QDUAL {
    const std::vector<DUAL_ISOVERT> & iso_vlist,
    const RANDOM_SEED_TYPE seed,
    const bool flag_V1w_close,
+   const int num_intervals,
    std::vector<COORD_TYPE> & coord);
 
 };

@@ -20,7 +20,7 @@ if (ret_code != 0):
     print 'Exiting ', sys.argv[0]
     exit(ret_code)
 
-ijkmeshinfo_command_line = 'ijkmeshinfo -manifold -terse out.off'
+ijkmeshinfo_command_line = 'ijkmeshinfo -manifold -report_deep -terse out.off'
 os.system(ijkmeshinfo_command_line)
 
 ijkmeshinfo_command_line = 'ijkmeshinfo -out_min_angle out.off'
