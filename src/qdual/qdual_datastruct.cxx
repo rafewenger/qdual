@@ -218,13 +218,24 @@ void QDUAL::DUALISO_TIME::Clear()
 
 void QDUAL::DUALISO_TIME::Add(const DUALISO_TIME & dualiso_time)
 {
-  preprocessing += dualiso_time.preprocessing;
-  extract += dualiso_time.extract;
-  merge += dualiso_time.merge;
-  position += dualiso_time.position;
-  total += dualiso_time.total;
+	preprocessing += dualiso_time.preprocessing;
+	extract += dualiso_time.extract;
+	merge += dualiso_time.merge;
+	position += dualiso_time.position;
+	total += dualiso_time.total;
 }
 
+/// Same function as above include times for quality dual
+void QDUAL::DUALISO_TIME::Add(const DUALISO_TIME & dualiso_time, const QDUAL_TIME qt)
+{
+	preprocessing += dualiso_time.preprocessing;
+	extract += dualiso_time.extract;
+	merge += dualiso_time.merge;
+	position += dualiso_time.position;
+	total += dualiso_time.total;
+
+	qdual_t = qt;
+}
 // **************************************************
 // INFO CLASSES
 // **************************************************

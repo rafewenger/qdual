@@ -6,8 +6,10 @@
 #include <utility>
 #include <cmath> 
 #include <algorithm>
+
 #include "ijk.txx"
 #include "ijkmesh.txx"
+#include "ijktime.txx"
 #include "qdual_types.h"
 #include "qdual_datastruct.h"
 #include "qdual_restrictions.h"

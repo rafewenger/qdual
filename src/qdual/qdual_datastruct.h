@@ -103,7 +103,7 @@ namespace QDUAL {
 		/// Only for 2D surface embedded in 3D.
 		/// Not always set.
 		VERTEX_INDEX_ARRAY tri_vert;
-		
+
 		bool flag_has_degen_quads;
 
 		/// cube_containing_isopoly[i] = cube containing i'th isopoly.
@@ -139,8 +139,8 @@ namespace QDUAL {
 		VERTEX_POSITION_METHOD vertex_position_method;
 		bool use_triangle_mesh;
 		bool use_quad_tri_mesh;
-    RANDOM_SEED_TYPE random_seed;
-    int random_num_intervals;
+		RANDOM_SEED_TYPE random_seed;
+		int random_num_intervals;
 
 		QUAD_TRI_METHOD quad_tri_method;
 
@@ -178,10 +178,10 @@ namespace QDUAL {
 		bool flag_cap_col;// cap collapse
 		bool flag_delete_isolate;
 
-    /// flag_V1w_close Controls generation of random vertex positions.
-    ///   If true, isosurface vertices with degree dimension
-    ///       are placed 1/3 from the corner grid vertex.
-    bool flag_V1w_close;
+		/// flag_V1w_close Controls generation of random vertex positions.
+		///   If true, isosurface vertices with degree dimension
+		///       are placed 1/3 from the corner grid vertex.
+		bool flag_V1w_close;
 
 
 	public:
@@ -266,6 +266,31 @@ namespace QDUAL {
 		bool Check(IJK::ERROR & error) const;
 	};
 
+	/// Quality dual timings  
+	class QDUAL_TIME
+	{
+	public:
+		// all times are in seconds
+		float collapse_caps;
+		float collapse_across_facets;
+		float collapse_across_edges;
+		float collapse_across_vertices;
+		float dual_collapse;
+
+		float set_restrictions;
+		float triangulate;
+
+		QDUAL_TIME()
+		{
+			collapse_caps=0.0;
+			collapse_across_facets=0.0;
+			collapse_across_edges=0.0;
+			collapse_across_vertices=0.0;
+			dual_collapse=0.0;
+			set_restrictions=0.0;
+			triangulate=0.0;
+		};
+	};
 
 	// **************************************************
 	// DUALISO TIME
@@ -278,6 +303,7 @@ namespace QDUAL {
 	class DUALISO_TIME {
 
 	public:
+		QDUAL_TIME qdual_t;
 		// all times are in seconds
 		float preprocessing;  
 		// time to create data structure for faster isosurface extraction
@@ -289,6 +315,7 @@ namespace QDUAL {
 		DUALISO_TIME();
 		void Clear();
 		void Add(const DUALISO_TIME & dualiso_time);
+		void Add(const DUALISO_TIME & dualiso_time, const QDUAL_TIME qt);
 	};
 
 	// **************************************************
@@ -388,7 +415,7 @@ namespace QDUAL {
 		int permitted_facet_restriction;
 		int permitted_vertex_restriction;
 		int permitted_edge_restriction;
-		
+
 		int not_permitted_facet_restriction;
 		int not_permitted_vertex_restriction;
 		int not_permitted_edge_restriction;
@@ -427,6 +454,8 @@ namespace QDUAL {
 		}
 	};
 
+	
+
 	// **************************************************
 	// DUALISO INFO
 	// **************************************************
@@ -444,6 +473,7 @@ namespace QDUAL {
 		QDUALISO_COLLAPSE_INFO col_info; // keep track of collapse info
 		MOVE_VERTICES_INFO mv_info; //move vertices info
 		CAP_QUAD_INFO cp_info;
+		QDUAL_TIME qdual_time;
 		DUALISO_INFO();
 		DUALISO_INFO(const int dimension);
 

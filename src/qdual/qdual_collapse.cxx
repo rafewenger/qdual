@@ -989,24 +989,38 @@ void QCOLLAPSE::dual_collapse(
 {
 	//Reordering QuadVert 
 	IJK::reorder_quad_vertices(quad_vert);
+	clock_t t0,t1,t2,t3,t4;
+	t0 = clock();
 
     //CYCLIC ORDER
-    if (dualiso_data.flag_cap_col)
-	collapse_caps(scalar_grid, quad_vert, vertex_coord, orth_dir, 
-		epsilon, iso_vlist, collapse_map, dualiso_info, dualiso_data.flag_collapse_debug);
-	
+	if (dualiso_data.flag_cap_col)
+	{
+		collapse_caps(scalar_grid, quad_vert, vertex_coord, orth_dir, 
+			epsilon, iso_vlist, collapse_map, dualiso_info, dualiso_data.flag_collapse_debug);
+	}
+	t1=clock();
+
 	collapse_across_facets(scalar_grid, iso_vlist, quad_vert,
 	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	t2=clock();
 
 	collapse_across_edges(scalar_grid, iso_vlist, quad_vert,
 	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	t3=clock();
 
 	collapse_across_vertices(scalar_grid, iso_vlist, quad_vert, 
 	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
-	
+	t4=clock();
+
 	update_quads(collapse_map, quad_vert);
 	//reorder the quads back to the original.
 	IJK::reorder_quad_vertices(quad_vert);
+
+	IJK::clock2seconds(t1-t0, dualiso_info.qdual_time.collapse_caps);
+	IJK::clock2seconds(t2-t1, dualiso_info.qdual_time.collapse_across_facets);
+	IJK::clock2seconds(t3-t2, dualiso_info.qdual_time.collapse_across_edges);
+	IJK::clock2seconds(t4-t3, dualiso_info.qdual_time.collapse_across_vertices);
+
 }
 
 void QCOLLAPSE::delIsolated(

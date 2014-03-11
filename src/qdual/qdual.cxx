@@ -86,15 +86,6 @@ void QDUAL::quality_dual_contouring
 		isodual_table(dimension, flag_separate_neg, 
 		flag_always_separate_opposite);
 
-	/* DEPRACATED
-	dual_contouring
-	(dualiso_data.ScalarGrid(), isovalue, vpos_method, 
-	flag_select_split, flag_separate_neg,
-	dual_isosurface.isopoly_vert, dual_isosurface.orth_dir,
-	dual_isosurface.vertex_coord, iso_vlist,
-	isodual_table, merge_data, dualiso_info);
-	*/
-
 	dual_contouring
 		(dualiso_data.ScalarGrid(), isovalue, dualiso_data,
 		dual_isosurface.isopoly_vert, dual_isosurface.orth_dir,
@@ -106,6 +97,8 @@ void QDUAL::quality_dual_contouring
 
 	if (!dualiso_data.flag_NO_collapse)
 	{
+		clock_t t0,t1,t3,t2,t4,t5;
+
 		// set up restriction conditions
 		QDUAL_TABLE qdual_table(DIM3);
 
@@ -121,16 +114,16 @@ void QDUAL::quality_dual_contouring
 		for (int j=0;j<iso_vlist.size();j++)
 		{
 			iso_vlist[j].ver_degree=0;
-
 			iso_vlist[j].flag_restrictionC = false;
 			iso_vlist[j].flag_isolated = false;
 			iso_vlist[j].flag_fixed = false;
+
 			(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index,a);
 			//Set iso_vlist[j].cube_coord
 			for (int d=0; d<DIM3; d++)
 				iso_vlist[j].cube_coord.push_back(a[d]);
-			bool flag_boundary = false;
 
+			bool flag_boundary = false;
 			isBoundaryIsoVertex(j, iso_vlist, boundary_grid,
 				qdual_table, flag_boundary);
 
@@ -143,7 +136,7 @@ void QDUAL::quality_dual_contouring
 
 
 		hashQuadsDual2GridEdge(diagonalMap, dual_isosurface.isopoly_vert,
-		dual_isosurface.orth_dir, iso_vlist, dual_isosurface.vertex_coord);
+			dual_isosurface.orth_dir, iso_vlist, dual_isosurface.vertex_coord);
 		//store the original quads 
 		vector <QUAD_INDEX> origQuadVert = dual_isosurface.isopoly_vert;
 		IJK::reorder_quad_vertices(origQuadVert);
@@ -158,16 +151,15 @@ void QDUAL::quality_dual_contouring
 			first_isov.Set(iso_vlist[i].cube_index, i);
 		}
 
-
+		t0=clock();
 		// Setup sep  vert
 		compute_sep_vert(dualiso_data.ScalarGrid(), iso_vlist, qdual_table);
-
 		vector<VERTEX_INDEX> isolatedList; // keep track of the isolated vertices.
-
 		set_restrictions (dualiso_data,  dualiso_data.ScalarGrid(), isovalue,  dual_isosurface.isopoly_vert,
 			iso_vlist, isodual_table, first_isov, qdual_table,
 			dual_isosurface.vertex_coord, dualiso_info, boundary_grid, isolatedList);
-
+		t1=clock();
+		IJK::clock2seconds(t1-t0, dualiso_info.qdual_time.set_restrictions);
 
 		if (dualiso_data.flag_collapse_debug)
 		{
@@ -203,10 +195,13 @@ void QDUAL::quality_dual_contouring
 		//setup collapse_map.
 		setup_collapse_map(collapse_map, numVertex);
 
+		t2=clock();
 		// Collapse Function calls.
 		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
 			dual_isosurface.vertex_coord, dual_isosurface.orth_dir, 
 			dualiso_data.qdual_epsilon,  collapse_map, dualiso_info);
+		t3=clock();
+		IJK::clock2seconds(t3-t2, dualiso_info.qdual_time.dual_collapse);
 
 		// Delete Isolated vertices
 		if(dualiso_data.flag_delete_isolate)
@@ -217,9 +212,6 @@ void QDUAL::quality_dual_contouring
 		//used by function triangulate_degenerate_quads
 		//and for keeping track of quads that share diagonal vertices.
 		unordered_map<QUAD_INDEX, QUAD_INDEX> track_quad_indices;
-
-		
-
 		if (dualiso_data.use_quad_tri_mesh)
 		{
 			dual_isosurface.flag_has_degen_quads = 
@@ -230,6 +222,7 @@ void QDUAL::quality_dual_contouring
 		}
 		else if (dualiso_data.use_triangle_mesh)
 		{
+			t4=clock();
 			dual_isosurface.flag_has_degen_quads =  triangulate_degenerate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord, track_quad_indices);
 
@@ -239,6 +232,8 @@ void QDUAL::quality_dual_contouring
 				dual_isosurface.vertex_coord, boundary_grid, qdual_table, 
 				diagonalMap, dual_isosurface.orth_dir, track_quad_indices, collapse_map,
 				dualiso_data.flag_collapse_debug);
+			t5=clock();
+			IJK::clock2seconds(t5-t4, dualiso_info.qdual_time.triangulate);
 		}
 	}
 	// store times

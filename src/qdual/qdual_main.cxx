@@ -124,7 +124,10 @@ void construct_isosurface
 		dualiso_info.grid.num_cubes = num_cubes;
 
 		quality_dual_contouring(dualiso_data, isovalue, dual_isosurface, dualiso_info);
-		dualiso_time.Add(dualiso_info.time);
+		//Added a new version to include times for quality dual
+
+		//dualiso_time.Add(dualiso_info.time);
+		dualiso_time.Add(dualiso_info.time, dualiso_info.qdual_time);
 
 		OUTPUT_INFO output_info;
 		set_output_info(io_info, i, output_info);

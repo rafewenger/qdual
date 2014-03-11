@@ -1000,7 +1000,7 @@ void QDUAL::report_iso_info
 	}
 	if(output_info.flag_cap_col)
 	{
-		cout <<"Cap Collapse Iinfo:"<<endl;
+		cout <<"Cap Collapse info:"<<endl;
 		cout <<"	Number of move to edge "<<dualiso_info.cp_info.moved2Edge <<endl;
 		cout <<"	Number of cap quad "<<dualiso_info.cp_info.numCapQuad<<endl;
 	}
@@ -1075,6 +1075,26 @@ void QDUAL::report_dualiso_time
 	cout << "    Time to position "
 		<< mesh_type_string << " vertices: "
 		<< dualiso_time.position << " seconds." << endl;
+
+	if (!io_info.flag_NO_collapse)
+	{
+		cout <<"\nQuality dual timings"<<endl;
+		cout <<"Time to compute restrictions " 
+			<< dualiso_time.qdual_t.set_restrictions << " seconds"<<endl;
+		cout <<"Total Time to compute collapses " 
+			<< dualiso_time.qdual_t.dual_collapse << " seconds"<<endl;
+		cout <<"	Time to collapse across facets " 
+			<< dualiso_time.qdual_t.collapse_across_facets << " seconds"<<endl;
+		cout <<"	Time to collapse across edges " 
+			<< dualiso_time.qdual_t.collapse_across_edges << " seconds"<<endl;
+		cout <<"	Time to collapse across vertices " 
+			<< dualiso_time.qdual_t.collapse_across_vertices << " seconds"<<endl;
+		cout <<"	Time to collapse caps " 
+			<< dualiso_time.qdual_t.collapse_caps << " seconds"<<endl;
+		cout <<"Time to triangulate quadrilaterals " 
+			<< dualiso_time.qdual_t.triangulate << " seconds"<<endl;
+		cout <<endl;
+	}
 }
 
 
