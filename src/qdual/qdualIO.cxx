@@ -1062,45 +1062,53 @@ void QDUAL::report_iso_info
 // **************************************************
 
 void QDUAL::report_dualiso_time
-	(const IO_INFO & io_info, const DUALISO_TIME & dualiso_time, 
+	(const IO_INFO & io_info, const QDUAL_TIME & qdual_time, 
 	const char * mesh_type_string)
+
 {
 	cout << "CPU time to run ijkdual: " 
-		<< dualiso_time.total << " seconds." << endl;
+		<< qdual_time.total << " seconds." << endl;
 	cout << "    Time to extract " << mesh_type_string << " triangles: "
-		<< dualiso_time.extract << " seconds." << endl;
+		<< qdual_time.extract << " seconds." << endl;
 	cout << "    Time to merge identical "
 		<< mesh_type_string << " vertices: " 
-		<< dualiso_time.merge << " seconds." << endl;
+		<< qdual_time.merge << " seconds." << endl;
 	cout << "    Time to position "
 		<< mesh_type_string << " vertices: "
-		<< dualiso_time.position << " seconds." << endl;
+		<< qdual_time.position << " seconds." << endl;
 
 	if (!io_info.flag_NO_collapse)
 	{
 		cout <<"\nQuality dual timings"<<endl;
 		cout <<"Time to compute restrictions " 
-			<< dualiso_time.qdual_t.set_restrictions << " seconds"<<endl;
+			<< qdual_time.set_restrictions << " seconds"<<endl;
 		cout <<"Total Time to compute collapses " 
-			<< dualiso_time.qdual_t.dual_collapse << " seconds"<<endl;
+			<< qdual_time.dual_collapse << " seconds"<<endl;
 		cout <<"	Time to collapse across facets " 
-			<< dualiso_time.qdual_t.collapse_across_facets << " seconds"<<endl;
+			<< qdual_time.collapse_across_facets << " seconds"<<endl;
 		cout <<"	Time to collapse across edges " 
-			<< dualiso_time.qdual_t.collapse_across_edges << " seconds"<<endl;
+			<< qdual_time.collapse_across_edges << " seconds"<<endl;
 		cout <<"	Time to collapse across vertices " 
-			<< dualiso_time.qdual_t.collapse_across_vertices << " seconds"<<endl;
+			<< qdual_time.collapse_across_vertices << " seconds"<<endl;
 		cout <<"	Time to collapse caps " 
-			<< dualiso_time.qdual_t.collapse_caps << " seconds"<<endl;
+			<< qdual_time.collapse_caps << " seconds"<<endl;
 		cout <<"Time to triangulate quadrilaterals " 
-			<< dualiso_time.qdual_t.triangulate << " seconds"<<endl;
+			<< qdual_time.triangulate << " seconds"<<endl;
+		cout <<"Total time [set restricitons+collapse+triangulate] "
+			<< qdual_time.dual_collapse+qdual_time.triangulate
+			+qdual_time.set_restrictions <<"  seconds "<<endl;
 		cout <<endl;
 	}
 }
 
-
+// red
+//void QDUAL::report_time
+//	(const IO_INFO & io_info, const IO_TIME & io_time, 
+//	const DUALISO_TIME & dualiso_time, const double total_elapsed_time)
 void QDUAL::report_time
 	(const IO_INFO & io_info, const IO_TIME & io_time, 
-	const DUALISO_TIME & dualiso_time, const double total_elapsed_time)
+	const QDUAL_TIME & qdual_time, const double total_elapsed_time)
+
 {
 	const char * ISOSURFACE_STRING = "isosurface";
 	const char * INTERVAL_VOLUME_STRING = "interval volume";
@@ -1111,7 +1119,7 @@ void QDUAL::report_time
 	cout << "Time to read file " << io_info.input_filename << ": "
 		<< io_time.read_nrrd_time << " seconds." << endl;
 
-	report_dualiso_time(io_info, dualiso_time, mesh_type_string);
+	report_dualiso_time(io_info, qdual_time, mesh_type_string);
 	if (!io_info.nowrite_flag) {
 		cout << "Time to write "
 			<< mesh_type_string << ": " 
@@ -1308,7 +1316,7 @@ namespace {
 // **************************************************
 
 void QDUAL::set_dualiso_data
-	(const IO_INFO & io_info, DUALISO_DATA & dualiso_data, DUALISO_TIME & dualiso_time)
+	(const IO_INFO & io_info, DUALISO_DATA & dualiso_data, QDUAL_TIME & qdual_time)
 {
 	PROCEDURE_ERROR error("set_dualiso_data");
 

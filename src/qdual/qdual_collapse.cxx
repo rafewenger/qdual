@@ -1016,10 +1016,10 @@ void QCOLLAPSE::dual_collapse(
 	//reorder the quads back to the original.
 	IJK::reorder_quad_vertices(quad_vert);
 
-	IJK::clock2seconds(t1-t0, dualiso_info.qdual_time.collapse_caps);
-	IJK::clock2seconds(t2-t1, dualiso_info.qdual_time.collapse_across_facets);
-	IJK::clock2seconds(t3-t2, dualiso_info.qdual_time.collapse_across_edges);
-	IJK::clock2seconds(t4-t3, dualiso_info.qdual_time.collapse_across_vertices);
+	IJK::clock2seconds(t1-t0, dualiso_info.time.collapse_caps);
+	IJK::clock2seconds(t2-t1, dualiso_info.time.collapse_across_facets);
+	IJK::clock2seconds(t3-t2, dualiso_info.time.collapse_across_edges);
+	IJK::clock2seconds(t4-t3, dualiso_info.time.collapse_across_vertices);
 
 }
 

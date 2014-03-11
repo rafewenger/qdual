@@ -204,38 +204,51 @@ bool DUALISO_DATA::Check(IJK::ERROR & error) const
 QDUAL::DUALISO_TIME::DUALISO_TIME()
 // constructor
 {
-  Clear();
 }
 
-void QDUAL::DUALISO_TIME::Clear()
+//void QDUAL::DUALISO_TIME::Add(const DUALISO_TIME & dualiso_time)
+//{
+//	preprocessing += dualiso_time.preprocessing;
+//	extract += dualiso_time.extract;
+//	merge += dualiso_time.merge;
+//	position += dualiso_time.position;
+//	total += dualiso_time.total;
+//
+//}
+
+void QDUAL::QDUAL_TIME::Clear()
 {
-  preprocessing = 0.0;
-  extract = 0.0;
-  merge = 0.0;
-  position = 0.0;
-  total = 0.0;
-}
+	preprocessing = 0.0;
+	extract = 0.0;
+	merge = 0.0;
+	position = 0.0;
+	total = 0.0;
 
-void QDUAL::DUALISO_TIME::Add(const DUALISO_TIME & dualiso_time)
+	collapse_caps=0.0;
+	collapse_across_facets=0.0;
+	collapse_across_edges=0.0;
+	collapse_across_vertices=0.0;
+	dual_collapse=0.0;
+	set_restrictions=0.0;
+	triangulate=0.0;
+}
+void QDUAL::QDUAL_TIME::Add(const QDUAL_TIME & qdual_time)
 {
-	preprocessing += dualiso_time.preprocessing;
-	extract += dualiso_time.extract;
-	merge += dualiso_time.merge;
-	position += dualiso_time.position;
-	total += dualiso_time.total;
+	preprocessing += qdual_time.preprocessing;
+	extract += qdual_time.extract;
+	merge += qdual_time.merge;
+	position += qdual_time.position;
+	total += qdual_time.total;
+	collapse_caps += qdual_time.collapse_caps;
+	collapse_across_facets += qdual_time.collapse_across_facets;
+	collapse_across_edges += qdual_time.collapse_across_edges;
+	collapse_across_vertices += qdual_time.collapse_across_vertices;
+	dual_collapse += qdual_time.dual_collapse;
+	triangulate += qdual_time.triangulate;
+	set_restrictions += qdual_time.set_restrictions;
 }
 
-/// Same function as above include times for quality dual
-void QDUAL::DUALISO_TIME::Add(const DUALISO_TIME & dualiso_time, const QDUAL_TIME qt)
-{
-	preprocessing += dualiso_time.preprocessing;
-	extract += dualiso_time.extract;
-	merge += dualiso_time.merge;
-	position += dualiso_time.position;
-	total += dualiso_time.total;
 
-	qdual_t = qt;
-}
 // **************************************************
 // INFO CLASSES
 // **************************************************

@@ -34,10 +34,14 @@ using namespace std;
 
 // local subroutines
 void memory_exhaustion();
+
+//void construct_isosurface
+//	(const IO_INFO & io_info, const DUALISO_DATA & dualiso_data,
+//	DUALISO_TIME & dualiso_time, IO_TIME & io_time);
+
 void construct_isosurface
 	(const IO_INFO & io_info, const DUALISO_DATA & dualiso_data,
-	DUALISO_TIME & dualiso_time, IO_TIME & io_time);
-
+	QDUAL_TIME & qdual_time, IO_TIME & io_time);
 
 // **************************************************
 // MAIN
@@ -48,7 +52,7 @@ int main(int argc, char **argv)
 	time_t start_time;
 	time(&start_time);
 
-	DUALISO_TIME dualiso_time;
+	QDUAL_TIME qdual_time;
 	IO_TIME io_time = {0.0, 0.0};
 	IO_INFO io_info;
 	IJK::ERROR error;
@@ -75,10 +79,10 @@ int main(int argc, char **argv)
 		dualiso_data.SetScalarGrid
 			(full_scalar_grid, io_info.flag_subsample, io_info.subsample_resolution,
 			io_info.flag_supersample, io_info.supersample_resolution);
-		set_dualiso_data(io_info, dualiso_data, dualiso_time);
+		set_dualiso_data(io_info, dualiso_data, qdual_time);
 		report_num_cubes(full_scalar_grid, io_info, dualiso_data);
 
-		construct_isosurface(io_info, dualiso_data, dualiso_time, io_time);
+		construct_isosurface(io_info, dualiso_data, qdual_time, io_time);
 
 		if (io_info.report_time_flag) {
 
@@ -87,7 +91,7 @@ int main(int argc, char **argv)
 			double total_elapsed_time = difftime(end_time, start_time);
 
 			cout << endl;
-			report_time(io_info, io_time, dualiso_time, total_elapsed_time);
+			report_time(io_info, io_time, qdual_time, total_elapsed_time);
 		};
 
 	} 
@@ -108,7 +112,7 @@ int main(int argc, char **argv)
 
 void construct_isosurface
 	(const IO_INFO & io_info, const DUALISO_DATA & dualiso_data,
-	DUALISO_TIME & dualiso_time, IO_TIME & io_time)
+	QDUAL_TIME & qdual_time, IO_TIME & io_time)
 {
 	const int dimension = dualiso_data.ScalarGrid().Dimension();
 	const int num_cube_vertices = dualiso_data.ScalarGrid().NumCubeVertices();
@@ -126,8 +130,8 @@ void construct_isosurface
 		quality_dual_contouring(dualiso_data, isovalue, dual_isosurface, dualiso_info);
 		//Added a new version to include times for quality dual
 
-		//dualiso_time.Add(dualiso_info.time);
-		dualiso_time.Add(dualiso_info.time, dualiso_info.qdual_time);
+		qdual_time.Add(dualiso_info.time);
+		//qdual_time.Add(dualiso_info.time, qdual_info.qdual_time);
 
 		OUTPUT_INFO output_info;
 		set_output_info(io_info, i, output_info);

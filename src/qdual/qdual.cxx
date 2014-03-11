@@ -159,7 +159,7 @@ void QDUAL::quality_dual_contouring
 			iso_vlist, isodual_table, first_isov, qdual_table,
 			dual_isosurface.vertex_coord, dualiso_info, boundary_grid, isolatedList);
 		t1=clock();
-		IJK::clock2seconds(t1-t0, dualiso_info.qdual_time.set_restrictions);
+		IJK::clock2seconds(t1-t0, dualiso_info.time.set_restrictions);
 
 		if (dualiso_data.flag_collapse_debug)
 		{
@@ -201,7 +201,7 @@ void QDUAL::quality_dual_contouring
 			dual_isosurface.vertex_coord, dual_isosurface.orth_dir, 
 			dualiso_data.qdual_epsilon,  collapse_map, dualiso_info);
 		t3=clock();
-		IJK::clock2seconds(t3-t2, dualiso_info.qdual_time.dual_collapse);
+		IJK::clock2seconds(t3-t2, dualiso_info.time.dual_collapse);
 
 		// Delete Isolated vertices
 		if(dualiso_data.flag_delete_isolate)
@@ -233,7 +233,7 @@ void QDUAL::quality_dual_contouring
 				diagonalMap, dual_isosurface.orth_dir, track_quad_indices, collapse_map,
 				dualiso_data.flag_collapse_debug);
 			t5=clock();
-			IJK::clock2seconds(t5-t4, dualiso_info.qdual_time.triangulate);
+			IJK::clock2seconds(t5-t4, dualiso_info.time.triangulate);
 		}
 	}
 	// store times

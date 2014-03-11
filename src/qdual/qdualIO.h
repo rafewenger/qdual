@@ -304,8 +304,13 @@ namespace QDUAL {
   /// Set dualiso_data based on io_info.
   /// Precondition: Scalar field in dualiso_data must be set before
   ///   this routines is called.
+
+  // red
+  /* void set_dualiso_data
+  (const IO_INFO & io_info, DUALISO_DATA & dualiso_data, DUALISO_TIME & dualiso_time);
+  */
   void set_dualiso_data
-    (const IO_INFO & io_info, DUALISO_DATA & dualiso_data, DUALISO_TIME & dualiso_time);
+	  (const IO_INFO & io_info, DUALISO_DATA & dualiso_data, QDUAL_TIME & qdual_time);
 
   /// Set output_info based on isotable, io_info and isovalue index i.
   void set_output_info
@@ -341,14 +346,22 @@ namespace QDUAL {
 // **************************************************
 // REPORT TIMING INFORMATION
 // **************************************************
+  //red
 
-  void report_dualiso_time
-    (const IO_INFO & io_info, const DUALISO_TIME & dualiso_time, 
-     const char * mesh_type_string);
-
-  void report_time
+  /* void report_dualiso_time
+  (const IO_INFO & io_info, const DUALISO_TIME & dualiso_time, 
+  const char * mesh_type_string);
+   void report_time
     (const IO_INFO & io_info, const IO_TIME & io_time, 
      const DUALISO_TIME & dualiso_time, const double total_elapsed_time);
+	 */
+  void report_dualiso_time
+	  (const IO_INFO & io_info, const QDUAL_TIME & qdual_time, 
+	  const char * mesh_type_string);
+   void report_time
+    (const IO_INFO & io_info, const IO_TIME & io_time, 
+     const QDUAL_TIME & qdual_time, const double total_elapsed_time);
+ 
 
 // **************************************************
 // USAGE/HELP MESSAGES

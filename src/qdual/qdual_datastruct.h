@@ -266,31 +266,7 @@ namespace QDUAL {
 		bool Check(IJK::ERROR & error) const;
 	};
 
-	/// Quality dual timings  
-	class QDUAL_TIME
-	{
-	public:
-		// all times are in seconds
-		float collapse_caps;
-		float collapse_across_facets;
-		float collapse_across_edges;
-		float collapse_across_vertices;
-		float dual_collapse;
 
-		float set_restrictions;
-		float triangulate;
-
-		QDUAL_TIME()
-		{
-			collapse_caps=0.0;
-			collapse_across_facets=0.0;
-			collapse_across_edges=0.0;
-			collapse_across_vertices=0.0;
-			dual_collapse=0.0;
-			set_restrictions=0.0;
-			triangulate=0.0;
-		};
-	};
 
 	// **************************************************
 	// DUALISO TIME
@@ -303,7 +279,8 @@ namespace QDUAL {
 	class DUALISO_TIME {
 
 	public:
-		QDUAL_TIME qdual_t;
+		// red
+		//QDUAL_TIME qdual_t;
 		// all times are in seconds
 		float preprocessing;  
 		// time to create data structure for faster isosurface extraction
@@ -313,9 +290,32 @@ namespace QDUAL {
 		float total;      // extract_time+merge_time+position_time
 
 		DUALISO_TIME();
+		
+		//void Add(const DUALISO_TIME & dualiso_time);
+		//void Add(const DUALISO_TIME & dualiso_time, const QDUAL_TIME qt);
+	};
+
+
+	/// Quality dual timings  
+	class QDUAL_TIME : public DUALISO_TIME  
+	{
+	public:
+		// all times are in seconds
+		float collapse_caps;
+		float collapse_across_facets;
+		float collapse_across_edges;
+		float collapse_across_vertices;
+		float dual_collapse;
+
+		float set_restrictions;
+		float triangulate;
+
+		QDUAL_TIME():DUALISO_TIME()
+		{
+			Clear();
+		};
 		void Clear();
-		void Add(const DUALISO_TIME & dualiso_time);
-		void Add(const DUALISO_TIME & dualiso_time, const QDUAL_TIME qt);
+		void Add(const QDUAL_TIME & qdual_time);
 	};
 
 	// **************************************************
@@ -467,13 +467,14 @@ namespace QDUAL {
 	public:
 		GRID_INFO grid;
 		SCALAR_INFO scalar;
-		DUALISO_TIME time;
+		//red
+		//DUALISO_TIME time;
+		QDUAL_TIME time;
 		MULTI_ISOV_INFO multi_isov;
 		QDUALISO_RESTRICTION_INFO rs_info; //keep track of restriction info
 		QDUALISO_COLLAPSE_INFO col_info; // keep track of collapse info
 		MOVE_VERTICES_INFO mv_info; //move vertices info
 		CAP_QUAD_INFO cp_info;
-		QDUAL_TIME qdual_time;
 		DUALISO_INFO();
 		DUALISO_INFO(const int dimension);
 
