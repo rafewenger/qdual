@@ -19,19 +19,6 @@ namespace QTRIANGULATE{
 		const std::vector<COORD_TYPE> & vertex_coord,
 		std::unordered_map <QUAD_INDEX, QUAD_INDEX > &track_quad_indices);
 
-	// Triangulate all quads
-	void triangulate_quads (
-		const DUALISO_SCALAR_GRID_BASE & scalar_grid,
-		std::vector<VERTEX_INDEX> & quad_vert,
-		std::vector<VERTEX_INDEX> & tri_vert,
-		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
-		const std::vector<COORD_TYPE> & vertex_coord,
-		QDUAL_TABLE & qdual_table,
-		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
-		const std::vector<DIRECTION_TYPE> &orth_dir,
-		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX>  & diagonalMap,
-		std::unordered_map<QUAD_INDEX, QUAD_INDEX> & track_quad_indices);
-
 	// Remove degfenerate quads
 	void remove_degenerate_quads(
 		std::vector<VERTEX_INDEX> & quad_vert,

@@ -102,12 +102,16 @@ void QDUAL::quality_dual_contouring
 		// set up restriction conditions
 		QDUAL_TABLE qdual_table(DIM3);
 
-		IJK::BOOL_GRID<DUALISO_GRID> boundary_grid;
-		boundary_grid.SetSize(dualiso_data.ScalarGrid());
-		boundary_grid.SetAll(false);
-		compute_boundary_grid(boundary_grid);
+		IJK::BOOL_GRID<DUALISO_GRID> vertex_boundary_grid;
+		vertex_boundary_grid.SetSize(dualiso_data.ScalarGrid());
+		vertex_boundary_grid.SetAll(false);
+		compute_boundary_grid(vertex_boundary_grid);
 
-		//flag_boundary_cubes(boundary_grid);
+
+		IJK::BOOL_GRID<DUALISO_GRID> cube_boundary_grid;
+		cube_boundary_grid.SetSize(dualiso_data.ScalarGrid());
+		cube_boundary_grid.SetAll(false);
+		flag_boundary_cubes(cube_boundary_grid);
 
 		//set variables in iso_vlist
 		COORD_TYPE *a = new COORD_TYPE[3];
@@ -124,7 +128,8 @@ void QDUAL::quality_dual_contouring
 				iso_vlist[j].cube_coord.push_back(a[d]);
 
 			bool flag_boundary = false;
-			isBoundaryIsoVertex(j, iso_vlist, boundary_grid,
+			//this ones needs the cube boundaries
+			isBoundaryIsoVertex(j, iso_vlist, cube_boundary_grid,
 				qdual_table, flag_boundary);
 
 			if (flag_boundary)
@@ -157,7 +162,7 @@ void QDUAL::quality_dual_contouring
 		vector<VERTEX_INDEX> isolatedList; // keep track of the isolated vertices.
 		set_restrictions (dualiso_data,  dualiso_data.ScalarGrid(), isovalue,  dual_isosurface.isopoly_vert,
 			iso_vlist, isodual_table, first_isov, qdual_table,
-			dual_isosurface.vertex_coord, dualiso_info, boundary_grid, isolatedList);
+			dual_isosurface.vertex_coord, dualiso_info, vertex_boundary_grid, isolatedList);
 		t1=clock();
 		IJK::clock2seconds(t1-t0, dualiso_info.time.set_restrictions);
 
@@ -226,10 +231,10 @@ void QDUAL::quality_dual_contouring
 			dual_isosurface.flag_has_degen_quads =  triangulate_degenerate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord, track_quad_indices);
 
-			flag_boundary_cubes(boundary_grid);
+			//flag_boundary_cubes(boundary_grid);
 			triangulate_quad_angle_based(dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert,
 				origQuadVert, dual_isosurface.tri_vert, iso_vlist, 
-				dual_isosurface.vertex_coord, boundary_grid, qdual_table, 
+				dual_isosurface.vertex_coord, cube_boundary_grid, qdual_table, 
 				diagonalMap, dual_isosurface.orth_dir, track_quad_indices, collapse_map,
 				dualiso_data.flag_collapse_debug);
 			t5=clock();
