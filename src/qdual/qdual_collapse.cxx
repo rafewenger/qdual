@@ -265,16 +265,14 @@ void collapse_across_facets(
 
 			if (endPt1!=endPt2)
 			{
-				if ( vert_simple(iso_vlist[endPt2].patch_index ) 
-					&& !vert_simple( iso_vlist[quad_vert[endPt1]].patch_index ))
-				{
-					swap(endPt1, endPt2);
-				}
-				else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index)
-				{
-					swap(endPt1, endPt2);
-				}
-
+				if (!vert_simple(iso_vlist[endPt1].patch_index)) {
+					if (vert_simple( iso_vlist[endPt2].patch_index)) {
+            swap(endPt1, endPt2);
+          }
+          else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index) {
+            swap(endPt1, endPt2);
+          }
+        }
 
 				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
@@ -415,15 +413,14 @@ void collapse_across_edges(
 
 			if (endPt1!=endPt2)
 			{
-				if ( vert_simple(iso_vlist[endPt2].patch_index ) 
-					&& !vert_simple( iso_vlist[quad_vert[endPt1]].patch_index ))
-				{
-					swap(endPt1, endPt2);
-				}
-				else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index)
-				{
-					swap(endPt1, endPt2);
-				}
+				if (!vert_simple(iso_vlist[endPt1].patch_index)) {
+					if (vert_simple( iso_vlist[endPt2].patch_index)) {
+            swap(endPt1, endPt2);
+          }
+          else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index) {
+            swap(endPt1, endPt2);
+          }
+        }
 
 				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
@@ -625,15 +622,15 @@ void collapse_across_vertices(
 				endPt2 = find_vertex(collapse_map, endPt2);
 				if (endPt1!=endPt2)
 				{
-					if ( vert_simple(iso_vlist[endPt2].patch_index ) 
-						&& !vert_simple( iso_vlist[quad_vert[endPt1]].patch_index ))
-					{
-						swap(endPt1, endPt2);
-					}
-					else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index)
-					{
-						swap(endPt1, endPt2);
-					}
+          if (!vert_simple(iso_vlist[endPt1].patch_index)) {
+            if (vert_simple( iso_vlist[endPt2].patch_index)) {
+              swap(endPt1, endPt2);
+            }
+            else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index) {
+              swap(endPt1, endPt2);
+            }
+          }
+
 					const COORD_TYPE * endPt1_coord =  & (vertex_coord[DIM3*endPt1]);
 					const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
 
