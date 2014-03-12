@@ -79,11 +79,11 @@ if (flagFound):
     seed0 = int(argument);
     command_options = strip_option('-seed', 1, command_options);
 
-flagFound, argument = get_argument('-maxVal', command_options);
+flagFound, argument = get_argument('-maxval', command_options);
 if (flagFound):
     maxVal = int(argument);
     isovalue = maxVal/2.0 + 0.1;
-    command_options = strip_option('-maxVal', 1, command_options);
+    command_options = strip_option('-maxval', 1, command_options);
 
 flagFound, argument = get_argument('-asize', command_options);
 if (flagFound):

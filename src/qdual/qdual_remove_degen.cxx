@@ -337,7 +337,12 @@ float length_of_side (	const VERTEX_INDEX A, const VERTEX_INDEX B,
 //c2=a2+b2-2abcosC
 float compute_cosine_rule_angle(const float A, const float B, const float C)
 {
-	return ((B*B + C*C - A*A)/ (2.0*B*C));
+  float x = B*B + C*C - A*A;
+  float y = 2.0*B*C;
+
+  if (x > y) { return(1); }
+  if (-x > y) { return(-1); }
+	return (x/y);
 }
 //compute the cosine of the min angle in the triangle
 
@@ -355,12 +360,8 @@ void compute_cos_min_angle (
 	float cos_angle_B = compute_cosine_rule_angle(BC, CA, AB);
 	float cos_angle_A = compute_cosine_rule_angle(CA, BC, AB);
 
-	if ((cos_angle_A > cos_angle_B) && (cos_angle_A > cos_angle_C))
-		cos_angle = cos_angle_A;
-	else if ((cos_angle_B > cos_angle_A)&&(cos_angle_B > cos_angle_C))
-		cos_angle = cos_angle_B;
-	else
-		cos_angle = cos_angle_C;
+  cos_angle = std::max(cos_angle_A, cos_angle_B);
+  cos_angle = std::max(cos_angle, cos_angle_C);
 }
 
 // update collapses in trivert with collapse map
@@ -595,7 +596,6 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 				cos_min_2 = cos_min_angle_dbc;
 			else
 				cos_min_2 = cos_min_angle_dca;
-
 
 			//degree 2 and not boundary   
 			if (flag_deg2 && !flag_boundary)
