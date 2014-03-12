@@ -11,6 +11,7 @@ isovalue = 2.1
 seed = 12345
 epsilon = 0.3
 
+
 # Function runqdual
 def runqdual():
 
@@ -43,13 +44,22 @@ def runqdual():
 
 # main routine
 if (len(sys.argv) > 1) :
+    if (not((sys.argv[1]).isdigit())) :
+        print 'Usage: ', sys.argv[0], ' [ <numTest> [ <seed> [ <maxval> ]]]';
+        exit(10);
+        
+if (len(sys.argv) > 1) :
     numTest = int(sys.argv[1]);
 
 if (len(sys.argv) > 2) :
     seed = int(sys.argv[2]);
 
+if (len(sys.argv) > 3) :
+    maxVal = int(sys.argv[3]);
+    isovalue = maxVal/2.0 + 0.1;
+
 for i in range(numTest):
-    seed = seed+10;
     runqdual();
+    seed = seed+10;
 
 
