@@ -60,7 +60,7 @@ def runqdual(qdual_options):
 
 # main routine
 if (len(sys.argv) < 3) :
-    print 'Usage: ', sys.argv[0], ' [-num_test <N>] [-increment <I>] [qdual options] <isovalue0> {nrrd_file}';
+    print 'Usage: ', sys.argv[0], ' [-numTest <N>] [-increment <I>] [qdual options] <isovalue0> {nrrd_file}';
     exit(10);
 
 command_options = sys.argv[1:-2];
