@@ -7,9 +7,11 @@ import sys
 # global variables
 separator = ' ';
 flag_genscalar = False;
-genscalar_header = [ 'fileName', 'axisSize', 'isovalue', 'genscalarSeed',
-                     'maxVal', 'minAngle', 'Manifold', 'Boundary'];
-random_pos_header = [ 'fileName', 'isovalue', 'qdualSeed', 'randomNumI',
+genscalar_header = [ 'fileName', 'axisSize', 'isovalue', 'epsilon',
+                     'genscalarSeed', 'maxVal',
+                     'minAngle', 'Manifold', 'Boundary'];
+random_pos_header = [ 'fileName', 'isovalue', 'epsilon',
+                      'qdualSeed', 'randomNumI',
                       'minAngle', 'Manifold', 'Boundary'];
 
 # get argument
@@ -38,6 +40,16 @@ def searchFile(filename, s):
     return(flag);
 
 
+# Convert bool to character
+def bool2char(flag, char_false, char_true):
+
+    c = char_false;
+    if (flag):
+        c = char_true;
+
+    return(c);
+
+
 # main routine
 if (len(sys.argv) != 3) :
     print 'Usage error.  Usage: ', sys.argv[0], " <infile> <outfile>"
@@ -56,6 +68,9 @@ ijkgenscalar_seed = 0;
 qdual_seed = 0;
 axis_size = 0;
 maxval = 0;
+epsilon = '***';
+flag_passed_manifold = False;
+flag_passed_boundary = False;
 
 if (flag_genscalar) :
     header = separator.join(genscalar_header);
@@ -65,10 +80,12 @@ else:
 header = header + '\n';
 outfile.write(header);
 
+
 for line in infile:
     matchObj = re.match('Executing...qdual', line);
     if (matchObj):
         qdual_seed = getArgument('-seed', line, 0);
+        epsilon = getArgument('-epsilon', line, '***');
         random_num_intervals = getArgument('-random_num_intervals', line, 1);
         words = line.split();
         qdualFile = words[-1];
@@ -81,8 +98,6 @@ for line in infile:
         maxval = getArgument('-maxval', line, 0);
         words = line.split();
 
-    flag_passed_manifold = True;
-    flag_passed_boundary = True;
     matchObj = re.match('Passed all', line);
     if (matchObj) :
         flag_passed_manifold = True;
@@ -96,24 +111,20 @@ for line in infile:
     if (matchObj) :
         flag_passed_boundary = False;
 
-    flagM = 'F';
-    if (flag_passed_manifold) :
-        flagM = 'P';
-
-    flagB = 'F';
-    if (flag_passed_boundary) :
-        flagB = 'P';
-    
     matchObj = re.match('Min polygon angle', line)
     if (matchObj) :
         words = line.split()
         min_angle = words[-1]
+        flagM = bool2char(flag_passed_manifold, 'F', 'P');
+        flagB = bool2char(flag_passed_boundary, 'F', 'P');
         if (flag_genscalar) :
             data_list = [ qdualFile, str(axis_size), str(isovalue), \
+                          str(epsilon), \
                           str(ijkgenscalar_seed), str(maxval), \
                           min_angle, flagM, flagB ];
         else:
             data_list = [ qdualFile, str(isovalue), \
+                          str(epsilon), \
                           str(qdual_seed), str(random_num_intervals), \
                           min_angle, flagM, flagB ];
 

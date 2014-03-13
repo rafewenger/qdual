@@ -90,6 +90,11 @@ if (flagFound):
     axisSize = int(argument);
     command_options = strip_option('-asize', 1, command_options);
 
+flagFound, argument = get_argument('-epsilon', command_options);
+if (flagFound):
+    epsilon = float(argument);
+    command_options = strip_option('-epsilon', 1, command_options);
+
 
 seed = seed0;
 for i in range(numTest):
