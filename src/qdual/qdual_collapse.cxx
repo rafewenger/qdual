@@ -12,19 +12,19 @@ bool AreSame(TY a, TY b)
 	return abs(a - b) < 0.00001;
 }
 
-//Check if patch is simple 
-//Return True if the vert is simple
-inline bool vert_simple(const unsigned char patch_ind){
-	if ((int)patch_ind == 0)
+
+inline bool vert_simple (
+	const IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
+	const int table_index
+	)
+{
+	if (isodual_table.NumIsoVertices(table_index) == 1)
 	{
 		return true;
 	}
 	else
-	{
 		return false;
-	}
 }
-
 
 inline  void print_collapse_info (
 	string str, 
@@ -102,7 +102,7 @@ bool is_permitted_collapse(
 				edge_mask = (edge_mask | 1<< d2);
 			else
 				edge_mask = (edge_mask | 1<< (d2+DIM3));
-			
+
 			if (iso_vlist[v].restricted_facets & edge_mask)
 				return false;
 
@@ -240,6 +240,7 @@ int QCOLLAPSE::find_vertex(IJK::ARRAY<VERTEX_INDEX> &collapse_map, int endpt)
 //Collapse across facets
 void collapse_across_facets(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 	const std::vector<DUAL_ISOVERT> & iso_vlist,
 	std::vector<VERTEX_INDEX> & quad_vert,
 	const std::vector<COORD_TYPE> & vertex_coord,
@@ -265,14 +266,18 @@ void collapse_across_facets(
 
 			if (endPt1!=endPt2)
 			{
-				if (!vert_simple(iso_vlist[endPt1].patch_index)) {
-					if (vert_simple( iso_vlist[endPt2].patch_index)) {
-            swap(endPt1, endPt2);
-          }
-          else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index) {
-            swap(endPt1, endPt2);
-          }
-        }
+				bool vert_simple1 = vert_simple(isodual_table, iso_vlist[endPt1].table_index);
+				bool vert_simple2 = vert_simple(isodual_table, iso_vlist[endPt2].table_index);
+				if(vert_simple1 == vert_simple2)
+				{
+					if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index)
+					{
+						swap(endPt1, endPt2);
+					}
+				}
+				else if (vert_simple2){
+					swap(endPt1, endPt2);
+				}
 
 				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
@@ -385,6 +390,7 @@ void collapse_across_facets(
 //Collapse across edges
 void collapse_across_edges(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 	const std::vector<DUAL_ISOVERT> & iso_vlist,
 	std::vector<VERTEX_INDEX> & quad_vert,
 	const std::vector<COORD_TYPE> & vertex_coord,
@@ -413,14 +419,16 @@ void collapse_across_edges(
 
 			if (endPt1!=endPt2)
 			{
-				if (!vert_simple(iso_vlist[endPt1].patch_index)) {
-					if (vert_simple( iso_vlist[endPt2].patch_index)) {
-            swap(endPt1, endPt2);
-          }
-          else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index) {
-            swap(endPt1, endPt2);
-          }
-        }
+				bool vert_simple1 = vert_simple(isodual_table, iso_vlist[endPt1].table_index);
+				bool vert_simple2 = vert_simple(isodual_table, iso_vlist[endPt2].table_index);
+				if(vert_simple1 == vert_simple2){
+					if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index){
+						swap(endPt1, endPt2);
+					}
+				}
+				else if (vert_simple2){
+					swap(endPt1, endPt2);
+				}
 
 				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
@@ -464,7 +472,7 @@ void collapse_across_edges(
 									print_collapse_info("collapse across edges [permitted]", 
 										endPt1, endPt2, &(edge_base_coord[0]));
 									cout <<"endPt1 "<< endPt1<<" "<< iso_vlist[endPt1].flag_fixed <<endl;
-										cout <<"endPt2 "<< endPt2<<" "<< iso_vlist[endPt2].flag_fixed <<endl;
+									cout <<"endPt2 "<< endPt2<<" "<< iso_vlist[endPt2].flag_fixed <<endl;
 									cout <<"endpt2 "<< endPt2<<"("<< endPt2_coord[0]<<","<< endPt2_coord[1]<<","<< endPt2_coord[2]<<"\n";
 									cout <<"endpt1 "<< endPt1<<"("<< endPt1_coord[0]<<","<< endPt1_coord[1]<<","<< endPt1_coord[2]<<"\n";
 									cout <<"edge base "<< edge_base_coord[0]<<","
@@ -599,6 +607,7 @@ void find_closest_grid_vertex(
 //collapse across vertices
 void collapse_across_vertices(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 	const std::vector<DUAL_ISOVERT> & iso_vlist,
 	std::vector<VERTEX_INDEX> & quad_vert,
 	const std::vector<COORD_TYPE> & vertex_coord,
@@ -622,14 +631,18 @@ void collapse_across_vertices(
 				endPt2 = find_vertex(collapse_map, endPt2);
 				if (endPt1!=endPt2)
 				{
-          if (!vert_simple(iso_vlist[endPt1].patch_index)) {
-            if (vert_simple( iso_vlist[endPt2].patch_index)) {
-              swap(endPt1, endPt2);
-            }
-            else if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index) {
-              swap(endPt1, endPt2);
-            }
-          }
+					bool vert_simple1 = vert_simple(isodual_table, iso_vlist[endPt1].table_index);
+					bool vert_simple2 = vert_simple(isodual_table, iso_vlist[endPt2].table_index);
+					if(vert_simple1 == vert_simple2)
+					{
+						if (iso_vlist[endPt2].cube_index < iso_vlist[endPt1].cube_index)
+						{
+							swap(endPt1, endPt2);
+						}
+					}
+					else if (vert_simple2){
+						swap(endPt1, endPt2);
+					}
 
 					const COORD_TYPE * endPt1_coord =  & (vertex_coord[DIM3*endPt1]);
 					const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
@@ -692,17 +705,17 @@ void intersectQuadAndEdgeAndMoveVert
 	DUALISO_INFO & dualiso_info
 	)
 {
-    const int d1 = (edgeDir+1+DIM3)%DIM3;
+	const int d1 = (edgeDir+1+DIM3)%DIM3;
 	const int d2 = (edgeDir+2+DIM3)%DIM3;
-    vertex_coord[DIM3*v+d1]=edgeBase[d1];
+	vertex_coord[DIM3*v+d1]=edgeBase[d1];
 	vertex_coord[DIM3*v+d2]=edgeBase[d2];
-    COORD_TYPE c = 0;
+	COORD_TYPE c = 0;
 	for (int i = 0; i < VERT_PER_QUAD; i++)
 	{
-        int qi = quad_vert[VERT_PER_QUAD*q+i];
-        c=c+ vertex_coord[DIM3*qi+edgeDir];
+		int qi = quad_vert[VERT_PER_QUAD*q+i];
+		c=c+ vertex_coord[DIM3*qi+edgeDir];
 	}
-    vertex_coord[DIM3*v+edgeDir]=c/4.0;
+	vertex_coord[DIM3*v+edgeDir]=c/4.0;
 }
 
 
@@ -725,12 +738,12 @@ void collapseToEdge(
 		if (iso_vlist[v2].ver_degree == 3
 			&& v2 != v)
 		{
-			
+
 			update_collapse_edges(collapse_map, v, v2);
 		}
 	}
 	iso_vlist[v].flag_fixed = true;
-	
+
 	intersectQuadAndEdgeAndMoveVert(v, q, quad_vert, edgeBase,
 		edgeDir, vertex_coord, dualiso_info );
 }
@@ -752,7 +765,7 @@ void capQuadComputation(
 	bool &capQuad,
 	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	DUALISO_INFO & dualiso_info,
-    bool printInfo
+	bool printInfo
 	)
 {
 	if (printInfo)
@@ -850,7 +863,7 @@ void capQuadComputation(
 					{
 						collapseToEdge(d1, q, quad_vert, vertex_coord, iso_vlist
 							,collapse_map, edgeBase, edgeDir, dualiso_info);
-					
+
 						dualiso_info.cp_info.moved2Edge++;
 						if ( printInfo)
 						{
@@ -900,7 +913,7 @@ void collapse_caps (
 	std::vector<DUAL_ISOVERT> & iso_vlist,
 	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
 	DUALISO_INFO & dualiso_info, 
-    const bool printInfo
+	const bool printInfo
 	)
 {
 	const int numQuads = quad_vert.size()/4;
@@ -993,6 +1006,7 @@ void QCOLLAPSE::dual_collapse(
 	const DUALISO_DATA & dualiso_data,
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	std::vector<VERTEX_INDEX> & quad_vert,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 	std::vector<DUAL_ISOVERT> & iso_vlist, 
 	std::vector<COORD_TYPE> & vertex_coord,
 	const std::vector<DIRECTION_TYPE> &orth_dir,
@@ -1006,7 +1020,7 @@ void QCOLLAPSE::dual_collapse(
 	clock_t t0,t1,t2,t3,t4;
 	t0 = clock();
 
-    //CYCLIC ORDER
+	//CYCLIC ORDER
 	if (dualiso_data.flag_cap_col)
 	{
 		collapse_caps(scalar_grid, quad_vert, vertex_coord, orth_dir, 
@@ -1014,16 +1028,16 @@ void QCOLLAPSE::dual_collapse(
 	}
 	t1=clock();
 
-	collapse_across_facets(scalar_grid, iso_vlist, quad_vert,
-	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	collapse_across_facets(scalar_grid, isodual_table, iso_vlist, quad_vert,
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
 	t2=clock();
 
-	collapse_across_edges(scalar_grid, iso_vlist, quad_vert,
-	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	collapse_across_edges(scalar_grid, isodual_table, iso_vlist, quad_vert,
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
 	t3=clock();
 
-	collapse_across_vertices(scalar_grid, iso_vlist, quad_vert, 
-	vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	collapse_across_vertices(scalar_grid, isodual_table, iso_vlist, quad_vert, 
+		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
 	t4=clock();
 
 	update_quads(collapse_map, quad_vert);
@@ -1038,22 +1052,22 @@ void QCOLLAPSE::dual_collapse(
 }
 
 void QCOLLAPSE::delIsolated(
-    std::vector<VERTEX_INDEX> & quad_vert,
+	std::vector<VERTEX_INDEX> & quad_vert,
 	vector<VERTEX_INDEX> isolatedList,
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	DUALISO_INDEX_GRID & first_isov,
-    IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
-    bool printInfo
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
+	bool printInfo
 	)
 {
-    const int sizeDelIsolated = isolatedList.size();
+	const int sizeDelIsolated = isolatedList.size();
 	for (int v = 0; v < sizeDelIsolated; v++)
 	{
-        VERTEX_INDEX iv0 = isolatedList[v] - scalar_grid.CubeVertexIncrement(NUM_CUBE_VERT-1);
+		VERTEX_INDEX iv0 = isolatedList[v] - scalar_grid.CubeVertexIncrement(NUM_CUBE_VERT-1);
 		for (int j = 0; j < NUM_CUBE_VERT; j++)
 		{
-            VERTEX_INDEX c = scalar_grid.CubeVertex(iv0,j);
+			VERTEX_INDEX c = scalar_grid.CubeVertex(iv0,j);
 
 			VERTEX_INDEX indx_iso_vlist = first_isov.Scalar(c);
 			if (indx_iso_vlist !=-1)
@@ -1065,14 +1079,14 @@ void QCOLLAPSE::delIsolated(
 				{
 					if ( iso_vlist[indx_iso_vlist+k].sep_vert == isolatedList[v])
 					{
-                        iso_vlist[indx_iso_vlist+k].flag_isolated = true;
+						iso_vlist[indx_iso_vlist+k].flag_isolated = true;
 					}
 				}
 			}
 		}
 	}
 
-    vector<VERTEX_INDEX>  local_quad_vert;
+	vector<VERTEX_INDEX>  local_quad_vert;
 	const int num_quads = quad_vert.size()/NUM_CUBE_FACET_VERT;
 	for (int i = 0; i < num_quads; i++)
 	{
@@ -1095,13 +1109,13 @@ void QCOLLAPSE::delIsolated(
 			}    
 		}
 	}
-   if (printInfo)
-   {
-    cout <<"Isolated list size: "<< sizeDelIsolated <<endl;
-    cout <<"Number of quads decimated: "<< (quad_vert.size() - local_quad_vert.size()) / 4 <<endl;
-   }
+	if (printInfo)
+	{
+		cout <<"Isolated list size: "<< sizeDelIsolated <<endl;
+		cout <<"Number of quads decimated: "<< (quad_vert.size() - local_quad_vert.size()) / 4 <<endl;
+	}
 	quad_vert.clear();
-    quad_vert = local_quad_vert;
+	quad_vert = local_quad_vert;
 }
 
 

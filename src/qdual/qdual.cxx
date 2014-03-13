@@ -201,10 +201,11 @@ void QDUAL::quality_dual_contouring
 		setup_collapse_map(collapse_map, numVertex);
 
 		t2=clock();
+
 		// Collapse Function calls.
-		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, iso_vlist, 
-			dual_isosurface.vertex_coord, dual_isosurface.orth_dir, 
-			dualiso_data.qdual_epsilon,  collapse_map, dualiso_info);
+		dual_collapse(dualiso_data, dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, 
+			isodual_table, iso_vlist, dual_isosurface.vertex_coord, dual_isosurface.orth_dir, 
+			dualiso_data.qdual_epsilon, collapse_map, dualiso_info);
 		t3=clock();
 		IJK::clock2seconds(t3-t2, dualiso_info.time.dual_collapse);
 

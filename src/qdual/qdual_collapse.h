@@ -33,6 +33,7 @@ namespace QCOLLAPSE{
 		const DUALISO_DATA & dualiso_data,
 		const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 		std::vector<VERTEX_INDEX> & quad_vert,
+		IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
 		std::vector<COORD_TYPE> & vertex_coord,
         const std::vector<DIRECTION_TYPE> & orth_dir,
