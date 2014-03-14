@@ -43,11 +43,13 @@ bool sharesOppositeVerticesComputations
 	const std::vector<DIRECTION_TYPE> &orth_dir,
 	vector< VERTEX_INDEX> & v,
 	unordered_map<QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
-	IJK::ARRAY<VERTEX_INDEX> & collapse_map
+	IJK::ARRAY<VERTEX_INDEX> & collapse_map, 
+	const bool printInfo
 	)
 {
 	if (diagonalMap.empty())
 		return false;
+
 
 	v.clear();
 	unordered_map<QUAD_INDEX, QUAD_INDEX>::const_iterator it = 
@@ -55,11 +57,21 @@ bool sharesOppositeVerticesComputations
 	QUAD_INDEX mappedQ = it->second;
 
 	VERTEX_INDEX B = iso_vlist [origQuadVert[VERT_PER_QUAD*mappedQ+2]].cube_index;
-	VERTEX_INDEX tempEdgeDir = (int)orth_dir[q];
+	VERTEX_INDEX tempEdgeDir = (int)orth_dir[mappedQ];
 	VERTEX_INDEX ie = DIM3*B + tempEdgeDir;
 
 	VERTEX_INDEX edgeDir = ie%DIM3;
 	VERTEX_INDEX iend = (ie-edgeDir)/DIM3;
+
+
+	if(printInfo)
+	{
+		cout <<"diag check "<<q <<endl;
+		cout <<" mapped to "<< mappedQ ;
+		cout <<" iend "<< iend <<
+			" ie "<< ie << endl;
+	}
+
 
 	IJK::ARRAY<GRID_COORD_TYPE> edgeBase(DIM3,0);
 	scalar_grid.ComputeCoord(iend, &(edgeBase[0]));
@@ -73,6 +85,10 @@ bool sharesOppositeVerticesComputations
 		if (ind  != diagonalMap.end())
 		{
 			q2 = diagonalMap.at(ie2);
+			if(printInfo)
+			{
+				cout <<"q2 "<< q2 <<endl;
+			}
 			if ((
 				(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD])) == 
 				find_vertex(collapse_map, (origQuadVert[q2*VERT_PER_QUAD]))
@@ -114,6 +130,10 @@ bool sharesOppositeVerticesComputations
 		if (ind != diagonalMap.end())
 		{
 			q2 = diagonalMap.at(ie2);
+			if(printInfo)
+			{
+				cout <<"q2 "<< q2 <<endl;
+			}
 			if ((
 				(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD])) == 
 				find_vertex(collapse_map, (origQuadVert[q2*VERT_PER_QUAD]))
@@ -165,7 +185,7 @@ void QTRIANGULATE::hashQuadsDual2GridEdge(
 		diagonalMap.insert(make_pair(index, q));
 		//debug
 		/*
-		cout <<"q "<< q << endl;
+		cout <<"has table q "<< q <<" of "<< numQuads<< endl;
 		cout <<"B(cube index) "<< B<<" ";
 		VERTEX_INDEX temp = quad_vert[VERT_PER_QUAD*q+2];
 		cout <<" issovertex index [" << temp <<"]  coord [";
@@ -189,7 +209,7 @@ void QTRIANGULATE::hashQuadsDual2GridEdge(
 		" cubeindex "<< iso_vlist [quad_vert[VERT_PER_QUAD*q+2]].cube_index <<endl;
 
 
-		cout <<"quad vert "<< quad_vert[VERT_PER_QUAD*q+3]<<" : " <<iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_coord[0]<<" "
+		cout <<"quad vert  "<< quad_vert[VERT_PER_QUAD*q+3]<<" : " <<iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_coord[0]<<" "
 		<<iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_coord[1]<<" "
 		<<iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_coord[2]<<
 		" cubeindex "<< iso_vlist [quad_vert[VERT_PER_QUAD*q+3]].cube_index <<endl;
@@ -201,7 +221,6 @@ void QTRIANGULATE::hashQuadsDual2GridEdge(
 		cout <<"edgeDir "<< edgeDir <<endl;
 		cout <<"index "<< index <<endl;
 		*/
-
 	}
 	IJK::reorder_quad_vertices(quad_vert);
 
@@ -494,6 +513,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	vector <QUAD_INDEX> quadIndices;
 	for (int q=0; q < num_quad; q++)
 	{
+
 		int w1=0;// has the index NOT the vertex
 		bool flag_deg2 = false;
 		bool flag_boundary = false;
@@ -504,7 +524,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 		{
 			vertex = QCOLLAPSE::find_vertex(collapse_map,quadVert[q*VERT_PER_QUAD+j]);
 			if(printInfo){
-				cout <<"q "<< q<<" j "<<j<< " " <<quadVert[q*VERT_PER_QUAD+j];
+				cout <<" triangulate routine q "<< q<<" j "<<j<< " " <<quadVert[q*VERT_PER_QUAD+j];
 				cout <<" mappped to "<< vertex << " degree "<< iso_vlist[vertex].ver_degree <<endl;
 				cout <<"cube_coord "<<iso_vlist[vertex].cube_coord[0]<<" "<<iso_vlist[vertex].cube_coord[1]
 				<<" "<<iso_vlist[vertex].cube_coord[2]<<endl;
@@ -640,7 +660,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 				if ( sharesOppositeVerticesComputations
 					(scalar_grid, q, commonQuad, iso_vlist, quadVert,
 					origQuadVert, diagonalMap,
-					orth_dir, quadIndices, track_quad_indices, origCollapse_map) )
+					orth_dir, quadIndices, track_quad_indices, origCollapse_map, printInfo) )
 				{
 					push_triangle( quadIndices[0], quadIndices[2], quadIndices[3], tri_vert);
 					push_triangle(quadIndices[3], quadIndices[2], quadIndices[1], tri_vert);

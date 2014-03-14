@@ -466,7 +466,6 @@ void collapse_across_facets(
 				else if (vert_simple2){
 					swap(endPt1, endPt2);
 				}
-
 				const COORD_TYPE * endPt1_coord = & (vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
 
@@ -488,7 +487,6 @@ void collapse_across_facets(
 						closest_facet_base_coord[2] = facet_base_coord[2];
 					}
 				}
-
 
 				if(num_close == 1)
 				{
@@ -831,7 +829,7 @@ void collapse_across_vertices(
 					else if (vert_simple2){
 						swap(endPt1, endPt2);
 					}
-
+					
 					const COORD_TYPE * endPt1_coord =  & (vertex_coord[DIM3*endPt1]);
 					const COORD_TYPE * endPt2_coord = & (vertex_coord[DIM3*endPt2]);
 
@@ -876,6 +874,20 @@ void collapse_across_vertices(
 									}
 								}
 							}
+						}
+						else
+						{
+							if(print_info)
+							{
+								cout <<" closest distance  endPt2 "<<closest_distance<<" greater than "<< epsilon << endl;
+							}
+						}
+					}
+					else
+					{
+						if(print_info)
+						{
+							cout <<" closest distance endPt1 "<<closest_distance<<" greater than "<< epsilon << endl;
 						}
 					}
 				}
