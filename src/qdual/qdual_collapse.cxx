@@ -5,11 +5,25 @@ using namespace QCOLLAPSE;
 using namespace std;
 using namespace NamedConstants;
 
-//Double comparison
+//Comparison
 template <typename TY>
 bool AreSame(TY a, TY b)
 {
 	return abs(a - b) < 0.00001;
+}
+
+template <typename TY>
+bool compareCoords(IJK::ARRAY<TY> &coord1,
+			 IJK::ARRAY<TY> &coord2)
+{
+	for (int i = 0; i < DIM3; i++)
+	{
+		if (!AreSame<TY>(coord1[i], coord2[i]))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 
@@ -235,7 +249,181 @@ int QCOLLAPSE::find_vertex(IJK::ARRAY<VERTEX_INDEX> &collapse_map, int endpt)
 	return temp;
 }
 
+//SubFunction to compute sigma called by
+//CollapseToFacet
+inline void computeSigma( const COORD_TYPE w1, const COORD_TYPE w2, 
+						 const COORD_TYPE alpha, float &sigma, bool printInfo)
+{
+	COORD_TYPE wDiff=w2-w1;
+	COORD_TYPE zero=0.0;
+	if (AreSame<COORD_TYPE>(wDiff, zero)){
+		sigma=0.5;
+		if(printInfo)
+			cout <<"sigma "<<sigma<< " wdiff "<<wDiff<<endl;
+		return ;
+	}
+	else{
+		sigma=(alpha-w1)/wDiff;
+		if(printInfo)
+		{
+			cout <<"sigma "<<sigma<< " wdiff "<<wDiff<<endl;
+		}
+	}
+	//if(sigma<0.0 || sigma >1.0)
+	//{
+	//	cout <<"sigma is outside range"<< sigma<<endl;
+	//}
+}
+// Collapse to Facet
+void collapseToFacet(
+	const VERTEX_INDEX endPt1,
+	const COORD_TYPE* endPt1Coord,
+	const COORD_TYPE* endPt2Coord,
+	IJK::ARRAY<GRID_COORD_TYPE> &facetBaseCoord,
+	const int faceDir,
+	std::vector<COORD_TYPE> & vertex_coord,
+	bool debug
+	)
+{
+	float sigma=0.0;
+	computeSigma(endPt1Coord[faceDir], endPt2Coord[faceDir],
+		facetBaseCoord[faceDir], sigma, debug);
 
+		if(debug)
+	{
+		cout <<"Collapsing to facet"<<endl;
+		cout <<"endPT1 "<< endPt1Coord[0]<<" "<<endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
+		cout <<"endPT2 "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
+		cout <<"faceDir "<< faceDir<<endl;
+		}
+		for (int d = 0; d < DIM3; d++)
+		{
+			vertex_coord[DIM3*endPt1+d]=endPt1Coord[d]*(1-sigma) + endPt2Coord[d]*sigma;
+		}
+	if(debug)
+	{
+		cout <<"\nnew version of endPt1 "<<endl;
+		cout <<vertex_coord[DIM3*endPt1+0]<<" "<<vertex_coord[DIM3*endPt1+1]<<" "<<vertex_coord[DIM3*endPt1+2]<<endl;
+	}
+
+}
+//Collapse across facets version B
+void collapse_across_facetsB
+	(	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
+	const std::vector<DUAL_ISOVERT> & iso_vlist,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	std::vector<COORD_TYPE> & vertex_coord,
+	const std::vector<DIRECTION_TYPE> & orth_dir,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
+	const float epsilon,
+	const bool printInfo,
+	DUALISO_INFO & dualiso_info)
+
+{
+	const int numQuads=quad_vert.size()/VERT_PER_QUAD;
+	const int dimension=scalar_grid.Dimension();
+	int v1,v2;
+	IJK::ARRAY<GRID_COORD_TYPE> facetBaseCoord(dimension,0);
+	IJK::ARRAY<GRID_COORD_TYPE> closestFacetBaseCoord(dimension,0);
+	//foreach quad
+	for (QUAD_INDEX q = 0; q < numQuads; q++){
+		//foreach edge
+		for (v1 = VERT_PER_QUAD-1, v2 = 0; v2 < VERT_PER_QUAD; v1 = v2++)
+		{
+			QUAD_INDEX endPt1=quad_vert[q*VERT_PER_QUAD+v1];
+			QUAD_INDEX endPt2=quad_vert[q*VERT_PER_QUAD+v2];
+			endPt1=find_vertex(collapse_map, endPt1);
+			endPt2=find_vertex(collapse_map, endPt2);
+			if(endPt1!=endPt2){
+				const COORD_TYPE* endPt1Coord=&(vertex_coord[DIM3*endPt1]);
+				const COORD_TYPE* endPt2Coord=&(vertex_coord[DIM3*endPt2]);
+				int numClose=0;
+				int closestFacetDir;
+				for (int d = 0; d < dimension; d++)
+				{
+					if(numClose==1)
+						break; // close to an edge or vertex
+					find_closest_facet(DIM3, endPt1Coord, d, facetBaseCoord);
+					if(is_epsilon_close(endPt1Coord, facetBaseCoord, d, epsilon))
+					{
+						numClose++;
+						closestFacetDir=d;
+						closestFacetBaseCoord[0]=facetBaseCoord[0];
+						closestFacetBaseCoord[1]=facetBaseCoord[1];
+						closestFacetBaseCoord[2]=facetBaseCoord[2];
+					}
+				}
+				if(numClose==0)
+					continue;
+				//DEBUG
+				if(printInfo){
+					cout <<"closestFacetBaseCoord "<< closestFacetBaseCoord[0]<<" "
+						<<closestFacetBaseCoord[1]<<" "
+						<<closestFacetBaseCoord[2]<<" "
+						<<"facetBaseCoord "<<facetBaseCoord[0]<<" "
+						<<facetBaseCoord[1]<<" "
+						<<facetBaseCoord[2]<<" "<<endl;
+					cout <<"numclose "<< numClose <<endl;
+					cout <<"closestDir "<< closestFacetDir<<endl;
+				}
+				//endPt1 is close to a grid facet and not close to any edge.
+				find_closest_facet(DIM3, endPt2Coord, closestFacetDir, facetBaseCoord);
+				if(is_epsilon_close(endPt2Coord, facetBaseCoord, closestFacetDir, epsilon))
+				{
+					if(compareCoords<GRID_COORD_TYPE>(facetBaseCoord, closestFacetBaseCoord))
+					{
+						const int d1 = (closestFacetDir+1)%DIM3;
+						const int d2 = (closestFacetDir+2)%DIM3;
+						bool endPt2CloseToEdge = false;
+						find_closest_facet(DIM3, endPt2Coord, d1, facetBaseCoord);
+						if(is_epsilon_close(endPt2Coord, facetBaseCoord, d1, epsilon))
+						{
+							endPt2CloseToEdge=true;
+							continue;
+							find_closest_facet(DIM3, endPt2Coord, d2, facetBaseCoord);
+							if(is_epsilon_close(endPt2Coord, facetBaseCoord, d2, epsilon))
+							{
+								endPt2CloseToEdge=true;
+							}
+						}
+						if(endPt2CloseToEdge==false){
+							//endPt2  is close to grid facet in the direction  closestFacetDir
+							//and not close to any edge
+							if (is_permitted_collapse (iso_vlist, endPt2,  &(closestFacetBaseCoord[0]),
+								closestFacetDir,  FACET)
+								&&
+								is_permitted_collapse (iso_vlist, endPt1,  &(closestFacetBaseCoord[0]),
+								closestFacetDir,  FACET)
+								)
+							{
+								collapseToFacet(endPt1, endPt1Coord, endPt2Coord, 
+									closestFacetBaseCoord, closestFacetDir,
+									vertex_coord, printInfo);
+								if (printInfo){
+									print_collapse_info("collapse across facets [permitted]", 
+										endPt2, endPt1, &(facetBaseCoord[0]));
+									cout <<"endPT2Coord "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
+									cout <<"endPT1Coord "<< endPt1Coord[0]<<" "<<endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
+								}
+								dualiso_info.col_info.permitted_facet_restriction++;
+								update_collapse_edges(collapse_map,endPt1, endPt2);
+							}
+							else
+							{
+								dualiso_info.col_info.not_permitted_facet_restriction++;
+								if (printInfo){
+									print_collapse_info("collapse across facets [NOT permitted]", 
+									endPt2, endPt1, &(facetBaseCoord[0]));
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
 
 //Collapse across facets
 void collapse_across_facets(
@@ -768,11 +956,11 @@ void capQuadComputation(
 	bool printInfo
 	)
 {
-	if (printInfo)
-	{
-		cout <<"d1 "<< d1 <<" sepvert "<< iso_vlist[d1].sep_vert<< " degree "<<iso_vlist[d1].ver_degree <<endl;
-		cout <<"d2 "<< d2 <<" sepvert "<< iso_vlist[d2].sep_vert<< " degree "<<iso_vlist[d2].ver_degree <<endl;
-	}
+	//if (printInfo)
+	//{
+	//	cout <<"d1 "<< d1 <<" sepvert "<< iso_vlist[d1].sep_vert<< " degree "<<iso_vlist[d1].ver_degree <<endl;
+	//	cout <<"d2 "<< d2 <<" sepvert "<< iso_vlist[d2].sep_vert<< " degree "<<iso_vlist[d2].ver_degree <<endl;
+	//}
 	if (iso_vlist[d1].sep_vert == iso_vlist[d2].sep_vert
 		&& iso_vlist[d1].ver_degree == 3 && iso_vlist[d2].ver_degree == 3)
 	{ 
@@ -786,7 +974,7 @@ void capQuadComputation(
 		IJK::ARRAY<GRID_COORD_TYPE> d1EdgeBase(DIM3,0);
 
 		find_closest_edge_and_distance(DIM3, &(d2Coord[0]), edgeDir, d2EdgeBase, closestDistance);
-		if ( printInfo)
+		/*if ( printInfo)
 		{
 			cout <<"close distance "<< closestDistance <<endl;
 			cout <<scalar_grid.ComputeVertexIndex(&d2EdgeBase[0])
@@ -795,7 +983,7 @@ void capQuadComputation(
 			cout <<"d2edgeBase "<< d2EdgeBase[0]<<" "<<d2EdgeBase[1]<<" "<<d2EdgeBase[2]<<endl;
 			cout <<"d2coord " << d2Coord[0]<<" "<<d2Coord[1]<<" "<<d2Coord[2]<<endl;
 
-		}
+		}*/
 		if(closestDistance < epsilon)
 		{
 
@@ -811,7 +999,7 @@ void capQuadComputation(
 						,collapse_map, edgeBase, edgeDir, dualiso_info);
 
 					dualiso_info.cp_info.moved2Edge++;
-					if ( printInfo)
+					/*if ( printInfo)
 					{
 						cout <<"*** CapQuad **** "
 							<<"quad index "<<quad_vert[VERT_PER_QUAD*q] <<" coord "
@@ -839,20 +1027,20 @@ void capQuadComputation(
 						cout <<"Edgebase "
 							<<edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
 						cout <<"Edge dir "<< edgeDir <<endl;
-					}
+					}*/
 				}
 			}
 		}
 		else
 		{
 			find_closest_edge_and_distance(DIM3, &(d1Coord[0]), edgeDir, d1EdgeBase, closestDistance);
-			if ( printInfo)
+			/*if ( printInfo)
 			{
 				cout <<"close distance "<< closestDistance <<endl;
 				cout <<scalar_grid.ComputeVertexIndex(&d2EdgeBase[0])
 					<<" == "<< scalar_grid.ComputeVertexIndex(&edgeBase[0])<<endl;
 
-			}
+			}*/
 			if (closestDistance <   epsilon)
 			{
 				if (scalar_grid.ComputeVertexIndex(&d1EdgeBase[0])
@@ -865,7 +1053,7 @@ void capQuadComputation(
 							,collapse_map, edgeBase, edgeDir, dualiso_info);
 
 						dualiso_info.cp_info.moved2Edge++;
-						if ( printInfo)
+						/*if ( printInfo)
 						{
 							cout <<"*** CapQuad *** "
 								<<quad_vert[VERT_PER_QUAD*q] <<" "
@@ -875,7 +1063,7 @@ void capQuadComputation(
 							cout <<"edgebase "
 								<<edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<endl;
 							cout <<"dir "<< edgeDir <<endl;
-						}
+						}*/
 					}
 				}
 			}
@@ -941,10 +1129,10 @@ void collapse_caps (
 		D = find_vertex(collapse_map,D);
 		bool flagCapQuad = false;
 
-		if (printInfo)
-		{
-			cout <<"q "<< q<<" quad indexUpdated to "<< A <<" "<<B<<" "<<C<<" "<<D <<endl; 
-		}
+		//if (printInfo)
+		//{
+		//	cout <<"q "<< q<<" quad indexUpdated to "<< A <<" "<<B<<" "<<C<<" "<<D <<endl; 
+		//}
 
 		IJK::ARRAY<GRID_COORD_TYPE> edgeBase(DIM3,0);
 		IJK::ARRAY<COORD_TYPE> BCoord(DIM3,0);
@@ -959,11 +1147,11 @@ void collapse_caps (
 
 		computeEdgeDual2q( q, B, iso_vlist, orth_dir, edgeBase, edgeDir);
 
-		if (printInfo)
-		{
-			cout <<"edgebase "<< edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<" edgeDir "<< edgeDir <<endl;
+		//if (printInfo)
+		//{
+		//	cout <<"edgebase "<< edgeBase[0]<<" "<<edgeBase[1]<<" "<<edgeBase[2]<<" edgeDir "<< edgeDir <<endl;
 
-		}
+		//}
 		capQuadComputation(A,B, ACoord, BCoord, q, quad_vert, vertex_coord,
 			scalar_grid, epsilon, notDegreeThree, iso_vlist, 
 			edgeBase, edgeDir, flagCapQuad, collapse_map, dualiso_info, printInfo);
@@ -1027,9 +1215,19 @@ void QCOLLAPSE::dual_collapse(
 			epsilon, iso_vlist, collapse_map, dualiso_info, dualiso_data.flag_collapse_debug);
 	}
 	t1=clock();
+	if (dualiso_data.flag_use_collapse_B)
+	{
 
-	collapse_across_facets(scalar_grid, isodual_table, iso_vlist, quad_vert,
-		vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+		cout <<"VERSION B "<< endl;
+		collapse_across_facetsB(scalar_grid, isodual_table, iso_vlist, quad_vert,
+			vertex_coord, orth_dir, collapse_map, epsilon,
+			dualiso_data.flag_collapse_debug, dualiso_info);
+	}
+	else
+	{
+		collapse_across_facets(scalar_grid, isodual_table, iso_vlist, quad_vert,
+			vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+	}
 	t2=clock();
 
 	collapse_across_edges(scalar_grid, isodual_table, iso_vlist, quad_vert,

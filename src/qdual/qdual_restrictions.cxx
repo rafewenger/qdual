@@ -362,7 +362,7 @@ void set_restrictionsB(
 		{
 			GRID_COORD_TYPE * coord = new GRID_COORD_TYPE[3];
 			scalar_grid.ComputeCoord(end0,coord);
-			cout <<"\n\nedge "<<end0<<"("<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<") ";
+			cout <<"\nRestricted edge "<<end0<<"("<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<") ";
 			scalar_grid.ComputeCoord(end1,coord);
 			cout <<end1<<" ("<< coord[0]<<" "<<coord[1]<<" "<<coord[2]<<")"<<endl;
 		}

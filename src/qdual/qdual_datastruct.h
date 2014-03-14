@@ -177,6 +177,7 @@ namespace QDUAL {
 		bool flag_move_vertices;
 		bool flag_cap_col;// cap collapse
 		bool flag_delete_isolate;
+		bool flag_use_collapse_B; // use the new version of collapse
 
 		/// flag_V1w_close Controls generation of random vertex positions.
 		///   If true, isosurface vertices with degree dimension

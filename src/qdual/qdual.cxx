@@ -208,7 +208,7 @@ void QDUAL::quality_dual_contouring
 			dualiso_data.qdual_epsilon, collapse_map, dualiso_info);
 		t3=clock();
 		IJK::clock2seconds(t3-t2, dualiso_info.time.dual_collapse);
-
+		
 		// Delete Isolated vertices
 		if(dualiso_data.flag_delete_isolate)
 			delIsolated(dual_isosurface.isopoly_vert, isolatedList, dualiso_data.ScalarGrid(),
@@ -241,6 +241,7 @@ void QDUAL::quality_dual_contouring
 			t5=clock();
 			IJK::clock2seconds(t5-t4, dualiso_info.time.triangulate);
 		}
+		
 	}
 	// store times
 	clock_t t_end = clock();
