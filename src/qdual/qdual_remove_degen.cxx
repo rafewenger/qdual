@@ -501,6 +501,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 {
 	const int num_quad = quadVert.size()/VERT_PER_QUAD;
 	IJK::reorder_quad_vertices(quadVert);
+	QTRIANGULATE::reset_degree_per_vertex(VERT_PER_QUAD, quadVert, iso_vlist);
 	compute_degree_per_vertex(4, quadVert, iso_vlist);
 	compute_degree_per_vertex(3, tri_vert, iso_vlist);
 

@@ -415,7 +415,7 @@ namespace QDUAL {
 	public :
 		int permitted_facet_restriction;
 		int permitted_vertex_restriction;
-		int permitted_edge_restriction;
+		int permitted_edge_collapse;
 
 		int not_permitted_facet_restriction;
 		int not_permitted_vertex_restriction;
@@ -425,7 +425,7 @@ namespace QDUAL {
 			not_permitted_edge_restriction=0;
 			not_permitted_facet_restriction=0;
 			not_permitted_vertex_restriction=0;
-			permitted_edge_restriction=0;
+			permitted_edge_collapse=0;
 			permitted_facet_restriction=0;
 			permitted_vertex_restriction=0;
 		}

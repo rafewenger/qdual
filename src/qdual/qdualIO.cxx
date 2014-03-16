@@ -989,7 +989,7 @@ void QDUAL::report_iso_info
 		cout <<"	Num isosurface boxes: "<< dualiso_info.rs_info.restriction_CList_size << endl;
 		cout <<"\nCollapse info" << endl;
 		cout <<"	Collapse across facets: "<<dualiso_info.col_info.permitted_facet_restriction<<endl;
-		cout <<"	Collapse around edges: "<<dualiso_info.col_info.permitted_edge_restriction<<endl;
+		cout <<"	Collapse around edges: "<<dualiso_info.col_info.permitted_edge_collapse<<endl;
 		cout <<"	Collapse around vertices: "<<dualiso_info.col_info.permitted_vertex_restriction<<endl;
 		cout <<"	Not permitted facet restriction: "<<dualiso_info.col_info.not_permitted_facet_restriction<<endl;
 		cout <<"	Not permitted edge restriction: "<<dualiso_info.col_info.not_permitted_edge_restriction<<endl;
