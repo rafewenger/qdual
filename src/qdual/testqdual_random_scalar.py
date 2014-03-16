@@ -9,7 +9,18 @@ axisSize = 10;
 maxVal = 5;
 isovalue = 2.1;
 seed0 = 12345;
+flag_collapseB = False;
+flag_collapseC = False;
 epsilon = 0.3;
+
+# Function get_flag
+def get_flag(option, option_list):
+    flag = False;
+    argument = None;
+    for i in range(len(option_list)) :
+        if (option_list[i] == option):
+            flag = True;
+    return(flag);
 
 # Function get_argument
 def get_argument(option, option_list):
@@ -45,7 +56,14 @@ def runqdual():
     os.system(ijkgenscalar_command_line);
 
     qdual_command_line = 'qdual -s -trimesh -move_vertex ' + \
-                         '-epsilon ' + str(epsilon) + \
+                         '-epsilon ' + str(epsilon);
+    if (flag_collapseB):
+        qdual_command_line = qdual_command_line + ' -collapseB';
+
+    if (flag_collapseC):
+        qdual_command_line = qdual_command_line + ' -collapseC';
+
+    qdual_command_line = qdual_command_line + \
                          ' -o ' + offFile + ' ' + str(isovalue) + \
                          ' random.nrrd';
     
@@ -94,6 +112,14 @@ flagFound, argument = get_argument('-epsilon', command_options);
 if (flagFound):
     epsilon = float(argument);
     command_options = strip_option('-epsilon', 1, command_options);
+
+flag_collapseB = get_flag('-collapseB', command_options);
+if (flag_collapseB):
+    command_options = strip_option('-collapseB', 0, command_options);
+
+flag_collapseC = get_flag('-collapseC', command_options);
+if (flag_collapseC):
+    command_options = strip_option('-collapseC', 0, command_options);
 
 
 seed = seed0;
