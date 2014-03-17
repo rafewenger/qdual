@@ -512,11 +512,13 @@ bool isEpsilonCloseToGridEdge
 		}
 	}
 	if (closestEdgeDist2Endpt <= epsilon)
-	{
+	{	
 		return true;
 	}
 	else
+	{
 		return false;
+	}
 }
 
 
@@ -723,7 +725,7 @@ bool isClose2Edge(
 }
 //Sub function for collapse across edgesB
 //Returns the facetBaseCoord for the common facet and the facetDir.
-void findFacetCommonToEndPts(
+bool findFacetCommonToEndPts(
 	const VERTEX_INDEX endPt1,
 	const VERTEX_INDEX endPt2,
 	const std::vector<COORD_TYPE> & vertex_coord,
@@ -738,23 +740,27 @@ void findFacetCommonToEndPts(
 	const COORD_TYPE * cube1Coord = &(iso_vlist[endPt2].cube_coord[0]);
 	//find facetDir
 	facetDir=-1;
+	int count=0;
 	for (int d = 0; d < DIM3; d++)
 	{
 		if (!AreSame<COORD_TYPE>(cube0Coord[d],cube1Coord[d]))
 		{
 			facetDir=d;
-			break;
+			count++;
 		}
 	}
-	if(facetDir==-1)
+
+	if (count==1)
 	{
-		cerr<<"ERROR facetDir "<< facetDir<<endl;
+		DIRECTION_TYPE d1 = (facetDir+1)%DIM3;
+		DIRECTION_TYPE d2 = (facetDir+2)%DIM3;
+		facetBaseCoord[d1]= cube0Coord[d1];
+		facetBaseCoord[d2]= cube0Coord[d2];
+		facetBaseCoord[facetDir] = max(cube0Coord[facetDir], cube1Coord[facetDir]);
+		return true;
 	}
-	DIRECTION_TYPE d1 = (facetDir+1)%DIM3;
-	DIRECTION_TYPE d2 = (facetDir+2)%DIM3;
-	facetBaseCoord[d1]= cube0Coord[d1];
-	facetBaseCoord[d2]= cube0Coord[d2];
-	facetBaseCoord[facetDir] = max(cube0Coord[facetDir], cube1Coord[facetDir]);
+	else
+		return false;
 }
 
 //Collapse across facets version C
@@ -782,59 +788,86 @@ void collapse_across_facetsC
 		{
 			QUAD_INDEX endPt1=quad_vert[q*VERT_PER_QUAD+v1];
 			QUAD_INDEX endPt2=quad_vert[q*VERT_PER_QUAD+v2];
+			if(printInfo){
+				cout <<"\nCollapseAcrossFacets quad "<< q<<"  endpts "<< endPt1 <<" "<<endPt2 <<endl;
+			}
 			endPt1=find_vertex(collapse_map, endPt1);
 			endPt2=find_vertex(collapse_map, endPt2);
+
 			if(endPt1!=endPt2){
 				const COORD_TYPE* endPt1Coord=&(vertex_coord[DIM3*endPt1]);
 				const COORD_TYPE* endPt2Coord=&(vertex_coord[DIM3*endPt2]);
 				IJK::ARRAY<GRID_COORD_TYPE> facetBaseCoord(DIM3,0);
 				DIRECTION_TYPE facetDir=-1;
-				findFacetCommonToEndPts
+				bool hasCommonFacet = findFacetCommonToEndPts
 					(endPt1, endPt2,  vertex_coord, iso_vlist, printInfo, facetBaseCoord, facetDir);
+				if(printInfo){
+					cout <<"Updated endpts "<< endPt1 <<" "<<endPt2 <<endl;
+					cout <<"endpt coords ("<<endPt1<<") "<< endPt1Coord[0] <<" "<< endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
+					cout <<" ("<<endPt2<<") "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
+					cout <<"facetBaseCoord "<< facetBaseCoord[0]<<" "<<facetBaseCoord[1]<<" "<<facetBaseCoord[2]<<endl;
+				}
+				if (hasCommonFacet){
+					bool endPt1EpsilonClose2F =
+						is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
+					bool endPt2EpsilonClose2F =
+						is_epsilon_close(endPt2Coord, facetBaseCoord, facetDir, epsilon);
+					bool endPt1IsPermittedAcrossF=
+						is_permitted_collapse (iso_vlist, endPt1,  &(facetBaseCoord[0]),
+						facetDir,  FACET);
+					bool endPt2IsPermittedAcrossF=
+						is_permitted_collapse (iso_vlist, endPt2,  &(facetBaseCoord[0]),
+						facetDir,  FACET);
+					if(endPt1EpsilonClose2F && endPt2EpsilonClose2F 
+						&& endPt1IsPermittedAcrossF && endPt2IsPermittedAcrossF)
+					{
+						IJK::ARRAY<GRID_COORD_TYPE> closestEdgeBase2EndPt1(DIM3, 0);
+						DIRECTION_TYPE closestEdge2EndPt1Dir=-1;
+						bool isEndPt1EpsilonCloseToGridEdge = isEpsilonCloseToGridEdge 
+							( endPt1, endPt1Coord, epsilon, closestEdgeBase2EndPt1, closestEdge2EndPt1Dir);
 
-				bool endPt1EpsilonClose2F =
-					is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
-				bool endPt2EpsilonClose2F =
-					is_epsilon_close(endPt2Coord, facetBaseCoord, facetDir, epsilon);
-				bool endPt1IsPermittedAcrossF=
-					is_permitted_collapse (iso_vlist, endPt1,  &(facetBaseCoord[0]),
-					facetDir,  FACET);
-				bool endPt2IsPermittedAcrossF=
-					is_permitted_collapse (iso_vlist, endPt2,  &(facetBaseCoord[0]),
-					facetDir,  FACET);
-				if(endPt1EpsilonClose2F && endPt2EpsilonClose2F 
-					&& endPt1IsPermittedAcrossF && endPt2IsPermittedAcrossF)
-				{
-					IJK::ARRAY<GRID_COORD_TYPE> closestEdgeBase2EndPt1(DIM3, 0);
-					DIRECTION_TYPE closestEdge2EndPt1Dir=-1;
-					bool isEndPt1EpsilonCloseToGridEdge = isEpsilonCloseToGridEdge 
-						( endPt1, endPt1Coord, epsilon, closestEdgeBase2EndPt1, closestEdge2EndPt1Dir);
-				
-					IJK::ARRAY<GRID_COORD_TYPE> closestEdgeBase2EndPt2(DIM3, 0);
-					DIRECTION_TYPE closestEdge2EndPt2Dir=-1;
-					bool isEndPt2EpsilonCloseToGridEdge = isEpsilonCloseToGridEdge 
-						( endPt2, endPt2Coord, epsilon, closestEdgeBase2EndPt2, closestEdge2EndPt2Dir);
-					
-					if ((isEndPt1EpsilonCloseToGridEdge == false)
-						&&(isEndPt2EpsilonCloseToGridEdge == false))
-					{
-						collapseToFacet
-							( endPt1, endPt1Coord, endPt2Coord, facetBaseCoord,
-							facetDir, vertex_coord, iso_vlist, printInfo);
-						dualiso_info.col_info.permitted_facet_restriction++;
-						update_collapse_edges(collapse_map,endPt1, endPt2);
-					}
-					else if(isEndPt1EpsilonCloseToGridEdge==false)
-					{
-						update_collapse_edges(collapse_map,endPt1, endPt2);
-						dualiso_info.col_info.permitted_edge_collapse++;
-						iso_vlist[endPt1].flag_fixed=true;
-					}
-					else if(isEndPt2EpsilonCloseToGridEdge==false)
-					{
-						update_collapse_edges(collapse_map,endPt2, endPt1);
-						dualiso_info.col_info.permitted_edge_collapse++;
-						iso_vlist[endPt2].flag_fixed=true;
+						IJK::ARRAY<GRID_COORD_TYPE> closestEdgeBase2EndPt2(DIM3, 0);
+						DIRECTION_TYPE closestEdge2EndPt2Dir=-1;
+						bool isEndPt2EpsilonCloseToGridEdge = isEpsilonCloseToGridEdge 
+							( endPt2, endPt2Coord, epsilon, closestEdgeBase2EndPt2, closestEdge2EndPt2Dir);
+
+						if ((isEndPt1EpsilonCloseToGridEdge == false)
+							&&(isEndPt2EpsilonCloseToGridEdge == false))
+						{
+							collapseToFacet
+								( endPt1, endPt1Coord, endPt2Coord, facetBaseCoord,
+								facetDir, vertex_coord, iso_vlist, printInfo);
+							dualiso_info.col_info.permitted_facet_restriction++;
+							update_collapse_edges(collapse_map,endPt1, endPt2);
+							if(printInfo)
+							{
+								cout <<"endpt "<< endPt1 <<"  and endpt "<< endPt2 <<" are not close to any edge\n";
+								cout <<isEndPt1EpsilonCloseToGridEdge<<" "<<isEndPt2EpsilonCloseToGridEdge<<endl;
+								cout <<"**endpt "<< endPt2 <<" collapses to "<< endPt1 << endl;
+							}
+						}
+						else if(isEndPt1EpsilonCloseToGridEdge==false)
+						{
+							update_collapse_edges(collapse_map,endPt1, endPt2);
+							dualiso_info.col_info.permitted_edge_collapse++;
+							iso_vlist[endPt1].flag_fixed=true;
+							if(printInfo)
+							{
+								cout <<"endpt "<< endPt1 <<"  and endpt "<< endPt2 <<". endpt1 is not close to any edge\n";
+								cout <<"**endpt "<< endPt2 <<" collapses to "<< endPt1 << endl;
+							}
+						}
+						else if(isEndPt2EpsilonCloseToGridEdge==false)
+						{
+							update_collapse_edges(collapse_map,endPt2, endPt1);
+							dualiso_info.col_info.permitted_edge_collapse++;
+							iso_vlist[endPt2].flag_fixed=true;
+							if(printInfo)
+							{
+								cout <<"endpt "<< endPt1 <<"  and endpt "<< endPt2 <<". endpt2 is not close to any edge\n";
+								cout <<"**endpt "<< endPt1 <<" collapses to "<< endPt2 << endl;
+							}
+						}
 					}
 				}
 			}
@@ -874,108 +907,109 @@ void collapse_across_edgesB(
 			{
 				IJK::ARRAY<GRID_COORD_TYPE> facetBaseCoord(DIM3,0);
 				DIRECTION_TYPE facetDir=-1;
-				findFacetCommonToEndPts
+				bool hasCommonFacet = findFacetCommonToEndPts
 					(endPt1, endPt2,  vertex_coord, iso_vlist, printInfo, facetBaseCoord, facetDir);
-
-				bool endPt1EpsilonClose2F =
-					is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
-				bool endPt2EpsilonClose2F =
-					is_epsilon_close(endPt2Coord, facetBaseCoord, facetDir, epsilon);
-				bool endPt1IsPermittedAcrossF=
-					is_permitted_collapse (iso_vlist, endPt1,  &(facetBaseCoord[0]),
-					facetDir,  FACET);
-				bool endPt2IsPermittedAcrossF=
-					is_permitted_collapse (iso_vlist, endPt2,  &(facetBaseCoord[0]),
-					facetDir,  FACET);
-				if(endPt1EpsilonClose2F && endPt2EpsilonClose2F 
-					&& endPt1IsPermittedAcrossF && endPt2IsPermittedAcrossF)
-				{
-					//find Grid edge closest to endPt1
-					IJK::ARRAY<GRID_COORD_TYPE> tempEdgeBaseCoord(DIM3, 0);
-					IJK::ARRAY<GRID_COORD_TYPE> closestEdgeBase2EndPt1(DIM3, 0);
-					float tempDistance=0.0;
-					DIRECTION_TYPE closestEdge2EndPt1Dir=-1;
-					float closestEdgeDist2Endpt1=0.0;
-					for (int d = 0; d < DIM3; d++)
+				if(hasCommonFacet){
+					bool endPt1EpsilonClose2F =
+						is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
+					bool endPt2EpsilonClose2F =
+						is_epsilon_close(endPt2Coord, facetBaseCoord, facetDir, epsilon);
+					bool endPt1IsPermittedAcrossF=
+						is_permitted_collapse (iso_vlist, endPt1,  &(facetBaseCoord[0]),
+						facetDir,  FACET);
+					bool endPt2IsPermittedAcrossF=
+						is_permitted_collapse (iso_vlist, endPt2,  &(facetBaseCoord[0]),
+						facetDir,  FACET);
+					if(endPt1EpsilonClose2F && endPt2EpsilonClose2F 
+						&& endPt1IsPermittedAcrossF && endPt2IsPermittedAcrossF)
 					{
-						find_closest_edge_and_distance
-							(DIM3, endPt1Coord, d, tempEdgeBaseCoord, tempDistance);
-						if(d==0)
+						//find Grid edge closest to endPt1
+						IJK::ARRAY<GRID_COORD_TYPE> tempEdgeBaseCoord(DIM3, 0);
+						IJK::ARRAY<GRID_COORD_TYPE> closestEdgeBase2EndPt1(DIM3, 0);
+						float tempDistance=0.0;
+						DIRECTION_TYPE closestEdge2EndPt1Dir=-1;
+						float closestEdgeDist2Endpt1=0.0;
+						for (int d = 0; d < DIM3; d++)
 						{
-							closestEdge2EndPt1Dir = 0;
-							closestEdgeDist2Endpt1 = tempDistance;
-							closestEdgeBase2EndPt1[0] = tempEdgeBaseCoord[0];
-							closestEdgeBase2EndPt1[1] = tempEdgeBaseCoord[1];
-							closestEdgeBase2EndPt1[2] = tempEdgeBaseCoord[2];
-						}
-						if (tempDistance < closestEdgeDist2Endpt1 )
-						{
-							closestEdge2EndPt1Dir = d;
-							closestEdgeDist2Endpt1 = tempDistance;
-							closestEdgeBase2EndPt1[0] = tempEdgeBaseCoord[0];
-							closestEdgeBase2EndPt1[1] = tempEdgeBaseCoord[1];
-							closestEdgeBase2EndPt1[2] = tempEdgeBaseCoord[2];
-						}
-					}
-					if (closestEdgeDist2Endpt1 <= epsilon)
-					{
-						find_closest_edge_and_distance
-							(DIM3, endPt2Coord, closestEdge2EndPt1Dir,  tempEdgeBaseCoord, tempDistance);
-						if ( tempDistance <= epsilon)
-						{
-							if (compareCoords<GRID_COORD_TYPE>( tempEdgeBaseCoord, closestEdgeBase2EndPt1))
+							find_closest_edge_and_distance
+								(DIM3, endPt1Coord, d, tempEdgeBaseCoord, tempDistance);
+							if(d==0)
 							{
-								collapseToFacet
-									(endPt1, endPt1Coord, endPt2Coord, closestEdgeBase2EndPt1,
-									closestEdge2EndPt1Dir, vertex_coord, iso_vlist, printInfo);
-								update_collapse_edges(collapse_map,endPt1, endPt2);
-								dualiso_info.col_info.permitted_edge_collapse++;
+								closestEdge2EndPt1Dir = 0;
+								closestEdgeDist2Endpt1 = tempDistance;
+								closestEdgeBase2EndPt1[0] = tempEdgeBaseCoord[0];
+								closestEdgeBase2EndPt1[1] = tempEdgeBaseCoord[1];
+								closestEdgeBase2EndPt1[2] = tempEdgeBaseCoord[2];
+							}
+							if (tempDistance < closestEdgeDist2Endpt1 )
+							{
+								closestEdge2EndPt1Dir = d;
+								closestEdgeDist2Endpt1 = tempDistance;
+								closestEdgeBase2EndPt1[0] = tempEdgeBaseCoord[0];
+								closestEdgeBase2EndPt1[1] = tempEdgeBaseCoord[1];
+								closestEdgeBase2EndPt1[2] = tempEdgeBaseCoord[2];
 							}
 						}
-					}
-					/*
-					/// DEPRECATED ** NOT WORKING **
-					bool endPt1Close2Edge=
+						if (closestEdgeDist2Endpt1 <= epsilon)
+						{
+							find_closest_edge_and_distance
+								(DIM3, endPt2Coord, closestEdge2EndPt1Dir,  tempEdgeBaseCoord, tempDistance);
+							if ( tempDistance <= epsilon)
+							{
+								if (compareCoords<GRID_COORD_TYPE>( tempEdgeBaseCoord, closestEdgeBase2EndPt1))
+								{
+									collapseToFacet
+										(endPt1, endPt1Coord, endPt2Coord, closestEdgeBase2EndPt1,
+										closestEdge2EndPt1Dir, vertex_coord, iso_vlist, printInfo);
+									update_collapse_edges(collapse_map,endPt1, endPt2);
+									dualiso_info.col_info.permitted_edge_collapse++;
+								}
+							}
+						}
+						/*
+						/// DEPRECATED ** NOT WORKING **
+						bool endPt1Close2Edge=
 						isClose2Edge(endPt1, endPt1Coord, facetDir, epsilon, printInfo);
-					bool endPt2Close2Edge=
+						bool endPt2Close2Edge=
 						isClose2Edge(endPt2, endPt2Coord, facetDir, epsilon, printInfo);
 
-					if (endPt1Close2Edge && !endPt2Close2Edge)
-					{
+						if (endPt1Close2Edge && !endPt2Close2Edge)
+						{
 						if (printInfo){
-							print_collapse_info("\ncollapse across edges [permitted]", 
-								endPt2, endPt1, &(facetBaseCoord [0]));
-							cout <<"endPT2Coord "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
-							cout <<"endPT1Coord "<< endPt1Coord[0]<<" "<<endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
-							cout <<"is Endpt "<< endPt2 <<"  fixed ? "
-								<< iso_vlist[endPt2].flag_fixed <<endl;
-							cout <<"is Endpt "<< endPt1 <<"  fixed ? "
-								<< iso_vlist[endPt1].flag_fixed <<endl;
+						print_collapse_info("\ncollapse across edges [permitted]", 
+						endPt2, endPt1, &(facetBaseCoord [0]));
+						cout <<"endPT2Coord "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
+						cout <<"endPT1Coord "<< endPt1Coord[0]<<" "<<endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
+						cout <<"is Endpt "<< endPt2 <<"  fixed ? "
+						<< iso_vlist[endPt2].flag_fixed <<endl;
+						cout <<"is Endpt "<< endPt1 <<"  fixed ? "
+						<< iso_vlist[endPt1].flag_fixed <<endl;
 						}
 						collapseToFacet(endPt1, endPt1Coord, endPt2Coord, facetBaseCoord, facetDir, 
-							vertex_coord,  iso_vlist, printInfo);
+						vertex_coord,  iso_vlist, printInfo);
 						dualiso_info.col_info.permitted_edge_collapse++;
 						update_collapse_edges(collapse_map,endPt1, endPt2);
-					}
-					if (endPt2Close2Edge && !endPt1Close2Edge)
-					{
+						}
+						if (endPt2Close2Edge && !endPt1Close2Edge)
+						{
 						if (printInfo){
-							print_collapse_info("\ncollapse across edges [permitted]", 
-								endPt2, endPt1, &(facetBaseCoord [0]));
-							cout <<"endPT2Coord "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
-							cout <<"endPT1Coord "<< endPt1Coord[0]<<" "<<endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
-							cout <<"is Endpt "<< endPt2 <<"  fixed ? "
-								<< iso_vlist[endPt2].flag_fixed <<endl;
-							cout <<"is Endpt "<< endPt1 <<"  fixed ? "
-								<< iso_vlist[endPt1].flag_fixed <<endl;
+						print_collapse_info("\ncollapse across edges [permitted]", 
+						endPt2, endPt1, &(facetBaseCoord [0]));
+						cout <<"endPT2Coord "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
+						cout <<"endPT1Coord "<< endPt1Coord[0]<<" "<<endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
+						cout <<"is Endpt "<< endPt2 <<"  fixed ? "
+						<< iso_vlist[endPt2].flag_fixed <<endl;
+						cout <<"is Endpt "<< endPt1 <<"  fixed ? "
+						<< iso_vlist[endPt1].flag_fixed <<endl;
 						}
 						collapseToFacet(endPt1, endPt1Coord, endPt2Coord, facetBaseCoord, facetDir, 
-							vertex_coord, iso_vlist, printInfo);
+						vertex_coord, iso_vlist, printInfo);
 						update_collapse_edges(collapse_map,endPt1, endPt2);
 						dualiso_info.col_info.permitted_edge_collapse++;
-					}
-					*/
+						}
+						*/
 
+					}
 				}
 			}
 		}
@@ -1337,36 +1371,38 @@ void collapse_across_verticesB(
 				const COORD_TYPE* endPt2Coord=&(vertex_coord[DIM3*endPt2]);
 				IJK::ARRAY<GRID_COORD_TYPE> facetBaseCoord(DIM3,0);
 				DIRECTION_TYPE facetDir=-1;
-				findFacetCommonToEndPts
+				bool hasCommonFacet = findFacetCommonToEndPts
 					(endPt1, endPt2,  vertex_coord, iso_vlist, print_info, facetBaseCoord, facetDir);
-
-				bool endPt1EpsilonClose2F =
-					is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
-				bool endPt2EpsilonClose2F =
-					is_epsilon_close(endPt2Coord, facetBaseCoord, facetDir, epsilon);
-				bool endPt1IsPermittedAcrossF=
-					is_permitted_collapse (iso_vlist, endPt1,  &(facetBaseCoord[0]),
-					facetDir,  FACET);
-				bool endPt2IsPermittedAcrossF=
-					is_permitted_collapse (iso_vlist, endPt2,  &(facetBaseCoord[0]),
-					facetDir,  FACET);
-				if(endPt1EpsilonClose2F && endPt2EpsilonClose2F 
-					&& endPt1IsPermittedAcrossF && endPt2IsPermittedAcrossF)
+				if(hasCommonFacet)
 				{
-					if (print_info){
-						print_collapse_info("\ncollapse across vertices [permitted]", 
-							endPt2, endPt1, &(facetBaseCoord [0]));
-						cout <<"endPT2Coord "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
-						cout <<"endPT1Coord "<< endPt1Coord[0]<<" "<<endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
-						cout <<"is Endpt "<< endPt2 <<"  fixed ? "
-							<< iso_vlist[endPt2].flag_fixed <<endl;
-						cout <<"is Endpt "<< endPt1 <<"  fixed ? "
-							<< iso_vlist[endPt1].flag_fixed <<endl;
+					bool endPt1EpsilonClose2F =
+						is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
+					bool endPt2EpsilonClose2F =
+						is_epsilon_close(endPt2Coord, facetBaseCoord, facetDir, epsilon);
+					bool endPt1IsPermittedAcrossF=
+						is_permitted_collapse (iso_vlist, endPt1,  &(facetBaseCoord[0]),
+						facetDir,  FACET);
+					bool endPt2IsPermittedAcrossF=
+						is_permitted_collapse (iso_vlist, endPt2,  &(facetBaseCoord[0]),
+						facetDir,  FACET);
+					if(endPt1EpsilonClose2F && endPt2EpsilonClose2F 
+						&& endPt1IsPermittedAcrossF && endPt2IsPermittedAcrossF)
+					{
+						if (print_info){
+							print_collapse_info("\ncollapse across vertices [permitted]", 
+								endPt2, endPt1, &(facetBaseCoord [0]));
+							cout <<"endPT2Coord "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
+							cout <<"endPT1Coord "<< endPt1Coord[0]<<" "<<endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
+							cout <<"is Endpt "<< endPt2 <<"  fixed ? "
+								<< iso_vlist[endPt2].flag_fixed <<endl;
+							cout <<"is Endpt "<< endPt1 <<"  fixed ? "
+								<< iso_vlist[endPt1].flag_fixed <<endl;
+						}
+						collapseToFacet(endPt1, endPt1Coord, endPt2Coord, facetBaseCoord, facetDir, 
+							vertex_coord, iso_vlist, print_info);
+						update_collapse_edges(collapse_map,endPt1, endPt2);
+						dualiso_info.col_info.permitted_vertex_restriction++;
 					}
-					collapseToFacet(endPt1, endPt1Coord, endPt2Coord, facetBaseCoord, facetDir, 
-						vertex_coord, iso_vlist, print_info);
-					update_collapse_edges(collapse_map,endPt1, endPt2);
-					dualiso_info.col_info.permitted_vertex_restriction++;
 				}
 			}
 		}
