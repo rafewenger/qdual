@@ -48,6 +48,12 @@ using namespace QTRIANGULATE;
 using namespace NamedConstants;
 using namespace std;
 
+// Helper function for quality dual contouring
+// Help function for quality dual contouring.
+void setUpIsoVlist
+	(const DUALISO_DATA & dualiso_data, QDUAL_TABLE &qdual_table,
+	IJK::BOOL_GRID<DUALISO_GRID> &cube_boundary_grid,
+	std::vector<QDUAL::DUAL_ISOVERT> &iso_vlist);
 
 // **************************************************
 // DUAL CONTOURING (HYPERCUBES)
@@ -78,7 +84,6 @@ void QDUAL::quality_dual_contouring
 	ISO_MERGE_DATA merge_data(dimension, axis_size);
 
 	// List of isosurface vertices. 
-	// Class DUAL_ISOVERT contains cube_index, patch_index and table_index.
 	std::vector<DUAL_ISOVERT> iso_vlist;
 
 	bool flag_always_separate_opposite(true);
@@ -113,32 +118,8 @@ void QDUAL::quality_dual_contouring
 		cube_boundary_grid.SetAll(false);
 		flag_boundary_cubes(cube_boundary_grid);
 
-		//set variables in iso_vlist
-		COORD_TYPE *a = new COORD_TYPE[3];
-		for (int j=0;j<iso_vlist.size();j++)
-		{
-			iso_vlist[j].ver_degree=0;
-			iso_vlist[j].flag_restrictionC = false;
-			iso_vlist[j].flag_isolated = false;
-			iso_vlist[j].flag_fixed = false;
-
-			(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index,a);
-			//Set iso_vlist[j].cube_coord
-			for (int d=0; d<DIM3; d++)
-				iso_vlist[j].cube_coord.push_back(a[d]);
-
-			bool flag_boundary = false;
-			//this ones needs the cube boundaries
-			isBoundaryIsoVertex(j, iso_vlist, cube_boundary_grid,
-				qdual_table, flag_boundary);
-
-			if (flag_boundary)
-				iso_vlist[j].restricted_facets=255;
-			else
-				iso_vlist[j].restricted_facets=0;
-		}
-		delete[] a;
-
+		////set variables in iso_vlist
+		setUpIsoVlist( dualiso_data, qdual_table, cube_boundary_grid, iso_vlist);
 
 		hashQuadsDual2GridEdge(diagonalMap, dual_isosurface.isopoly_vert,
 			dual_isosurface.orth_dir, iso_vlist, dual_isosurface.vertex_coord);
@@ -576,3 +557,38 @@ void QDUAL::convert_quad_to_tri
 	}
 }
 
+// Help function for quality dual contouring.
+void setUpIsoVlist(
+	const DUALISO_DATA & dualiso_data,
+    QDUAL_TABLE &qdual_table,
+	IJK::BOOL_GRID<DUALISO_GRID> &cube_boundary_grid,
+	//returns
+	std::vector<QDUAL::DUAL_ISOVERT> &iso_vlist
+	)
+{
+	const int iso_vlistSize = iso_vlist.size();
+	//set variables in iso_vlist
+	IJK::ARRAY<COORD_TYPE> a (DIM3,0);
+	bool flag_boundary = false;
+	for (int j=0;j<iso_vlist.size();j++)
+	{
+		iso_vlist[j].ver_degree=0;
+		iso_vlist[j].flag_restrictionC = false;
+		iso_vlist[j].flag_isolated = false;
+		iso_vlist[j].flag_fixed = false;
+
+		(dualiso_data.ScalarGrid()).ComputeCoord(iso_vlist[j].cube_index, &(a[0]));
+		//Set iso_vlist[j].cube_coord
+		for (int d=0; d<DIM3; d++)
+			iso_vlist[j].cube_coord.push_back(a[d]);
+		flag_boundary = false;
+		//this ones needs the cube boundaries
+		isBoundaryIsoVertex(j, iso_vlist, cube_boundary_grid,
+			qdual_table, flag_boundary);
+
+		if (flag_boundary)
+			iso_vlist[j].restricted_facets=255;
+		else
+			iso_vlist[j].restricted_facets=0;
+	}
+}

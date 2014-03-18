@@ -1074,16 +1074,17 @@ void QDUAL::report_dualiso_time
 	const char * mesh_type_string)
 
 {
-	cout << "CPU time to run ijkdual: " 
-		<< qdual_time.total << " seconds." << endl;
-	cout << "    Time to extract " << mesh_type_string << " triangles: "
-		<< qdual_time.extract << " seconds." << endl;
-	cout << "    Time to merge identical "
-		<< mesh_type_string << " vertices: " 
-		<< qdual_time.merge << " seconds." << endl;
-	cout << "    Time to position "
-		<< mesh_type_string << " vertices: "
-		<< qdual_time.position << " seconds." << endl;
+	//***DEBUG RED****
+	//cout << "CPU time to run ijkdual: " 
+	//	<< qdual_time.total << " seconds." << endl;
+	//cout << "    Time to extract " << mesh_type_string << " triangles: "
+	//	<< qdual_time.extract << " seconds." << endl;
+	//cout << "    Time to merge identical "
+	//	<< mesh_type_string << " vertices: " 
+	//	<< qdual_time.merge << " seconds." << endl;
+	//cout << "    Time to position "
+	//	<< mesh_type_string << " vertices: "
+	//	<< qdual_time.position << " seconds." << endl;
 
 	if (!io_info.flag_NO_collapse)
 	{
@@ -1109,10 +1110,6 @@ void QDUAL::report_dualiso_time
 	}
 }
 
-// red
-//void QDUAL::report_time
-//	(const IO_INFO & io_info, const IO_TIME & io_time, 
-//	const DUALISO_TIME & dualiso_time, const double total_elapsed_time)
 void QDUAL::report_time
 	(const IO_INFO & io_info, const IO_TIME & io_time, 
 	const QDUAL_TIME & qdual_time, const double total_elapsed_time)
