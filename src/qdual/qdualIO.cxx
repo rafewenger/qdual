@@ -276,10 +276,10 @@ void QDUAL::parse_command_line(int argc, char **argv, IO_INFO & io_info)
 			io_info.flag_no_restriction_AB = true;
 			break;
 		case NO_RESTR_B:
-			io_info.flag_no_restriciton_B = true;
+			io_info.flag_no_restriction_B = true;
 			break;
 		case NO_RESTR_C:
-			io_info.flag_no_restriciton_C = true;
+			io_info.flag_no_restriction_C = true;
 			break;
 
 		};
@@ -1103,7 +1103,7 @@ void QDUAL::report_dualiso_time
 			<< qdual_time.collapse_caps << " seconds"<<endl;
 		cout <<"Time to triangulate quadrilaterals " 
 			<< qdual_time.triangulate << " seconds"<<endl;
-		cout <<"Total time [set restricitons+collapse+triangulate] "
+		cout <<"Total time [set restrictions + collapse + triangulate] "
 			<< qdual_time.dual_collapse+qdual_time.triangulate
 			+qdual_time.set_restrictions <<"  seconds "<<endl;
 		cout <<endl;

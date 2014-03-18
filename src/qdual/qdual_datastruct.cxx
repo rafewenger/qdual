@@ -64,8 +64,8 @@ void DUALISO_DATA_FLAGS::Init()
   quad_tri_method = UNDEFINED_TRI;
   flag_NO_collapse = false;
   flag_no_restriction_AB=false;
-  flag_no_restriciton_B=false;
-  flag_no_restriciton_C=false;
+  flag_no_restriction_B=false;
+  flag_no_restriction_C=false;
   flag_collapse_info = false;
   flag_collapse_debug = false;
   qdual_epsilon = 0.33;

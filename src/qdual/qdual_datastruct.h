@@ -168,8 +168,8 @@ namespace QDUAL {
 		/// Do not collapse
 		bool flag_NO_collapse;
 		bool flag_no_restriction_AB;
-		bool flag_no_restriciton_B;
-		bool flag_no_restriciton_C;
+		bool flag_no_restriction_B;
+		bool flag_no_restriction_C;
 		//store info regarding collapses
 		bool flag_collapse_info; 
 		bool flag_collapse_debug;
