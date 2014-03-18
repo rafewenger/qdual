@@ -999,20 +999,20 @@ void QDUAL::report_iso_info
 		cout <<"	Not permitted edge restriction: "<<dualiso_info.col_info.not_permitted_edge_restriction<<endl;
 		cout <<"	Not permitted vertex restriction: "<< dualiso_info.col_info.not_permitted_vertex_restriction<<endl;
 
+		if (output_info.flag_move_vertices)
+		{
+			cout <<"Move Vertices Info"<<endl;
+			cout <<"	Moved from edges: "<<dualiso_info.mv_info.moveFromEdges<<endl;
+			cout <<"	Moved from vertices: "<<dualiso_info.mv_info.moveFromVertices<<endl;
+		}
+		if(output_info.flag_cap_col)
+		{
+			cout <<"Cap Collapse info:"<<endl;
+			cout <<"	Number of move to edge "<<dualiso_info.cp_info.moved2Edge <<endl;
+			cout <<"	Number of cap quad "<<dualiso_info.cp_info.numCapQuad<<endl;
+		}
 	}
-	if (output_info.flag_move_vertices)
-	{
-		cout <<"Move Vertices Info"<<endl;
-		cout <<"	Moved from edges: "<<dualiso_info.mv_info.moveFromEdges<<endl;
-		cout <<"	Moved from vertices: "<<dualiso_info.mv_info.moveFromVertices<<endl;
-	}
-	if(output_info.flag_cap_col)
-	{
-		cout <<"Cap Collapse info:"<<endl;
-		cout <<"	Number of move to edge "<<dualiso_info.cp_info.moved2Edge <<endl;
-		cout <<"	Number of cap quad "<<dualiso_info.cp_info.numCapQuad<<endl;
-	}
-
+	
 }
 
 void QDUAL::report_iso_info
