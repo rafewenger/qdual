@@ -26,6 +26,9 @@ os.system(ijkmeshinfo_command_line)
 ijkmeshinfo_command_line = 'ijkmeshinfo -out_min_angle out.off'
 os.system(ijkmeshinfo_command_line)
 
+ijkmeshinfo_command_line = 'ijkmeshinfo -internal -out_min_angle out.off'
+os.system(ijkmeshinfo_command_line)
+
 
 
 

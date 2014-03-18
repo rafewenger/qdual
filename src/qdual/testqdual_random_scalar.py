@@ -79,6 +79,10 @@ def runqdual():
                                offFile;
     os.system(ijkmeshinfo_command_line);
 
+    ijkmeshinfo_command_line = 'ijkmeshinfo -internal -out_min_angle ' + \
+                               offFile;
+    os.system(ijkmeshinfo_command_line);
+
     ijkmeshinfo_command_line = 'ijkmeshinfo -out_min_angle ' + offFile;
     os.system(ijkmeshinfo_command_line);
 

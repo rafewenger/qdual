@@ -9,10 +9,10 @@ separator = ' ';
 flag_genscalar = False;
 genscalar_header = [ 'fileName', 'axisSize', 'isovalue', 'epsilon',
                      'genscalarSeed', 'maxVal',
-                     'minAngle', 'Manifold', 'Boundary'];
+                     'minAngle', 'minInternalAngle', 'Manifold', 'Boundary'];
 random_pos_header = [ 'fileName', 'isovalue', 'epsilon',
                       'qdualSeed', 'randomNumI',
-                      'minAngle', 'Manifold', 'Boundary'];
+                      'minAngle', 'minInternalAngle', 'Manifold', 'Boundary'];
 
 # get argument
 def getArgument(option, line, init_value):
@@ -71,6 +71,8 @@ maxval = 0;
 epsilon = '***';
 flag_passed_manifold = False;
 flag_passed_boundary = False;
+min_angle = 180;
+min_internal_angle = 180;
 
 if (flag_genscalar) :
     header = separator.join(genscalar_header);
@@ -90,6 +92,8 @@ for line in infile:
         words = line.split();
         qdualFile = words[-1];
         isovalue = words[-2];
+        min_angle = 180;
+        min_internal_angle = 180;
 
     matchObj = re.match('Executing...ijkgenscalar', line);
     if (matchObj) :
@@ -111,6 +115,11 @@ for line in infile:
     if (matchObj) :
         flag_passed_boundary = False;
 
+    matchObj = re.match('Min internal polygon angle', line)
+    if (matchObj) :
+        words = line.split()
+        min_internal_angle = words[-1]
+        
     matchObj = re.match('Min polygon angle', line)
     if (matchObj) :
         words = line.split()
@@ -121,12 +130,14 @@ for line in infile:
             data_list = [ qdualFile, str(axis_size), str(isovalue), \
                           str(epsilon), \
                           str(ijkgenscalar_seed), str(maxval), \
-                          min_angle, flagM, flagB ];
+                          min_angle, min_internal_angle,
+                          flagM, flagB ];
         else:
             data_list = [ qdualFile, str(isovalue), \
                           str(epsilon), \
                           str(qdual_seed), str(random_num_intervals), \
-                          min_angle, flagM, flagB ];
+                          min_angle, min_internal_angle,
+                          flagM, flagB ];
 
         s = separator.join(data_list);
         s = s + '\n';
