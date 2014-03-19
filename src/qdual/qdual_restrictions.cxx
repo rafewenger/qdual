@@ -160,39 +160,45 @@ void compute_restrictions_BList(
 	// Restriction B list is the list of positive and negative interior grid edges
 	// surrounded by a square isourface path
 	VERTEX_INDEX end0=0;
-	int edge_dir;
 
-	IJK_FOR_EACH_INTERIOR_GRID_EDGE(end0, edge_dir, scalar_grid, VERTEX_INDEX)
-	{
+  for (int edge_dir = 0; edge_dir < DIM3; edge_dir++) {
+
 		int d1 = (edge_dir+1)% DIM3;
 		int d2 = (edge_dir+2)%DIM3;
-		// c0 is the index of the cube left and below to the edge
-		VERTEX_INDEX c0 = end0 - scalar_grid.AxisIncrement(d1) - scalar_grid.AxisIncrement(d2);
-		VERTEX_INDEX index_iso_vlist_c0 = first_isov.Scalar(c0);
-		if (index_iso_vlist_c0 == NO_ISOVERTEX_IN_CUBE ) 
-		{ 
-			continue;
-		}
+    VERTEX_INDEX c0_increment = 
+      scalar_grid.AxisIncrement(d1) + scalar_grid.AxisIncrement(d2);
+    
+    IJK_FOR_EACH_INTERIOR_GRID_EDGE_IN_DIRECTION
+      (end0, edge_dir, scalar_grid, VERTEX_INDEX) {
 
-		VERTEX_INDEX end1 = scalar_grid.NextVertex(end0,edge_dir);
-		SCALAR_TYPE s_end0, s_end1;
-		s_end0 = scalar_grid.Scalar(end0);
-		s_end1 = scalar_grid.Scalar(end1);
+      // c0 is the index of the cube left and below to the edge
+      VERTEX_INDEX c0 = end0 - c0_increment;
+      VERTEX_INDEX index_iso_vlist_c0 = first_isov.Scalar(c0);
+      if (index_iso_vlist_c0 == NO_ISOVERTEX_IN_CUBE ) 
+        {
+          continue;
+        }
 
-		if (((s_end0 > isovalue) && ( s_end1 < isovalue)) ||
-			((s_end0 < isovalue) && ( s_end1 > isovalue)))
-      {	continue; }
+      VERTEX_INDEX end1 = scalar_grid.NextVertex(end0,edge_dir);
+      SCALAR_TYPE s_end0, s_end1;
+      s_end0 = scalar_grid.Scalar(end0);
+      s_end1 = scalar_grid.Scalar(end1);
 
-    bool flag_edge = 
-      check_edge_has_square_isosurface_path
-      (scalar_grid, first_isov, iso_vlist, isodual_table, 
-       qdual_table, c0, d1, d2);
+      if (((s_end0 > isovalue) && ( s_end1 < isovalue)) ||
+          ((s_end0 < isovalue) && ( s_end1 > isovalue)))
+        {	continue; }
 
-    if (flag_edge) {
-      RESTRICTED_EDGE re;
-      re.end0 = end0;
-      re.edge_dir = edge_dir;
-      restricted_edges.push_back(re);
+      bool flag_edge = 
+        check_edge_has_square_isosurface_path
+        (scalar_grid, first_isov, iso_vlist, isodual_table, 
+         qdual_table, c0, d1, d2);
+
+      if (flag_edge) {
+        RESTRICTED_EDGE re;
+        re.end0 = end0;
+        re.edge_dir = edge_dir;
+        restricted_edges.push_back(re);
+      }
     }
   }
 }
