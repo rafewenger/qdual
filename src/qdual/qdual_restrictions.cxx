@@ -1,6 +1,8 @@
 #include "qdual_restrictions.h"
 #include "ijkscalar_grid.txx"
 
+// *** DEBUG ***
+#include "ijktime.txx"
 
 using namespace std;
 using namespace IJK;
@@ -145,8 +147,8 @@ bool check_edge_has_square_isosurface_path(
 	const int d2 
 	)
 {
-	int d1coef[NUM_CUBE_FACET_VERT]={0,1,0,1};
-	int d2coef[NUM_CUBE_FACET_VERT]= {0,0,1,1};
+	static int d1coef[NUM_CUBE_FACET_VERT] = {0,1,0,1};
+	static int d2coef[NUM_CUBE_FACET_VERT] = {0,0,1,1};
 	int num_connect=0;
 	for (int i = 0; i<NUM_CUBE_FACET_VERT; i++)
 	{
@@ -202,8 +204,6 @@ void compute_restrictions_BList(
 	vector< pair<VERTEX_INDEX, int> > &restricted_edges, 
 	const bool print_info)
 {
-
-
 	// Restriction B list is the list of positive and negative interior grid edges
 	// surrounded by a square isourface path
 	VERTEX_INDEX end0=0;
@@ -225,8 +225,8 @@ void compute_restrictions_BList(
 		// c0 is the index of the cube left and below to the edge
 		VERTEX_INDEX c0 = end0 - scalar_grid.AxisIncrement(d1) - scalar_grid.AxisIncrement(d2);
 		VERTEX_INDEX index_iso_vlist_c0 = first_isov.Scalar(c0);
-		if (index_iso_vlist_c0 == NO_ISOVERTEX_IN_CUBE )
-			continue;
+		if (index_iso_vlist_c0 == NO_ISOVERTEX_IN_CUBE ) 
+      { continue; }
 		else
 		{
 			bool flag_edge = check_edge_has_square_isosurface_path(scalar_grid, first_isov,
@@ -446,11 +446,17 @@ void set_restrictionsB(
 
 	vector< pair<VERTEX_INDEX, int> > restricted_edges;
 
+  // **** DEBUG ***
+  clock_t t0 = clock();
+
 	compute_restrictions_BList( scalar_grid, isovalue, iso_vlist, 
 		isodual_table, first_isov, qdual_table, restricted_edges, print_info);
 	//store information 
 	dualiso_info.rs_info.restriction_BList_size = restricted_edges.size();
 	dualiso_info.rs_info.restricted_edges_info = restricted_edges;
+
+  // **** DEBUG ***
+  clock_t t1 = clock();
 
 	int d1coef[NUM_CUBE_FACET_VERT]={0,1,0,1};
 	int d2coef[NUM_CUBE_FACET_VERT]= {0,0,1,1};
@@ -523,6 +529,14 @@ void set_restrictionsB(
 			}
 		}
 	}
+
+  // **** DEBUG ***
+  clock_t t2 = clock();
+  float sec1, sec2;
+  IJK::clock2seconds(t1-t0, sec1);
+  IJK::clock2seconds(t2-t1, sec2);
+  cerr << "Time for compute_restrictions_BList: " << sec1 << endl;
+  cerr << "Time for restrictions: " << sec2 << endl;
 }
 
 
