@@ -160,6 +160,7 @@ bool check_edge_has_square_isosurface_path(
 		VERTEX_INDEX indx_iso_vlist = first_isov.Scalar(c);
 		if (indx_iso_vlist == NO_ISOVERTEX_IN_CUBE)
 		{
+			//DEBUG
 			count++;
 			return false;
 		}
@@ -313,7 +314,8 @@ void compute_restrictions_BList(
 			}
 		}
 	}
-	cerr <<"COUNT "<< count <<endl;
+	// DEBUG
+	cerr <<"number of skipped edges: "<< count <<endl;
 }
 // OBSOLETE
 // Square isosurface paths
