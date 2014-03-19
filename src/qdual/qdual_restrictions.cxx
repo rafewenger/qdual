@@ -145,8 +145,7 @@ bool check_edge_has_square_isosurface_path(
 	const QDUAL_TABLE & qdual_table,
 	const int c0,
 	const int d1, 
-	const int d2, 
-	int & count
+	const int d2
 	)
 {
 	static int d1coef[NUM_CUBE_FACET_VERT] = {0,1,0,1};
@@ -160,8 +159,6 @@ bool check_edge_has_square_isosurface_path(
 		VERTEX_INDEX indx_iso_vlist = first_isov.Scalar(c);
 		if (indx_iso_vlist == NO_ISOVERTEX_IN_CUBE)
 		{
-			//DEBUG
-			count++;
 			return false;
 		}
 	}
@@ -192,7 +189,6 @@ bool check_edge_has_square_isosurface_path(
 				flag_connect = true;
 			}
 		}
-
 		if (flag_connect) 
 		{
 			num_connect++;
@@ -303,7 +299,7 @@ void compute_restrictions_BList(
 		else
 		{
 			bool flag_edge = check_edge_has_square_isosurface_path(scalar_grid, first_isov,
-				iso_vlist, isodual_table, qdual_table, c0, d1, d2, count);
+				iso_vlist, isodual_table, qdual_table, c0, d1, d2);
 
 			if (flag_edge)
 			{
@@ -314,8 +310,6 @@ void compute_restrictions_BList(
 			}
 		}
 	}
-	// DEBUG
-	cerr <<"number of skipped edges: "<< count <<endl;
 }
 // OBSOLETE
 // Square isosurface paths
@@ -569,8 +563,6 @@ void set_restrictionsB(
 	bool move_vertex,
 	DUALISO_INFO & dualiso_info)
 {
-	// **** DEBUG ***
-	clock_t t0 = clock();
 	/*
 	vector< pair<VERTEX_INDEX, int> > restricted_edges;
 	compute_restrictions_BList( scalar_grid, isovalue, iso_vlist, 
@@ -581,12 +573,9 @@ void set_restrictionsB(
 	compute_restrictions_BList( scalar_grid, isovalue, iso_vlist, 
 		isodual_table, first_isov, qdual_table, restricted_edges, print_info);
 	//store information 
-	dualiso_info.rs_info.restriction_BList_size = restricted_edges.size();
-
-	// **** DEBUG 
+	dualiso_info.rs_info.restriction_BList_size = restricted_edges.size(); 
 	//dualiso_info.rs_info.restricted_edges_info = restricted_edges;
 
-	// **** DEBUG ***
 	clock_t t1 = clock();
 
 	int d1coef[NUM_CUBE_FACET_VERT]={0,1,0,1};
@@ -594,7 +583,6 @@ void set_restrictionsB(
 
 	for (int i=0;i < restricted_edges.size(); i++)
 	{
-		// DEBUG ***
 		/*VERTEX_INDEX end0 = restricted_edges[i].first;
 		int edge_dir = restricted_edges[i].second;*/
 		VERTEX_INDEX end0 = restricted_edges[i].end0;
@@ -662,14 +650,6 @@ void set_restrictionsB(
 			}
 		}
 	}
-
-	// **** DEBUG ***
-	clock_t t2 = clock();
-	float sec1, sec2;
-	IJK::clock2seconds(t1-t0, sec1);
-	IJK::clock2seconds(t2-t1, sec2);
-	cerr << "Time for compute_restrictions_BList: " << sec1 << endl;
-	cerr << "Time for restrictions: " << sec2 << endl;
 }
 
 
@@ -690,14 +670,9 @@ void set_restrictionsC(
 	vector<VERTEX_INDEX> &isolatedList)
 {
 	vector<VERTEX_INDEX> restriction_Clist;
-	// **** DEBUG ***
-	clock_t t0 = clock();
+
 	compute_restrictions_CList( scalar_grid, isovalue, iso_vlist, isodual_table, first_isov,
 		qdual_table, vertex_coord, restriction_Clist, boundary_grid, isolatedList);
-
-	// **** DEBUG ***
-	clock_t t1 = clock();
-	//store info
 
 	dualiso_info.rs_info.restriction_CList_size = restriction_Clist.size();
 	dualiso_info.rs_info.restricted_vertex_info = restriction_Clist;
@@ -745,14 +720,6 @@ void set_restrictionsC(
 			}
 		}
 	}
-	// **** DEBUG ***
-	clock_t t2 = clock();
-	float sec1, sec2;
-	IJK::clock2seconds(t1-t0, sec1);
-	IJK::clock2seconds(t2-t1, sec2);
-	cerr << "Time for compute_restrictions_CList: " << sec1 << endl;
-	cerr << "Time for restrictions: " << sec2 << endl;
-
 }
 
 
