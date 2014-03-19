@@ -14,6 +14,12 @@
 using namespace QDUAL;
 using namespace std;
 
+class RESTRICTED_EDGE
+{
+public:
+	VERTEX_INDEX end0;
+	int edge_dir;
+};
 
 void compute_restrictions_BList(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
