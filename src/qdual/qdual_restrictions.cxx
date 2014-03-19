@@ -193,6 +193,8 @@ bool check_edge_has_square_isosurface_path(
 	else 
 		return false;
 }
+
+
 // Square isosurface paths
 void compute_restrictions_BList(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
