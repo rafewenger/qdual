@@ -4,7 +4,7 @@
 
 /*
   IJK: Isosurface Jeneration Kode
-  Copyright (C) 2011 Rephael Wenger
+  Copyright (C) 2011-2014 Rephael Wenger
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public License
@@ -74,21 +74,21 @@
 
 // Edge direction is an input parameter.
 #define IJK_FOR_EACH_INTERIOR_GRID_EDGE_IN_DIRECTION_LOCAL(_iend0,_edge_dir,_grid,_VTYPE,_vlist,_i,_axis_inc,_axis_size,_endv) \
-  IJK_LOCAL(IJK::FACET_INTERIOR_VERTEX_LIST<_VTYPE>                 \
-            _vlist(_grid, 0, true),                                 \
+  if (_grid.AxisSize(_edge_dir) > 0)                                \
+    IJK_LOCAL(IJK::FACET_INTERIOR_VERTEX_LIST<_VTYPE>               \
+              _vlist(_grid, _edge_dir, false, true),                \
             _k0 ## __LINE__, _k1 ## __LINE__)                       \
-    if (_grid.AxisSize(_edge_dir) > 0)                              \
-      IJK_LOCAL(_vlist.GetVertices(_grid, _edge_dir),               \
-                _k2 ## __LINE__, _k3 ## __LINE__)                   \
-        for (_VTYPE _i = 0,                                         \
-               _axis_inc = _grid.AxisIncrement(_edge_dir),          \
-               _axis_size = _grid.AxisSize(_edge_dir);              \
-             _i < _vlist.NumVertices(); _i++)                       \
-          for (_VTYPE _iend0 = _vlist.VertexIndex(_i),              \
-                 _endv = _iend0 + (_axis_size-1)*_axis_inc;         \
-               _iend0 < _endv;                                      \
-               _iend0 +=  _axis_inc)
+      for (_VTYPE _i = 0,                                           \
+             _axis_inc = _grid.AxisIncrement(_edge_dir),            \
+             _axis_size = _grid.AxisSize(_edge_dir);                \
+           _i < _vlist.NumVertices(); _i++)                         \
+        for (_VTYPE _iend0 = _vlist.VertexIndex(_i),                \
+               _endv = _iend0 + (_axis_size-1)*_axis_inc;           \
+             _iend0 < _endv;                                        \
+             _iend0 +=  _axis_inc)
 
+// Edge direction is an input parameter.
+// Note: If grid dimension is 1, this processes all grid edges.
 #define IJK_FOR_EACH_INTERIOR_GRID_EDGE_IN_DIRECTION(_iend0,_edge_dir,_grid,_VTYPE) \
        IJK_FOR_EACH_INTERIOR_GRID_EDGE_IN_DIRECTION_LOCAL           \
        (_iend0,_edge_dir,_grid,_VTYPE,                              \
@@ -105,17 +105,53 @@
       IJK_FOR_EACH_INTERIOR_GRID_EDGE_IN_DIRECTION                  \
         (_iend0,_edge_dir,_grid,_VTYPE)
 
+// Processes 0 vertices if grid dimension is 0.
+#define IJK_FOR_EACH_INTERIOR_GRID_VERTEX_LOCAL(_iv,_grid,_VTYPE,_vlist,_i,_endv) \
+  if (_grid.Dimension() > 0)                                        \
+    if (_grid.AxisSize(0) > 1)                                      \
+      IJK_LOCAL(IJK::FACET_INTERIOR_VERTEX_LIST<_VTYPE>             \
+                _vlist(_grid, 0, false, true),                      \
+                _k0 ## __LINE__, _k1 ## __LINE__)                   \
+        for (_VTYPE _i = 0;                                         \
+             _i < _vlist.NumVertices(); _i++)                       \
+          for (_VTYPE _iv = _vlist.VertexIndex(_i)+1,               \
+                 _endv = _iv + (_grid.AxisSize(0)-2);               \
+               _iv < _endv;                                         \
+               _iv++)
+
+#define IJK_FOR_EACH_INTERIOR_GRID_VERTEX(_iv,_grid,_VTYPE)         \
+  IJK_FOR_EACH_INTERIOR_GRID_VERTEX_LOCAL                           \
+  (_iv,_grid,_VTYPE, _vertex_list ## __LINE__, _i ## __LINE,        \
+   _endv ## __LINE__)
+
 #define IJK_FOR_EACH_BOUNDARY_GRID_VERTEX_LOCAL(_iv,_grid,_VTYPE,_vertex_list,_i) \
   IJK_LOCAL(IJK::GRID_BOUNDARY_VERTEX_LIST<_VTYPE> _vertex_list(_grid), \
-            _k0 ## __LINE__, _k1 ## __LINE__)                           \
+            _k0 ## __LINE__, _k1 ## __LINE__)                       \
     for (_VTYPE _i = 0, _iv = _vertex_list.VertexIndex(_i);         \
          _i < _vertex_list.NumVertices();                           \
          _i++, _iv = _vertex_list.VertexIndex(_i))
 
-#define IJK_FOR_EACH_BOUNDARY_GRID_VERTEX(_iv,_grid,_VTYPE)          \
-  IJK_FOR_EACH_BOUNDARY_GRID_VERTEX_LOCAL(_iv,_grid,_VTYPE,          \
-                                          _vertex_list ## __LINE__,  \
+#define IJK_FOR_EACH_BOUNDARY_GRID_VERTEX(_iv,_grid,_VTYPE)         \
+  IJK_FOR_EACH_BOUNDARY_GRID_VERTEX_LOCAL(_iv,_grid,_VTYPE,         \
+                                          _vertex_list ## __LINE__, \
                                           _i ## __LINE__)
+
+// Direction orthogonal to facet (_orth_dir) is an input parameter.
+// Computes vertices for grid facets incident on origin (0,0,...,0).
+#define IJK_FOR_EACH_VERTEX_IN_GRID_FACET_INTERIOR_LOCAL(_iv,_orth_dir,_grid,_VTYPE,_vlist,_i) \
+  IJK_LOCAL(IJK::FACET_INTERIOR_VERTEX_LIST<_VTYPE>                 \
+            _vlist(_grid, _orth_dir, false),                        \
+            _k0 ## __LINE__, _k1 ## __LINE__)                       \
+    if (_vlist.NumVertices() > 0)                                   \
+      for (_VTYPE _i = 0, _iv = _vlist.VertexIndex(_i);       \
+           _i < _vlist.NumVertices();                               \
+           _i++, _iv = _vlist.VertexIndex(_i))
+
+// Direction orthogonal to facet (_orth_dir) is an input parameter.
+// Computes vertices for grid facets incident on origin (0,0,...,0).
+#define IJK_FOR_EACH_VERTEX_IN_GRID_FACET_INTERIOR(_iv,_orth_dir,_grid,_VTYPE) \
+  IJK_FOR_EACH_VERTEX_IN_GRID_FACET_INTERIOR_LOCAL                  \
+  (_iv,_orth_dir,_grid,_VTYPE,_vertex_list ## __LINE__,_i ## __LINE__)
 
 #endif
 

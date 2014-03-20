@@ -4,7 +4,7 @@
 
 /*
   IJK: Isosurface Jeneration Kode
-  Copyright (C) 2008-2013 Rephael Wenger
+  Copyright (C) 2008-2014 Rephael Wenger
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public License
@@ -809,15 +809,20 @@ namespace IJK {
     /// @param orth_dir Directional orthogonal to facet.
     /// @param allocate_max If true, allocate the list length
     ///            to be max number of interior vertices over all facets.
+    /// @param flag_dim1_facet_vertex If true, list the facet vertex
+    ///            if grid has dimension 1.
+    ///
     template <typename GCLASS>
     FACET_INTERIOR_VERTEX_LIST
     (const GCLASS & grid, const VTYPE orth_dir,
-     const bool allocate_max=true);
+     const bool allocate_max=true,
+     const bool flag_dim1_facet_vertex=false);
 
     /// Get vertices from grid and store in list.
     /// Reallocates list if (current list length < num vertices in facet)
     template <typename GCLASS>
-    void GetVertices(const GCLASS & grid, const VTYPE orth_dir);
+    void GetVertices(const GCLASS & grid, const VTYPE orth_dir,
+                     const bool flag_dim1_facet_vertex=false);
   };
 
   // **************************************************
@@ -5028,7 +5033,7 @@ namespace IJK {
   template<typename GCLASS>
   FACET_INTERIOR_VERTEX_LIST<VTYPE>::FACET_INTERIOR_VERTEX_LIST
   (const GCLASS & grid, const VTYPE orth_dir,
-   const bool allocate_max)
+   const bool allocate_max, const bool flag_dim1_facet_vertex)
   {
     const VTYPE boundary_width = 1;
     VTYPE numv = 0;
@@ -5043,15 +5048,19 @@ namespace IJK {
          numv);
     }
 
+    if (grid.Dimension() == 1 && flag_dim1_facet_vertex)
+      { numv = std::max(numv, 1); };
+
     this->AllocateList(numv);
-    GetVertices(grid, orth_dir);
+    GetVertices(grid, orth_dir, flag_dim1_facet_vertex);
   }
 
   /// Get vertices in grid facet interior
   template <typename VTYPE>
   template<typename GCLASS>
   void FACET_INTERIOR_VERTEX_LIST<VTYPE>::GetVertices
-  (const GCLASS & grid, const VTYPE orth_dir)
+  (const GCLASS & grid, const VTYPE orth_dir, 
+   const bool flag_dim1_facet_vertex)
   {
     VTYPE numv;
     const VTYPE boundary_width = 1;
@@ -5061,13 +5070,21 @@ namespace IJK {
       (grid.Dimension(), grid.AxisSize(), orth_dir, boundary_width,
        numv);
 
+    if (grid.Dimension() == 1 && flag_dim1_facet_vertex)
+      { numv = std::max(numv, 1); };
+
     if (numv > this->ListLength()) 
       { this->AllocateList(numv); }
 
     if (numv > 0) {
-      get_vertices_in_grid_facet_interior
-        (grid.Dimension(), grid.AxisSize(), orth_dir, side,
-         boundary_width, this->vertex_list);
+      if (grid.Dimension() > 1) {
+        get_vertices_in_grid_facet_interior
+          (grid.Dimension(), grid.AxisSize(), orth_dir, side,
+           boundary_width, this->vertex_list);
+      }
+      else if (grid.Dimension() == 1 && flag_dim1_facet_vertex) {
+        this->vertex_list[0] = 0;
+      }
     }
 
     this->num_vertices = numv;
