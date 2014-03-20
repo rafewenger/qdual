@@ -175,6 +175,7 @@ namespace QDUAL {
 		bool flag_collapse_debug;
 		float qdual_epsilon;
 		bool flag_move_vertices;
+		bool flag_move_vertices2; //move_vertices by epsilon/2
 		bool flag_cap_col;// cap collapse
 		bool flag_delete_isolate;
 		bool flag_use_collapse_B; // use version B of collapse

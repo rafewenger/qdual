@@ -406,6 +406,7 @@ void set_restrictionsB(
 	QDUAL_TABLE & qdual_table,
 	bool print_info,
 	bool move_vertex,
+	bool move_vertex2, // move vertices by epsilon by 2
 	DUALISO_INFO & dualiso_info)
 {
 	vector<RESTRICTED_EDGE> restricted_edges;
@@ -474,6 +475,12 @@ void set_restrictionsB(
 							moveAwayFromEdge(indx_iso_vlist+k, f1, f2,
 								e, iso_vlist, vertex_coord, dualiso_info);
 						}
+						else if (move_vertex2)
+						{
+							moveAwayFromEdge(indx_iso_vlist+k, f1, f2,
+								e/2.0, iso_vlist, vertex_coord, dualiso_info);
+						}
+
 						if (print_info){
 							cout <<"	new vertex: "<<vertex_coord[3*(indx_iso_vlist+k)]<<" "
 								<<vertex_coord[3*(indx_iso_vlist+k)+1]<<" "
@@ -495,6 +502,7 @@ void set_restrictionsC(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	const float e, //epsilon to move vertices.
 	const bool moveVertex,
+	const bool moveVertex2, // move vertices by epsilon/2
 	const SCALAR_TYPE isovalue,
 	const std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
@@ -538,7 +546,12 @@ void set_restrictionsC(
 						{
 							moveAwayFromVertex(indx_iso_vlist+k,
 								e, iso_vlist, vertex_coord, dualiso_info);
-						}		
+						}
+						else if (moveVertex2)
+						{
+							moveAwayFromVertex(indx_iso_vlist+k,
+								e/2.0, iso_vlist, vertex_coord, dualiso_info);
+						}
 					}
 				}
 			}
@@ -582,12 +595,14 @@ void set_restrictions(
 		if (!dualiso_data.flag_no_restriction_B)
 		{
 			set_restrictionsB(scalar_grid, vertex_coord, dualiso_data.qdual_epsilon, isovalue, iso_vlist, isodual_table,
-				first_isov, qdual_table, dualiso_data.flag_collapse_debug, dualiso_data.flag_move_vertices, dualiso_info);
+				first_isov, qdual_table, dualiso_data.flag_collapse_debug,
+				dualiso_data.flag_move_vertices, dualiso_data.flag_move_vertices2, dualiso_info);
 		}
 	}
 	if(!dualiso_data.flag_no_restriction_C)
 	{
-		set_restrictionsC(scalar_grid, dualiso_data.qdual_epsilon, dualiso_data.flag_move_vertices, isovalue, quad_vert,
+		set_restrictionsC(scalar_grid, dualiso_data.qdual_epsilon, 
+			dualiso_data.flag_move_vertices, dualiso_data.flag_move_vertices2, isovalue, quad_vert,
 			iso_vlist, isodual_table, first_isov,qdual_table, 
 			vertex_coord, dualiso_info, boundary_grid, isolatedList);
 	}

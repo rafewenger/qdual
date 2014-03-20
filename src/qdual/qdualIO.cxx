@@ -51,7 +51,7 @@ namespace {
 	{SUBSAMPLE_PARAM, SUPERSAMPLE_PARAM, POSITION_PARAM, 
 	SINGLE_ISOV_PARAM,  MULTI_ISOV_PARAM, 
 	SPLIT_NON_MANIFOLD_PARAM, SELECT_SPLIT_PARAM,
-	SEP_NEG_PARAM, SEP_POS_PARAM, EPSILON, MOVE_VERTEX, DEL_ISOLATE,
+	SEP_NEG_PARAM, SEP_POS_PARAM, EPSILON, MOVE_VERTEX, MOVE_VERTEX2, DEL_ISOLATE,
 	TRIMESH_PARAM, UNIFORM_TRIMESH_PARAM,COLLAPSE_DEBUG, COLLAPSE_INFO, USE_B, USE_C,
 	NO_COLLAPSE, NO_CAPCOL, QTMESH,
 	NO_RESTR_AB,NO_RESTR_B, NO_RESTR_C,
@@ -62,7 +62,7 @@ namespace {
 	const char * parameter_string[] = 
 	{"-subsample", "-supersample", "-position", 
 	"-single_isov", "-multi_isov", "-split_non_manifold", "-select_split",
-	"-sep_neg", "-sep_pos","-epsilon","-move_vertex","-del_isolate",
+	"-sep_neg", "-sep_pos","-epsilon","-move_vertex","-move_vertex_eby2", "-del_isolate",
 	"-trimesh", "-uniform_trimesh","-collapse_debug", "-collapse_info", "-collapseB", "-collapseC",
 	"-no_collapse","-no_capcol","-qt_mesh",
 	"-no_res_AB","-no_res_B","-no_res_C",
@@ -190,6 +190,10 @@ void QDUAL::parse_command_line(int argc, char **argv, IO_INFO & io_info)
 
 		case MOVE_VERTEX:
 			io_info.flag_move_vertices = true;
+			break;
+
+		case MOVE_VERTEX2:
+			io_info.flag_move_vertices2 = true;
 			break;
 
 		case USE_B:
