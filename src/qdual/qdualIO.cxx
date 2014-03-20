@@ -1078,17 +1078,19 @@ void QDUAL::report_dualiso_time
 	const char * mesh_type_string)
 
 {
-	//***DEBUG RED****
-	//cout << "CPU time to run ijkdual: " 
-	//	<< qdual_time.total << " seconds." << endl;
-	//cout << "    Time to extract " << mesh_type_string << " triangles: "
-	//	<< qdual_time.extract << " seconds." << endl;
-	//cout << "    Time to merge identical "
-	//	<< mesh_type_string << " vertices: " 
-	//	<< qdual_time.merge << " seconds." << endl;
-	//cout << "    Time to position "
-	//	<< mesh_type_string << " vertices: "
-	//	<< qdual_time.position << " seconds." << endl;
+	cout << "CPU time to run ijkdual: " 
+		<< qdual_time.total << " seconds." << endl;
+	cout << "    Time to extract " << mesh_type_string << " triangles: "
+		<< qdual_time.extract << " seconds." << endl;
+	cout << "    Time to merge identical "
+		<< mesh_type_string << " vertices: " 
+		<< qdual_time.merge << " seconds." << endl;
+	cout << "    Time to position "
+		<< mesh_type_string << " vertices: "
+		<< qdual_time.position << " seconds." << endl;
+	cout << "Total time [ extract +  merge identical + position isovertices ]: "
+		<< qdual_time.extract + qdual_time.merge + qdual_time.position 
+		<< " seconds. " <<endl;
 
 	if (!io_info.flag_NO_collapse)
 	{
@@ -1107,9 +1109,9 @@ void QDUAL::report_dualiso_time
 			<< qdual_time.collapse_caps << " seconds"<<endl;
 		cout <<"Time to triangulate quadrilaterals " 
 			<< qdual_time.triangulate << " seconds"<<endl;
-		cout <<"Total time [set restrictions + collapse + triangulate] "
+		cout <<"Total time [ set restrictions + collapse + triangulate ] "
 			<< qdual_time.dual_collapse+qdual_time.triangulate
-			+qdual_time.set_restrictions <<"  seconds "<<endl;
+			+qdual_time.set_restrictions <<"  seconds. "<<endl;
 		cout <<endl;
 	}
 }

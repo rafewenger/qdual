@@ -850,9 +850,9 @@ void collapse_across_facetsC
 		{
 			QUAD_INDEX endPt1=quad_vert[q*VERT_PER_QUAD+v1];
 			QUAD_INDEX endPt2=quad_vert[q*VERT_PER_QUAD+v2];
-			if(printInfo){
+			/*if(printInfo){
 				cout <<"\nCollapseAcrossFacets quad "<< q<<"  endpts "<< endPt1 <<" "<<endPt2 <<endl;
-			}
+			}*/
 			endPt1=find_vertex(collapse_map, endPt1);
 			endPt2=find_vertex(collapse_map, endPt2);
 
@@ -863,12 +863,12 @@ void collapse_across_facetsC
 				DIRECTION_TYPE facetDir=-1;
 				bool hasCommonFacet = findFacetCommonToEndPts
 					(endPt1, endPt2,  vertex_coord, iso_vlist, printInfo, facetBaseCoord, facetDir);
-				if(printInfo){
+				/*if(printInfo){
 					cout <<"Updated endpts "<< endPt1 <<" "<<endPt2 <<endl;
 					cout <<"endpt coords ("<<endPt1<<") "<< endPt1Coord[0] <<" "<< endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
 					cout <<" ("<<endPt2<<") "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
 					cout <<"facetBaseCoord "<< facetBaseCoord[0]<<" "<<facetBaseCoord[1]<<" "<<facetBaseCoord[2]<<endl;
-				}
+				}*/
 				if (hasCommonFacet){
 					bool endPt1EpsilonClose2F =
 						is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
@@ -902,34 +902,34 @@ void collapse_across_facetsC
 								facetDir, vertex_coord, iso_vlist, printInfo);
 							dualiso_info.col_info.permitted_facet_restriction++;
 							update_collapse_edges(collapse_map,endPt1, endPt2);
-							if(printInfo)
+							/*if(printInfo)
 							{
 								cout <<"endpt "<< endPt1 <<"  and endpt "<< endPt2 <<" are not close to any edge\n";
 								cout <<isEndPt1EpsilonCloseToGridEdge<<" "<<isEndPt2EpsilonCloseToGridEdge<<endl;
 								cout <<"**endpt "<< endPt2 <<" collapses to "<< endPt1 << endl;
-							}
+							}*/
 						}
 						else if(isEndPt1EpsilonCloseToGridEdge==false)
 						{
 							update_collapse_edges(collapse_map,endPt1, endPt2);
 							dualiso_info.col_info.permitted_edge_collapse++;
 							iso_vlist[endPt1].flag_fixed=true;
-							if(printInfo)
+							/*if(printInfo)
 							{
 								cout <<"endpt "<< endPt1 <<"  and endpt "<< endPt2 <<". endpt1 is not close to any edge\n";
 								cout <<"**endpt "<< endPt2 <<" collapses to "<< endPt1 << endl;
-							}
+							}*/
 						}
 						else if(isEndPt2EpsilonCloseToGridEdge==false)
 						{
 							update_collapse_edges(collapse_map,endPt2, endPt1);
 							dualiso_info.col_info.permitted_edge_collapse++;
 							iso_vlist[endPt2].flag_fixed=true;
-							if(printInfo)
+							/*if(printInfo)
 							{
 								cout <<"endpt "<< endPt1 <<"  and endpt "<< endPt2 <<". endpt2 is not close to any edge\n";
 								cout <<"**endpt "<< endPt1 <<" collapses to "<< endPt2 << endl;
-							}
+							}*/
 						}
 					}
 				}
@@ -1405,7 +1405,7 @@ void collapse_across_verticesB(
 					if(endPt1EpsilonClose2F && endPt2EpsilonClose2F 
 						&& endPt1IsPermittedAcrossF && endPt2IsPermittedAcrossF)
 					{
-						if (print_info){
+						/*if (print_info){
 							print_collapse_info("\ncollapse across vertices [permitted]", 
 								endPt2, endPt1, &(facetBaseCoord [0]));
 							cout <<"endPT2Coord "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
@@ -1414,7 +1414,7 @@ void collapse_across_verticesB(
 								<< iso_vlist[endPt2].flag_fixed <<endl;
 							cout <<"is Endpt "<< endPt1 <<"  fixed ? "
 								<< iso_vlist[endPt1].flag_fixed <<endl;
-						}
+						}*/
 						collapseToFacet(endPt1, endPt1Coord, endPt2Coord, facetBaseCoord, facetDir, 
 							vertex_coord, iso_vlist, print_info);
 						update_collapse_edges(collapse_map,endPt1, endPt2);

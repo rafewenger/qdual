@@ -97,10 +97,17 @@ bool sharesOppositeVerticesComputations
 				== find_vertex(collapse_map, origQuadVert[q2*VERT_PER_QUAD+2])
 				))
 			{
+				v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
+				v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
+				v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
+				v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
+				/*
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]));
+				*/
+
 				return true;		
 			}
 			if ((
@@ -111,10 +118,16 @@ bool sharesOppositeVerticesComputations
 				== find_vertex(collapse_map, origQuadVert[q2*VERT_PER_QUAD+1])
 				))
 			{
+				v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
+				v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
+				v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
+				v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
+				/*
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]));
+				*/
 				return true;		
 			}
 		}
@@ -142,10 +155,16 @@ bool sharesOppositeVerticesComputations
 				== find_vertex(collapse_map, origQuadVert[q2*VERT_PER_QUAD+2])
 				))
 			{
+				v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
+				v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
+				v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
+				v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
+				/*
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]));
+				*/
 				return true;		
 			}
 			if ((
@@ -156,10 +175,16 @@ bool sharesOppositeVerticesComputations
 				== find_vertex(collapse_map, origQuadVert[q2*VERT_PER_QUAD+3])
 				))
 			{
+				v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
+				v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
+				v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
+				v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
+				/*
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]));
 				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]));
+				*/
 				return true;		
 			}
 		}
@@ -511,7 +536,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	//setup collapse_map.
 	QCOLLAPSE::setup_collapse_map(collapse_map, num_vertex);
 
-	vector <QUAD_INDEX> quadIndices;
+	vector <QUAD_INDEX> quadIndices(4,0);
 	for (int q=0; q < num_quad; q++)
 	{
 
