@@ -1,6 +1,7 @@
 #include "qdual_restrictions.h"
 #include "ijkscalar_grid.txx"
 
+
 using namespace std;
 using namespace IJK;
 using namespace NamedConstants;
@@ -79,6 +80,77 @@ void moveAwayFromEdge(
 		dualiso_info.mv_info.moveFromEdges++;
 }
 
+//Subfunction to compute_restrictions_BList (the faster version)
+bool doesLoopSurroundEdge (	
+	const VERTEX_INDEX end0,
+	const int edge_dir,
+	const SCALAR_TYPE isovalue,
+	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	const DUALISO_INDEX_GRID & first_isov,
+	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	const IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
+	const QDUAL_TABLE & qdual_table,
+	const int c0, //index of the cube  left and below the edge
+	const int d1, 
+	const int d2
+	)
+{
+
+	static int d1coef[NUM_CUBE_FACET_VERT] = {0,1,0,1};
+	static int d2coef[NUM_CUBE_FACET_VERT] = {0,0,1,1};
+
+	VERTEX_INDEX end1 = scalar_grid.NextVertex(end0,edge_dir);
+	SCALAR_TYPE s_end0, s_end1;
+	s_end0 = scalar_grid.Scalar(end0);
+	s_end1 = scalar_grid.Scalar(end1);
+
+	if (((s_end0 > isovalue) && ( s_end1 < isovalue)) ||
+		((s_end0 < isovalue) && ( s_end1 > isovalue)))
+	{	return false; }
+	int num_connect=0;
+	for (int i = 0; i<NUM_CUBE_FACET_VERT; i++)
+	{
+		VERTEX_INDEX c = c0 + d1coef[i] * scalar_grid.AxisIncrement(d1) +
+			d2coef[i]*scalar_grid.AxisIncrement(d2);
+
+		VERTEX_INDEX indx_iso_vlist = first_isov.Scalar(c);
+
+		if (indx_iso_vlist == NO_ISOVERTEX_IN_CUBE)
+		{
+			return false;
+		}
+		bool flag_connect = false;
+
+		VERTEX_INDEX f1 = (d1+ (1-d1coef[i])* DIM3) % NUM_CUBE_FACETS;
+		VERTEX_INDEX f2 = (d2+ (1-d2coef[i])* DIM3) % NUM_CUBE_FACETS;
+
+		int table_ind = iso_vlist[indx_iso_vlist].table_index;
+		int num_iso_verts = isodual_table.NumIsoVertices(table_ind);
+		//for each isosurface vertex in cube c
+		for (int j = 0; j < num_iso_verts; j++)
+		{
+			IJKDUALTABLE::TABLE_INDEX it = iso_vlist[indx_iso_vlist+j].table_index;
+			FACET_VERTEX_INDEX ip = iso_vlist[indx_iso_vlist+j].patch_index;
+			QDUAL_TABLE::DIR_BITS edge_flag = qdual_table.connectDir(it, ip);
+			bool cond1 = (edge_flag & (1<<f1));
+			bool cond2 = (edge_flag & (1<<f2));
+
+			if (cond1 && cond2)
+			{
+				flag_connect = true;
+			}
+		}
+		if (flag_connect) 
+		{
+			num_connect++;
+		}
+
+	}
+	if(num_connect >=3)
+		return true;
+	else 
+		return false;
+}
 
 // With added Check 
 bool check_edge_has_square_isosurface_path(
@@ -145,9 +217,8 @@ bool check_edge_has_square_isosurface_path(
 		return false;
 }
 
-
-// Square isosurface paths
-void compute_restrictions_BList(
+//// Square isosurface paths // **** WORKING SLOW CODE **** 
+void compute_restrictions_BList_slow(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	const SCALAR_TYPE isovalue,
 	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
@@ -161,47 +232,121 @@ void compute_restrictions_BList(
 	// surrounded by a square isourface path
 	VERTEX_INDEX end0=0;
 
-  for (int edge_dir = 0; edge_dir < DIM3; edge_dir++) {
+	for (int edge_dir = 0; edge_dir < DIM3; edge_dir++) {
 
 		int d1 = (edge_dir+1)% DIM3;
 		int d2 = (edge_dir+2)%DIM3;
-    VERTEX_INDEX c0_increment = 
-      scalar_grid.AxisIncrement(d1) + scalar_grid.AxisIncrement(d2);
-    
-    IJK_FOR_EACH_INTERIOR_GRID_EDGE_IN_DIRECTION
-      (end0, edge_dir, scalar_grid, VERTEX_INDEX) {
+		VERTEX_INDEX c0_increment = 
+			scalar_grid.AxisIncrement(d1) + scalar_grid.AxisIncrement(d2);
 
-      // c0 is the index of the cube left and below to the edge
-      VERTEX_INDEX c0 = end0 - c0_increment;
-      VERTEX_INDEX index_iso_vlist_c0 = first_isov.Scalar(c0);
-      if (index_iso_vlist_c0 == NO_ISOVERTEX_IN_CUBE ) 
-        {
-          continue;
-        }
+		IJK_FOR_EACH_INTERIOR_GRID_EDGE_IN_DIRECTION
+			(end0, edge_dir, scalar_grid, VERTEX_INDEX) {
 
-      VERTEX_INDEX end1 = scalar_grid.NextVertex(end0,edge_dir);
-      SCALAR_TYPE s_end0, s_end1;
-      s_end0 = scalar_grid.Scalar(end0);
-      s_end1 = scalar_grid.Scalar(end1);
+				// c0 is the index of the cube left and below to the edge
+				VERTEX_INDEX c0 = end0 - c0_increment;
+				VERTEX_INDEX index_iso_vlist_c0 = first_isov.Scalar(c0);
+				if (index_iso_vlist_c0 == NO_ISOVERTEX_IN_CUBE ) 
+				{
+					continue;
+				}
 
-      if (((s_end0 > isovalue) && ( s_end1 < isovalue)) ||
-          ((s_end0 < isovalue) && ( s_end1 > isovalue)))
-        {	continue; }
+				VERTEX_INDEX end1 = scalar_grid.NextVertex(end0,edge_dir);
+				SCALAR_TYPE s_end0, s_end1;
+				s_end0 = scalar_grid.Scalar(end0);
+				s_end1 = scalar_grid.Scalar(end1);
 
-      bool flag_edge = 
-        check_edge_has_square_isosurface_path
-        (scalar_grid, first_isov, iso_vlist, isodual_table, 
-         qdual_table, c0, d1, d2);
+				if (((s_end0 > isovalue) && ( s_end1 < isovalue)) ||
+					((s_end0 < isovalue) && ( s_end1 > isovalue)))
+				{	continue; }
 
-      if (flag_edge) {
-        RESTRICTED_EDGE re;
-        re.end0 = end0;
-        re.edge_dir = edge_dir;
-        restricted_edges.push_back(re);
-      }
-    }
-  }
+				bool flag_edge = 
+					check_edge_has_square_isosurface_path
+					(scalar_grid, first_isov, iso_vlist, isodual_table, 
+					qdual_table, c0, d1, d2);
+
+				if (flag_edge) {
+					RESTRICTED_EDGE re;
+					re.end0 = end0;
+					re.edge_dir = edge_dir;
+					restricted_edges.push_back(re);
+				}
+		}
+	}
 }
+
+// Faster implementation of computing restrictions Blist 
+void compute_restrictions_BList(
+	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	const SCALAR_TYPE isovalue,
+	const std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
+	DUALISO_INDEX_GRID & first_isov,
+	QDUAL_TABLE & qdual_table,
+	vector<RESTRICTED_EDGE> &restricted_edges, 
+	const bool print_info)
+{
+	restricted_edges.clear();
+	VERTEX_INDEX iv;
+
+	IJK_FOR_EACH_INTERIOR_GRID_VERTEX
+		(iv, scalar_grid, VERTEX_INDEX)
+	{
+		VERTEX_INDEX indx_iso_vlist_iv = first_isov.Scalar(iv);
+		if (indx_iso_vlist_iv != -1)
+		{
+			for (int edge_dir = 0; edge_dir < DIM3; edge_dir++)
+			{
+				int d1 = (edge_dir+1)% DIM3;
+				int d2 = (edge_dir+2)%DIM3;
+				VERTEX_INDEX c0_increment = 
+					scalar_grid.AxisIncrement(d1) + scalar_grid.AxisIncrement(d2);
+
+				VERTEX_INDEX c0 = iv - c0_increment;				
+				VERTEX_INDEX index_iso_vlist_c0 = first_isov.Scalar(c0);
+
+				if (index_iso_vlist_c0 == NO_ISOVERTEX_IN_CUBE ) 
+				{
+					continue;
+				}
+				bool flag_edge = 
+					doesLoopSurroundEdge
+					(iv, edge_dir, isovalue, scalar_grid, first_isov, iso_vlist, isodual_table, 
+					qdual_table, c0, d1, d2);
+				if (flag_edge) {
+					RESTRICTED_EDGE re;
+					re.end0 = iv;
+					re.edge_dir = edge_dir;
+					restricted_edges.push_back(re);
+				}
+			}
+		}
+	}
+
+	for (int edgeDir = 0; edgeDir < DIM3; edgeDir++)
+	{
+		IJK_FOR_EACH_VERTEX_IN_GRID_FACET_INTERIOR
+			(iv, edgeDir, scalar_grid, VERTEX_INDEX)
+		{
+			int d1 = (edgeDir+1)% DIM3;
+			int d2 = (edgeDir+2)%DIM3;
+			VERTEX_INDEX c0_increment = 
+				scalar_grid.AxisIncrement(d1) + scalar_grid.AxisIncrement(d2);
+			VERTEX_INDEX c0 = iv - c0_increment;
+			bool flag_edge = 
+				doesLoopSurroundEdge
+				(iv, edgeDir, isovalue, scalar_grid, first_isov, iso_vlist, isodual_table, 
+				qdual_table, c0, d1, d2);
+			if (flag_edge) {
+				RESTRICTED_EDGE re;
+				re.end0 = iv;
+				re.edge_dir = edgeDir;
+				restricted_edges.push_back(re);
+			}
+		}
+	}
+}
+
+
 
 
 // Return true if the vertex is surrounded by a box
@@ -250,6 +395,7 @@ bool  check_vertex_has_box_around (
 	}
 	return false;
 }
+
 
 // Return true if the vertex is surrounded by a box
 bool  check_vertex_has_box_around (
@@ -416,8 +562,6 @@ void set_restrictionsB(
 	dualiso_info.rs_info.restriction_BList_size = restricted_edges.size(); 
 	//dualiso_info.rs_info.restricted_edges_info = restricted_edges;
 
-	clock_t t1 = clock();
-
 	int d1coef[NUM_CUBE_FACET_VERT]={0,1,0,1};
 	int d2coef[NUM_CUBE_FACET_VERT]= {0,0,1,1};
 
@@ -475,7 +619,7 @@ void set_restrictionsB(
 							moveAwayFromEdge(indx_iso_vlist+k, f1, f2,
 								e, iso_vlist, vertex_coord, dualiso_info);
 						}
-						else if (move_vertex2)
+						else if (move_vertex2)//move by epsilon/2.0
 						{
 							moveAwayFromEdge(indx_iso_vlist+k, f1, f2,
 								e/2.0, iso_vlist, vertex_coord, dualiso_info);
@@ -607,3 +751,6 @@ void set_restrictions(
 			vertex_coord, dualiso_info, boundary_grid, isolatedList);
 	}
 }
+
+
+
