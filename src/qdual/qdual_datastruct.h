@@ -96,6 +96,10 @@ namespace QDUAL {
 		/// List of vertex coordinates.
 		COORD_ARRAY vertex_coord;
 
+		/// Edge dual to each quad
+		std::vector<VERTEX_INDEX> dual_edge;
+
+    /// *** DEPRECATED ***
 		/// Orthogonal directions for each quad
 		std::vector<DIRECTION_TYPE> orth_dir;
 

@@ -1812,8 +1812,10 @@ void QCOLLAPSE::dual_collapse(
 
 }
 
+
 void QCOLLAPSE::delIsolated(
 	std::vector<VERTEX_INDEX> & quad_vert,
+  std::vector<VERTEX_INDEX> & dual_edge,
 	vector<VERTEX_INDEX> isolatedList,
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
@@ -1848,6 +1850,7 @@ void QCOLLAPSE::delIsolated(
 	}
 
 	vector<VERTEX_INDEX>  local_quad_vert;
+	vector<VERTEX_INDEX>  local_dual_edge;
 	const int num_quads = quad_vert.size()/NUM_CUBE_FACET_VERT;
 	for (int i = 0; i < num_quads; i++)
 	{
@@ -1867,11 +1870,12 @@ void QCOLLAPSE::delIsolated(
 			{
 				VERTEX_INDEX v = quad_vert[NUM_CUBE_FACET_VERT*i +j];
 				local_quad_vert.push_back(v);
-			}    
+			}
+      local_dual_edge.push_back(dual_edge[i]);
 		}
 	}
 	//DEBUG
-	if (true)
+	if (printInfo)
 	{
 		cout <<"\nIsolated list size: "<< sizeDelIsolated <<endl;
 		cout <<"Original quad vert size "<< quad_vert.size() << endl;
@@ -1880,6 +1884,8 @@ void QCOLLAPSE::delIsolated(
 	}
 	quad_vert.clear();
 	quad_vert = local_quad_vert;
+  dual_edge.clear();
+  dual_edge = local_dual_edge;
 }
 
 

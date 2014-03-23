@@ -61,31 +61,6 @@ namespace QDUAL {
     std::vector<VERTEX_INDEX> & quad_vert, 
     std::vector<COORD_TYPE> & vertex_coord);
 
-  /// Dual Contouring Algorithm. (main function red2)
-  /// Represents each grid edge by a single integer.
-  /// @param flag_separate_neg  If true, isosurface patches
-  ///        separate negative grid vertices.
-  /// @param[out] quad_vert[] Array of quadrilateral vertices.
-  ///        quad_vert[iq*4+j] is index to j'th vertex of quadrilateral iq.
-  /// @param[out] orth_dir[i] Direction orthogonal to quadrilateral i.
-  /// @param[out] vertex_coord[] Array of vertex coordinates.
-  ///        vertex_coord[i*dimension+j] is j'th coordinate of vertex i.
-  /// @param[out] Class DUAL_ISOVERT contains cube_index, patch_index and table_index.
-  /// @param merge_data Data structure for merging edges.  
-  ///        Requires memory of size(MERGE_INDEX) for each grid edge.
-  void dual_contouring 
-	  (const DUALISO_SCALAR_GRID_BASE & scalar_grid, 
-	  const SCALAR_TYPE isovalue, 
-	  const VERTEX_POSITION_METHOD vertex_position_method,
-	  const bool flag_select_split,
-	  const bool flag_separate_neg,
-	  std::vector<VERTEX_INDEX> & quad_vert, 
-    std::vector<DIRECTION_TYPE> & orth_dir,
-	  std::vector<COORD_TYPE> & vertex_coord,
-	  std::vector<DUAL_ISOVERT> &iso_vlist,
-	  IJKDUALTABLE::ISODUAL_CUBE_TABLE  & isodual_table,
-	  MERGE_DATA & merge_data, DUALISO_INFO & dualiso_info);
-
   /// Extract isosurface using Dual Contouring algorithm
   /// Returns list of isosurface simplex vertices
   ///  and list of isosurface vertex coordinates
@@ -94,7 +69,7 @@ namespace QDUAL {
    const SCALAR_TYPE isovalue, 
    const DUALISO_DATA_FLAGS & dualiso_data_flags,
    std::vector<VERTEX_INDEX> & quad_vert,
-   std::vector<DIRECTION_TYPE> & orth_dir,
+   std::vector<VERTEX_INDEX> & dual_edge,
    std::vector<COORD_TYPE> & vertex_coord,
    std::vector<DUAL_ISOVERT> &iso_vlist,
    IJKDUALTABLE::ISODUAL_CUBE_TABLE & isodual_table,

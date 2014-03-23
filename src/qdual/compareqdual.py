@@ -19,7 +19,7 @@ def runqdual(qdual1, qdual2):
     print 'Executing: ', ijkgenscalar_command_line;
     os.system(ijkgenscalar_command_line);
 
-    qdual_options = '-s -trimesh -move_vertex ' + str(isovalue) + ' random.nrrd';
+    qdual_options = '-s -trimesh -move_vertex -collapseC -del_isolate ' + str(isovalue) + ' random.nrrd';
     qdual_command_line = qdual1 + ' -o ' + offFile1 + ' ' + qdual_options;
     print 'Executing: ', qdual_command_line;
     os.system(qdual_command_line);

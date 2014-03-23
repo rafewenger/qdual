@@ -110,7 +110,7 @@ void QDUAL::extract_dual_isopoly
 ///   iso_simplices[numv_per_poly*ip+k] = 
 ///     cube containing k'th vertex of polytope ip.
 /// @param[out] facet_vertex[i] = Edge of cube containing iso_quad[i].
-/// @param[out] orth_dir[i] = Direction orthgonal to quadrilateral i.
+/// @param[out] orth_dir[i] = Direction orthogonal to quadrilateral i.
 void QDUAL::extract_dual_isoquad
 (const DUALISO_SCALAR_GRID_BASE & scalar_grid,
  const SCALAR_TYPE isovalue, std::vector<ISO_VERTEX_INDEX> & iso_quad,
@@ -139,6 +139,55 @@ void QDUAL::extract_dual_isoquad
     if (prev_size != iso_quad.size()) {
       // edge is bipolar.
       orth_dir.push_back(edge_dir);
+    }
+
+  }
+
+  clock_t t1 = clock();
+  clock2seconds(t1-t0, dualiso_info.time.extract);
+}
+
+
+/// Extract isosurface quadrilaterals.
+/// Returns list representing isosurface quadrilaterals.
+/// Returns also list of directions orthogonal to quadrilaterals.
+/// @param scalar_grid = scalar grid data
+/// @param isovalue = isosurface scalar value
+/// @param[out] iso_quad[] = vector of isosurface polygope vertices
+///   iso_simplices[numv_per_poly*ip+k] = 
+///     cube containing k'th vertex of polytope ip.
+/// @param[out] facet_vertex[i] = Edge of cube containing iso_quad[i].
+/// @param[out] dual_edge[i] = Edge dual to iso_quad[i].
+void QDUAL::extract_dual_isoquad_and_dual_edge
+(const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+ const SCALAR_TYPE isovalue, std::vector<ISO_VERTEX_INDEX> & iso_quad,
+ std::vector<FACET_VERTEX_INDEX> & facet_vertex,
+ std::vector<VERTEX_INDEX> & dual_edge,
+ DUALISO_INFO & dualiso_info)
+{
+  const int dimension = scalar_grid.Dimension();
+  dualiso_info.time.extract = 0;
+
+  clock_t t0 = clock();
+
+  // initialize output
+  iso_quad.clear();
+  facet_vertex.clear();
+  dual_edge.clear();
+
+  if (scalar_grid.NumCubeVertices() < 1) { return; }
+
+  IJK_FOR_EACH_INTERIOR_GRID_EDGE(iend0, edge_dir, scalar_grid, VERTEX_INDEX) {
+
+    std::vector<ISO_VERTEX_INDEX>::size_type prev_size = iso_quad.size();
+
+    extract_dual_isoquad_around_bipolar_edge
+      (scalar_grid, isovalue, iend0, edge_dir, iso_quad, facet_vertex);
+
+    if (prev_size != iso_quad.size()) {
+      // edge is bipolar.
+      VERTEX_INDEX ie = iend0*dimension + edge_dir;
+      dual_edge.push_back(ie);
     }
 
   }
