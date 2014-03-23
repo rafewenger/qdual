@@ -126,9 +126,10 @@ void QDUAL::quality_dual_contouring
 
 		////set variables in iso_vlist
 		setUpIsoVlist( dualiso_data, qdual_table, cube_boundary_grid, iso_vlist);
-
+		// OBSOLETE
 		hashQuadsDual2GridEdge(diagonalMap, dual_isosurface.isopoly_vert,
 			dual_isosurface.orth_dir, iso_vlist, dual_isosurface.vertex_coord);
+
 		//store the original quads 
 		vector <QUAD_INDEX> origQuadVert = dual_isosurface.isopoly_vert;
 		IJK::reorder_quad_vertices(origQuadVert);
@@ -210,25 +211,30 @@ void QDUAL::quality_dual_contouring
 		unordered_map<QUAD_INDEX, QUAD_INDEX> track_quad_indices;
 		if (dualiso_data.use_quad_tri_mesh)
 		{
+
 			dual_isosurface.flag_has_degen_quads = 
 				triangulate_degenerate_quads 
-        (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
+				(dual_isosurface.isopoly_vert, dual_isosurface.dual_edge,  dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord, track_quad_indices);
+		
+			
 			if (dual_isosurface.flag_has_degen_quads)
 				IJK::reorder_quad_vertices(dual_isosurface.isopoly_vert);
 		}
 		else if (dualiso_data.use_triangle_mesh)
 		{
 			t4=clock();
-			dual_isosurface.flag_has_degen_quads =  triangulate_degenerate_quads (dual_isosurface.isopoly_vert, dual_isosurface.tri_vert,
+			dual_isosurface.flag_has_degen_quads =  triangulate_degenerate_quads 
+				(dual_isosurface.isopoly_vert, dual_isosurface.dual_edge,  dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord, track_quad_indices);
 
 			//flag_boundary_cubes(boundary_grid);
-			triangulate_quad_angle_based(dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert,
+			triangulate_quad_angle_based(dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, dual_isosurface.dual_edge,
 				origQuadVert, dual_isosurface.tri_vert, iso_vlist, 
 				dual_isosurface.vertex_coord, cube_boundary_grid, qdual_table, 
 				diagonalMap, dual_isosurface.orth_dir, track_quad_indices, collapse_map,
 				dualiso_data.flag_collapse_debug);
+
 			t5=clock();
 			IJK::clock2seconds(t5-t4, dualiso_info.time.triangulate);
 		}

@@ -10,6 +10,7 @@
 using namespace QDUAL;
 
 namespace QTRIANGULATE{
+	/// OBSOLETE ****
 	// Triangulate the non degenerate quads into tris. 
 	// Returns an updated set of quads and tris. 
 	// Returns a bool which "has_degen_quads"
@@ -19,6 +20,18 @@ namespace QTRIANGULATE{
 		const std::vector<COORD_TYPE> & vertex_coord,
 		std::unordered_map <QUAD_INDEX, QUAD_INDEX > &track_quad_indices);
 
+
+	//Returns true if degen quads exists
+	//Returns the quadvert without the degen QUADS.
+	//Returns the track_quad_indices. 
+	bool triangulate_degenerate_quads (
+		std::vector<VERTEX_INDEX> & quad_vert,
+		std::vector<VERTEX_INDEX> & dual_edge,
+		std::vector<VERTEX_INDEX> & tri_vert,
+		const std::vector<COORD_TYPE> & vertex_coord,
+		std::unordered_map<QUAD_INDEX, QUAD_INDEX> &track_quad_indices);
+
+	/* /// OBSOLETE ***
 	// Remove degfenerate quads
 	void remove_degenerate_quads(
 		std::vector<VERTEX_INDEX> & quad_vert,
@@ -27,6 +40,19 @@ namespace QTRIANGULATE{
 		const std::vector<COORD_TYPE> & vertex_coord,
 		std::unordered_map<QUAD_INDEX, QUAD_INDEX > 
 		&track_quad_indices
+		);
+*/
+	// Remove degenerate quads
+	// Also sets the track_quad_indices.
+	void remove_degenerate_quads(
+		std::vector<VERTEX_INDEX> & quad_vert,
+		std::vector<VERTEX_INDEX> & dual_edge,
+		std::vector<VERTEX_INDEX> & non_degen_quad_vert, // only non degenerate quads
+		std::vector<VERTEX_INDEX> & non_degen_quad_dual_edge,
+		std::vector<VERTEX_INDEX> & tri_vert,
+		const std::vector<COORD_TYPE> & vertex_coord,
+		//returns
+		std::unordered_map<QUAD_INDEX, QUAD_INDEX > &track_quad_indices
 		);
 
 
@@ -44,6 +70,23 @@ namespace QTRIANGULATE{
 		const std::vector<DIRECTION_TYPE> &orth_dir,
 		std::unordered_map<QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
 		IJK::ARRAY<VERTEX_INDEX> &collapse_map,
+		bool printInfo
+		);
+
+	void triangulate_quad_angle_based(
+		const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+		std::vector<VERTEX_INDEX> & quadVert, // only non degenerate quads
+		std::vector<VERTEX_INDEX> & dual_edge,
+		const std::vector<VERTEX_INDEX> & origQuadVert,
+		std::vector<VERTEX_INDEX> & tri_vert,
+		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
+		const std::vector<COORD_TYPE> & vertex_coord,
+		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
+		QDUAL_TABLE & qdual_table,
+		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
+		const std::vector<DIRECTION_TYPE> &orth_dir,
+		std::unordered_map< QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
+		IJK::ARRAY<VERTEX_INDEX> & origCollapse_map,
 		bool printInfo
 		);
 
@@ -66,6 +109,14 @@ namespace QTRIANGULATE{
 		const std::vector<DIRECTION_TYPE> &orth_dir,
 		std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 		const std::vector<COORD_TYPE> & vertex_coord);
+
+
+	/// version B of 
+	//Setup the hashmap to find quads which share diagonals
+	void hashQuadsDual2GridEdgeB(
+		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
+		const std::vector<VERTEX_INDEX> &dual_edge);
+
 
 	// Compute degree of each vertex
 	// Only for non degenerate poly
