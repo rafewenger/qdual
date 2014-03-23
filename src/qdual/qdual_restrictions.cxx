@@ -475,7 +475,9 @@ void compute_restrictions_CList(
 				bool flag_box = check_vertex_has_box_around 
 					(scalar_grid, iv, iso_vlist, isodual_table,
 					first_isov, qdual_table, count);
+
 				if (flag_box){
+					// restricted vertex
 					restriction_Clist.push_back(iv);
 					if (count==8)
 					{
@@ -669,7 +671,6 @@ void set_restrictionsC(
 	for (int v = 0; v < restriction_Clist.size(); v++)
 	{
 		VERTEX_INDEX iv0 = restriction_Clist[v] - scalar_grid.CubeVertexIncrement(NUM_CUBE_VERT-1);
-
 
 		for (int j = 0; j < NUM_CUBE_VERT; j++)
 		{

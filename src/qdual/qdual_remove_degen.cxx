@@ -17,7 +17,6 @@ bool QTRIANGULATE::triangulate_degenerate_quads (
 	const std::vector<COORD_TYPE> & vertex_coord,
 	unordered_map<QUAD_INDEX, QUAD_INDEX> &track_quad_indices)
 {
-
 	std::vector<VERTEX_INDEX> non_degen_quad_vert;
 	remove_degenerate_quads(quad_vert, non_degen_quad_vert,
 		tri_vert, vertex_coord, track_quad_indices);
@@ -54,7 +53,7 @@ bool sharesOppositeVerticesComputations
 	v.clear();
 	unordered_map<QUAD_INDEX, QUAD_INDEX>::const_iterator it = 
 		track_quad_indices.find(q);
-	QUAD_INDEX mappedQ = it->second;
+	QUAD_INDEX mappedQ = it->second; // mapped to the original quad vert.*** WRONG
 
 	VERTEX_INDEX B = iso_vlist [origQuadVert[VERT_PER_QUAD*mappedQ+2]].cube_index;
 	VERTEX_INDEX tempEdgeDir = (int)orth_dir[mappedQ];
@@ -66,8 +65,8 @@ bool sharesOppositeVerticesComputations
 
 	if(printInfo)
 	{
-		cout <<"diag check "<<q <<endl;
-		cout <<" mapped to "<< mappedQ ;
+		cout <<"diag check quad: "<<q <<endl;
+		cout <<" mapped to quad: "<< mappedQ ;
 		cout <<" iend "<< iend <<
 			" ie "<< ie << endl;
 	}
@@ -207,10 +206,12 @@ void QTRIANGULATE::hashQuadsDual2GridEdge(
 		VERTEX_INDEX B = iso_vlist [quad_vert[VERT_PER_QUAD*q+2]].cube_index;
 		int edgeDir = (int)orth_dir[q];
 		int index = DIM3*B + edgeDir;
+		//Sets the diagonal map.
+		//Keeps track of the edge associated with each quad.
 		diagonalMap.insert(make_pair(index, q));
 		//debug
 		/*
-		cout <<"has table q "<< q <<" of "<< numQuads<< endl;
+		cout <<"hash table q "<< q <<" of "<< numQuads<< endl;
 		cout <<"B(cube index) "<< B<<" ";
 		VERTEX_INDEX temp = quad_vert[VERT_PER_QUAD*q+2];
 		cout <<" issovertex index [" << temp <<"]  coord [";
@@ -280,11 +281,13 @@ void remove_degen (
 }
 
 // Remove degenerate quads
+// Also sets the track_quad_indices.
 void QTRIANGULATE::remove_degenerate_quads(
 	std::vector<VERTEX_INDEX> & quad_vert,
 	std::vector<VERTEX_INDEX> & non_degen_quad_vert, // only non degenerate quads
 	std::vector<VERTEX_INDEX> & tri_vert,
 	const std::vector<COORD_TYPE> & vertex_coord,
+	//returns
 	unordered_map<QUAD_INDEX, QUAD_INDEX > &track_quad_indices
 	)
 {
@@ -521,7 +524,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 	const std::vector<DIRECTION_TYPE> &orth_dir,
 	unordered_map< QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
 	IJK::ARRAY<VERTEX_INDEX> & origCollapse_map,
-	const bool printInfo
+	bool printInfo
 	)
 {
 	const int num_quad = quadVert.size()/VERT_PER_QUAD;
@@ -612,11 +615,11 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			int C = quadVert[q*VERT_PER_QUAD+ (w1+3)%VERT_PER_QUAD];
 			int D = quadVert[q*VERT_PER_QUAD+ (w1+1)%VERT_PER_QUAD];
 
-
 			vertex = QCOLLAPSE::find_vertex(collapse_map,vertex);
 			B = QCOLLAPSE::find_vertex(collapse_map,B);
 			C = QCOLLAPSE::find_vertex(collapse_map,C);
 			D = QCOLLAPSE::find_vertex(collapse_map, D);
+			
 			//find the 4 angles.
 
 			float cos_min_angle_abc; // min angle of triangle ABC.

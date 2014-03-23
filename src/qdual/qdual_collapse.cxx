@@ -1726,7 +1726,8 @@ void update_quads(
 	}
 }
 
-// dual collapse main function
+// dual collapse main function.
+// Also updates quads at the end.
 // NOTE:quads are reordered at the start and again at the end.
 
 void QCOLLAPSE::dual_collapse(
@@ -1869,9 +1870,12 @@ void QCOLLAPSE::delIsolated(
 			}    
 		}
 	}
-	if (printInfo)
+	//DEBUG
+	if (true)
 	{
-		cout <<"Isolated list size: "<< sizeDelIsolated <<endl;
+		cout <<"\nIsolated list size: "<< sizeDelIsolated <<endl;
+		cout <<"Original quad vert size "<< quad_vert.size() << endl;
+		cout <<"after removing isolated quadvert size "<< local_quad_vert.size()<<endl;
 		cout <<"Number of quads decimated: "<< (quad_vert.size() - local_quad_vert.size()) / 4 <<endl;
 	}
 	quad_vert.clear();
