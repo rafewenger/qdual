@@ -15,21 +15,21 @@ using namespace QCOLLAPSE;
 //Returns the track_quad_indices. 
 /*
 bool QTRIANGULATE::triangulate_degenerate_quads (
-	std::vector<VERTEX_INDEX> & quad_vert,
-	std::vector<VERTEX_INDEX> & tri_vert,
-	const std::vector<COORD_TYPE> & vertex_coord,
-	unordered_map<QUAD_INDEX, QUAD_INDEX> &track_quad_indices)
+std::vector<VERTEX_INDEX> & quad_vert,
+std::vector<VERTEX_INDEX> & tri_vert,
+const std::vector<COORD_TYPE> & vertex_coord,
+unordered_map<QUAD_INDEX, QUAD_INDEX> &track_quad_indices)
 {
-	std::vector<VERTEX_INDEX> non_degen_quad_vert;
-	remove_degenerate_quads(quad_vert, non_degen_quad_vert,
-		tri_vert, vertex_coord, track_quad_indices);
-	//reset the quad vert
-	quad_vert.clear();
-	quad_vert = non_degen_quad_vert;
-	if (tri_vert.size() == 0 )
-		return false;
-	else
-		return true;
+std::vector<VERTEX_INDEX> non_degen_quad_vert;
+remove_degenerate_quads(quad_vert, non_degen_quad_vert,
+tri_vert, vertex_coord, track_quad_indices);
+//reset the quad vert
+quad_vert.clear();
+quad_vert = non_degen_quad_vert;
+if (tri_vert.size() == 0 )
+return false;
+else
+return true;
 }
 */
 
@@ -63,6 +63,257 @@ bool QTRIANGULATE::triangulate_degenerate_quads (
 		return true;
 }
 
+// Check if quads share vertices.
+// Set the right order of vertices in quad "v"
+// To triangulate the quad properly.
+bool checkIfQuadsShareVertices13B(
+	const QUAD_INDEX q,
+	const QUAD_INDEX q2,
+	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	vector< VERTEX_INDEX> & v
+	)
+{
+	v.clear();
+	if ((
+		(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1])) == 
+		find_vertex(collapse_map, (quad_vert[q2*VERT_PER_QUAD+3]))
+		)&&( 
+		find_vertex(collapse_map, quad_vert[q*VERT_PER_QUAD+3])
+		== find_vertex(collapse_map, quad_vert[q2*VERT_PER_QUAD+1])
+		))
+	{
+		v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
+		v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
+		v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
+		v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
+		return true;		
+	}
+	else
+		return false;
+}
+
+
+// Check if quads share vertices.
+// Set the right order of vertices in quad "v"
+// To triangulate the quad properly.
+bool checkIfQuadsShareVertices02B(
+	const QUAD_INDEX q,
+	const QUAD_INDEX q2,
+	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	vector< VERTEX_INDEX> & v
+	)
+{
+	v.clear();
+	if ((
+		(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD])) == 
+		find_vertex(collapse_map, (quad_vert[q2*VERT_PER_QUAD]))
+		)&&( 
+		find_vertex(collapse_map, quad_vert[q*VERT_PER_QUAD+2])
+		== find_vertex(collapse_map, quad_vert[q2*VERT_PER_QUAD+2])
+		))
+	{
+		v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
+		v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
+		v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
+		v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
+		return true;		
+	}
+	else
+		return false;
+}
+
+// Check if quads share vertices.
+// Set the right order of vertices in quad "v"
+// To triangulate the quad properly.
+bool checkIfQuadsShareVertices02(
+	const QUAD_INDEX q,
+	const QUAD_INDEX q2,
+	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	const std::vector<VERTEX_INDEX> & origQuadVert,
+	vector< VERTEX_INDEX> & v
+	)
+{
+	v.clear();
+	if ((
+		(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD])) == 
+		find_vertex(collapse_map, (origQuadVert[q2*VERT_PER_QUAD]))
+		)&&( 
+		find_vertex(collapse_map, quad_vert[q*VERT_PER_QUAD+2])
+		== find_vertex(collapse_map, origQuadVert[q2*VERT_PER_QUAD+2])
+		))
+	{
+		v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
+		v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
+		v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
+		v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
+		return true;		
+	}
+	else
+		return false;
+}
+
+// Check if quads share vertices.
+// Set the right order of vertices in quad "v"
+// To triangulate the quad properly.
+bool checkIfQuadsShareVertices13(
+	const QUAD_INDEX q,
+	const QUAD_INDEX q2,
+	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	const std::vector<VERTEX_INDEX> & origQuadVert,
+	vector< VERTEX_INDEX> & v
+	)
+{
+	v.clear();
+	if ((
+		(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1])) == 
+		find_vertex(collapse_map, (origQuadVert[q2*VERT_PER_QUAD+3]))
+		)&&( 
+		find_vertex(collapse_map, quad_vert[q*VERT_PER_QUAD+3])
+		== find_vertex(collapse_map, origQuadVert[q2*VERT_PER_QUAD+1])
+		))
+	{
+		v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
+		v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
+		v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
+		v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
+		return true;		
+	}
+	else
+		return false;
+}
+
+// **** Uses the diagonalMap2 *********
+bool checkEdgeForDiagonalCommonVerticesB
+	(
+	VERTEX_INDEX ie, 
+	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap2,
+	const QUAD_INDEX Q,
+	QUAD_INDEX & commonQuadToQ,
+	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	const std::vector<VERTEX_INDEX> & origQuadVert,
+	vector< VERTEX_INDEX> & v
+	)
+{
+	std::unordered_map<VERTEX_INDEX, VERTEX_INDEX>::iterator ind 
+		= diagonalMap2.find(ie);
+
+	if (ind  != diagonalMap2.end())
+	{
+		commonQuadToQ = diagonalMap2.at(ie);
+		bool check02 = checkIfQuadsShareVertices02B
+			(Q, commonQuadToQ, collapse_map, quad_vert, v);
+		if (check02)
+			return true;
+
+		bool check13 = checkIfQuadsShareVertices13B
+			(Q, commonQuadToQ, collapse_map, quad_vert, v);
+		if (check13)
+			return true;
+	}
+	return false;
+}
+
+
+bool checkEdgeForDiagonalCommonVertices
+	(
+	VERTEX_INDEX ie, 
+	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
+	const QUAD_INDEX Q,
+	QUAD_INDEX & commonQuadToQ,
+	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	const std::vector<VERTEX_INDEX> & origQuadVert,
+	vector< VERTEX_INDEX> & v
+	)
+{
+	std::unordered_map<VERTEX_INDEX, VERTEX_INDEX>::iterator ind 
+		= diagonalMap.find(ie);
+
+	if (ind  != diagonalMap.end())
+	{
+		commonQuadToQ = diagonalMap.at(ie);
+		bool check02 = checkIfQuadsShareVertices02
+			(Q, commonQuadToQ, collapse_map, quad_vert, origQuadVert, v);
+		if (check02)
+			return true;
+
+		bool check13 = checkIfQuadsShareVertices13
+			(Q, commonQuadToQ, collapse_map, quad_vert, origQuadVert, v);
+		if (check13)
+			return true;
+	}
+	return false;
+}
+
+//VERSION C
+bool sharesOppositeVerticesComputationsC
+	(
+	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	const QUAD_INDEX q, //qth quad
+	QUAD_INDEX & q2, //is the common quad
+	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
+	std::vector<VERTEX_INDEX> & quad_vert,
+	std::vector<VERTEX_INDEX> & dual_edge,
+	const std::vector<VERTEX_INDEX> & origQuadVert,
+	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
+	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap2,
+	const std::vector<DIRECTION_TYPE> &orth_dir,
+	vector< VERTEX_INDEX> & v,
+	unordered_map<QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
+	IJK::ARRAY<VERTEX_INDEX> & collapse_map, 
+	const bool printInfo
+	)
+{
+	if (diagonalMap.empty())
+		return false;
+
+	VERTEX_INDEX ie = dual_edge[q];
+
+	VERTEX_INDEX edgeDir = ie%DIM3;
+	VERTEX_INDEX iend = (ie-edgeDir)/DIM3;
+
+	if(printInfo)
+	{
+		cout <<"diag check quad: "<<q <<endl;
+		cout <<" iend "<< iend <<
+			" ie "<< ie << endl;
+	}
+	IJK::ARRAY<GRID_COORD_TYPE> edgeBase(DIM3,0);
+	scalar_grid.ComputeCoord(iend, &(edgeBase[0]));
+
+	if (edgeBase[edgeDir]!=0)
+	{
+		VERTEX_INDEX iprev = scalar_grid.PrevVertex(iend, edgeDir );
+		VERTEX_INDEX ie2 = iprev*DIM3 + edgeDir;
+
+		/*bool checkQuads = checkEdgeForDiagonalCommonVertices
+			(ie2, diagonalMap, q, q2, collapse_map, quad_vert, origQuadVert, v);*/
+		bool checkQuads = checkEdgeForDiagonalCommonVerticesB
+			(ie2, diagonalMap2, q, q2, collapse_map, quad_vert, origQuadVert, v);
+		
+		if (checkQuads)
+			return true;
+	}
+	const AXIS_SIZE_TYPE * axis_size = scalar_grid.AxisSize(); 
+	if (edgeBase[edgeDir] != (axis_size[edgeDir]-1))
+	{
+		VERTEX_INDEX inext = scalar_grid.NextVertex(iend, edgeDir);
+		VERTEX_INDEX ie2 = inext*DIM3 + edgeDir;
+		bool checkQuads = checkEdgeForDiagonalCommonVertices
+			(ie2, diagonalMap, q, q2, collapse_map, quad_vert, origQuadVert, v);
+
+		if (checkQuads)
+			return true;
+	}
+	return false;
+}
+
+
 
 // VERSION B OF 
 bool sharesOppositeVerticesComputations
@@ -90,7 +341,7 @@ bool sharesOppositeVerticesComputations
 
 	VERTEX_INDEX edgeDir = ie%DIM3;
 	VERTEX_INDEX iend = (ie-edgeDir)/DIM3;
-	
+
 	if(printInfo)
 	{
 		cout <<"diag check quad: "<<q <<endl;
@@ -127,13 +378,6 @@ bool sharesOppositeVerticesComputations
 				v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
 				v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
 				v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
-				/*
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]));
-				*/
-
 				return true;		
 			}
 			if ((
@@ -148,12 +392,6 @@ bool sharesOppositeVerticesComputations
 				v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
 				v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
 				v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
-				/*
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]));
-				*/
 				return true;		
 			}
 		}
@@ -185,12 +423,6 @@ bool sharesOppositeVerticesComputations
 				v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
 				v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
 				v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
-				/*
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]));
-				*/
 				return true;		
 			}
 			if ((
@@ -205,12 +437,6 @@ bool sharesOppositeVerticesComputations
 				v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
 				v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
 				v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
-				/*
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]));
-				v.push_back(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]));
-				*/
 				return true;		
 			}
 		}
@@ -589,11 +815,11 @@ float length_of_side (	const VERTEX_INDEX A, const VERTEX_INDEX B,
 //c2=a2+b2-2abcosC
 float compute_cosine_rule_angle(const float A, const float B, const float C)
 {
-  float x = B*B + C*C - A*A;
-  float y = 2.0*B*C;
+	float x = B*B + C*C - A*A;
+	float y = 2.0*B*C;
 
-  if (x > y) { return(1); }
-  if (-x > y) { return(-1); }
+	if (x > y) { return(1); }
+	if (-x > y) { return(-1); }
 	return (x/y);
 }
 //compute the cosine of the min angle in the triangle
@@ -612,8 +838,8 @@ void compute_cos_min_angle (
 	float cos_angle_B = compute_cosine_rule_angle(BC, CA, AB);
 	float cos_angle_A = compute_cosine_rule_angle(CA, BC, AB);
 
-  cos_angle = std::max(cos_angle_A, cos_angle_B);
-  cos_angle = std::max(cos_angle, cos_angle_C);
+	cos_angle = std::max(cos_angle_A, cos_angle_B);
+	cos_angle = std::max(cos_angle, cos_angle_C);
 }
 
 // update collapses in trivert with collapse map
@@ -827,7 +1053,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			B = QCOLLAPSE::find_vertex(collapse_map,B);
 			C = QCOLLAPSE::find_vertex(collapse_map,C);
 			D = QCOLLAPSE::find_vertex(collapse_map, D);
-			
+
 			//find the 4 angles.
 
 			float cos_min_angle_abc; // min angle of triangle ABC.
@@ -894,7 +1120,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			else
 			{
 				QUAD_INDEX commonQuad;
-				if ( sharesOppositeVerticesComputations
+				if ( sharesOppositeVerticesComputationsC
 					(scalar_grid, q, commonQuad, iso_vlist, quadVert,  dual_edge,
 					origQuadVert, diagonalMap, diagonalMap2, 
 					orth_dir, quadIndices, track_quad_indices, origCollapse_map, printInfo) )
@@ -1054,7 +1280,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 			B = QCOLLAPSE::find_vertex(collapse_map,B);
 			C = QCOLLAPSE::find_vertex(collapse_map,C);
 			D = QCOLLAPSE::find_vertex(collapse_map, D);
-			
+
 			//find the 4 angles.
 
 			float cos_min_angle_abc; // min angle of triangle ABC.
