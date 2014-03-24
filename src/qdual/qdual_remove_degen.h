@@ -83,7 +83,7 @@ namespace QTRIANGULATE{
 		const std::vector<COORD_TYPE> & vertex_coord,
 		IJK::BOOL_GRID<DUALISO_GRID> &boundary_grid,
 		QDUAL_TABLE & qdual_table,
-		std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
+		//std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
 		const std::vector<DIRECTION_TYPE> &orth_dir,
 		std::unordered_map< QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
 		IJK::ARRAY<VERTEX_INDEX> & origCollapse_map,
