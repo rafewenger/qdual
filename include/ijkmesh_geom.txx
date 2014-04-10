@@ -4,7 +4,7 @@
 
 /*
   IJK: Isosurface Jeneration Kode
-  Copyright (C) 2012 Rephael Wenger
+  Copyright (C) 2012-2014 Rephael Wenger
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public License
@@ -24,9 +24,10 @@
 #ifndef _IJKMESH_GEOM_
 #define _IJKMESH_GEOM_
 
+#include <vector>
+
 #include "ijk.txx"
 #include "ijkcoord.txx"
-#include <vector>
 
 namespace IJK {
 
@@ -147,6 +148,45 @@ namespace IJK {
       (dimension, IJK::vector2pointer(vert_coord),
        IJK::vector2pointer(quad_vert), num_quad, max_small_magnitude,
        tri_vert);
+
+  }
+
+  // **************************************************
+  // ENVELOPE
+  // **************************************************
+
+  /// Return true if diagonal (w0,w2) is in envelope.
+  /// @param v0[] Grid vertex v0.
+  /// @param v1[] Grid vertex v1. (v0,v1) is a grid edge.
+  /// @param w0[] Isosurface vertex w0.
+  /// @param w1[] Isosurface vertex w1.
+  /// @param w2[] Isosurface vertex w2.
+  /// @param w3[] Isosurface vertex w3.
+  ///        (w0,w1,w2,w3) is an isosurface quadrilateral q dual to (v0,v1).
+  ///        Vertices (w0,w1,w2,w3) are listed in order around q.
+  /// @pre  Orientation of (w0,w1,v0,v1) is positive.
+  /// @param epsilon Tolerance.  
+  ///        Determinants less than epsilon are considered equivalent to 0.
+  template <typename VCOORD_TYPE, typename WCOORD_TYPE,
+            typename EPSILON_TYPE>
+  bool is_in_envelope_3D
+  (const VCOORD_TYPE v0[3], const VCOORD_TYPE v1[3],
+   const WCOORD_TYPE w0[3], const WCOORD_TYPE w1[3],
+   const WCOORD_TYPE w2[3], const WCOORD_TYPE w3[3],
+   const EPSILON_TYPE epsilon)
+  {
+    double D;
+
+    IJK::determinant_point_3D(w0, w2, v1, w1, D);
+    if (D < epsilon) { return(false); }
+    IJK::determinant_point_3D(w0, w2, v0, w1, D);
+    if (-D < epsilon) { return(false); }
+    IJK::determinant_point_3D(w0, w2, v1, w3, D);
+    if (-D < epsilon) { return(false); }
+    IJK::determinant_point_3D(w0, w2, v0, w3, D);
+    if (D < epsilon) { return(false); }
+
+    return(true);
   }
 
 }

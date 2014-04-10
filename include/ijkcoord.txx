@@ -4,7 +4,7 @@
 
 /*
   IJK: Isosurface Jeneration Kode
-  Copyright (C) 2009-2013 Rephael Wenger
+  Copyright (C) 2009-2014 Rephael Wenger
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public License
@@ -588,7 +588,7 @@ namespace IJK {
   /// @param dimension = Coordinate dimension (= number of coordinates.)
   /// @param coord0 = Input coordinates.
   /// @param coord1 = Input coordinates.
-  /// @param[out] coord2 = Output coordinate equal to (\a coord1[] - \a coord1[]).
+  /// @param[out] coord2 = Output coordinate equal to (\a coord0[] - \a coord1[]).
   template <typename CTYPE0, typename CTYPE1, typename CTYPE2>
   inline void subtract_coord_3D
   (const CTYPE0 coord0[], const CTYPE1 coord1[], CTYPE2 coord2[])
@@ -680,6 +680,52 @@ namespace IJK {
   }
 
   /* \} */
+
+  // **************************************************
+  // 2D and 3D Determinants
+  // **************************************************
+
+  /// Return determinant of a 2x2 matrix.
+  template <typename COORD_TYPE, typename RESULT_TYPE>
+  inline void determinant_2x2
+  (const COORD_TYPE a00, const COORD_TYPE a01,
+   const COORD_TYPE a10, const COORD_TYPE a11,
+   RESULT_TYPE & result)
+  {
+    result = a00*a11 - a01*a10;
+  }
+
+  /// Return determinant of a 3x3 matrix.
+  template <typename COORD_TYPE, typename RESULT_TYPE>
+  inline void determinant_3x3
+  (const COORD_TYPE p0[3], const COORD_TYPE p1[3],
+   const COORD_TYPE p2[3], RESULT_TYPE & result)
+  {
+    RESULT_TYPE D;
+    determinant_2x2(p1[1], p1[2], p2[1], p2[2], D);
+    result = p0[0] * D;
+    determinant_2x2(p2[1], p2[2], p0[1], p0[2], D);
+    result += p1[0] * D;
+    determinant_2x2(p0[1], p0[2], p1[1], p1[2], D);
+    result += p2[0] * D;
+  }
+
+
+  /// Return determinant of four 3D points.
+  template <typename COORD_TYPE, typename RESULT_TYPE>
+  inline void determinant_point_3D
+  (const COORD_TYPE p0[3], const COORD_TYPE p1[3],
+   const COORD_TYPE p2[3], const COORD_TYPE p3[3],
+   RESULT_TYPE & result)
+  {
+    RESULT_TYPE v1[3], v2[3], v3[3];
+
+    subtract_coord_3D(p1, p0, v1);
+    subtract_coord_3D(p2, p0, v2);
+    subtract_coord_3D(p3, p0, v3);
+
+    determinant_3x3(v1, v2, v3, result);
+  }
 
 }
 
