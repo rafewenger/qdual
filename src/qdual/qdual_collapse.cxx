@@ -1503,12 +1503,17 @@ void capQuadComputation(
 	//	cout <<"d1 "<< d1 <<" sepvert "<< iso_vlist[d1].sep_vert<< " degree "<<iso_vlist[d1].ver_degree <<endl;
 	//	cout <<"d2 "<< d2 <<" sepvert "<< iso_vlist[d2].sep_vert<< " degree "<<iso_vlist[d2].ver_degree <<endl;
 	//}
-	if (iso_vlist[d1].sep_vert == iso_vlist[d2].sep_vert
-		&& iso_vlist[d1].ver_degree == 3 && iso_vlist[d2].ver_degree == 3)
+
+  // NOTE: ver_degree may be incorrect for vertices in boundary cubes.
+  // CHECK that sep_vert < scalar_grid.NumVertices().
+	if (iso_vlist[d1].sep_vert == iso_vlist[d2].sep_vert &&
+      iso_vlist[d1].sep_vert < scalar_grid.NumVertices() &&
+      iso_vlist[d1].ver_degree == 3 && iso_vlist[d2].ver_degree == 3)
 	{ 
 
 		if(printInfo)
-			cout <<"capQuad"<<endl;
+			cout <<"capQuad: Diagonals " << d1 << "," << d2 
+           << ".  Sep_vert: " << iso_vlist[d1].sep_vert << endl;
 
 		//CAP QUAD 
 		float closestDistance=0;
@@ -1613,7 +1618,7 @@ void capQuadComputation(
 
 	}
 	else
-		capQuad = false;
+    { capQuad = false; }
 }
 
 /// Compute the edge dual to the quad q
@@ -1647,6 +1652,7 @@ void collapse_caps (
 	const int numQuads = quad_vert.size()/4;
 	const int notDegreeThree = scalar_grid.NumVertices(); // Notdegree3
 
+  // PROBLEM: COMPUTES WRONG DEGREE ON BOUNDARY VERTICES.
 	QTRIANGULATE::compute_degree_per_vertex(VERT_PER_QUAD, quad_vert, iso_vlist);
 
 	for (int q = 0; q < numQuads; q++)

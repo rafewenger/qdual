@@ -11,6 +11,7 @@ isovalue = 2.1;
 seed0 = 12345;
 flag_collapseB = False;
 flag_collapseC = False;
+flag_trimesh = True;
 epsilon = 0.3;
 
 # Function get_flag
@@ -55,8 +56,11 @@ def runqdual():
     sys.stdout.flush()
     os.system(ijkgenscalar_command_line);
 
-    qdual_command_line = 'qdual -s -trimesh -move_vertex ' + \
-                         '-epsilon ' + str(epsilon);
+    qdual_command_line = 'qdual -s -move_vertex -epsilon ' + str(epsilon);
+    
+    if (flag_trimesh) :
+        qdual_command_line = qdual_command_line + ' -trimesh';
+
     if (flag_collapseB):
         qdual_command_line = qdual_command_line + ' -collapseB';
 
@@ -74,16 +78,16 @@ def runqdual():
         print 'qdual return code: ', ret_code
         print 'Exiting ', sys.argv[0]
         exit(ret_code)
-    
-    ijkmeshinfo_command_line = 'ijkmeshinfo -manifold -terse -report_deep ' + \
-                               offFile;
+
+    if (flag_trimesh):
+        ijkmeshinfo_command_line = 'ijkmeshinfo -mesh_dim 2 -manifold -terse -report_deep ' + offFile;
+        os.system(ijkmeshinfo_command_line);
+
+    ijkmeshinfo_command_line = 'ijkmeshinfo -mesh_dim 2 -internal -out_min_angle ' + offFile;
     os.system(ijkmeshinfo_command_line);
 
-    ijkmeshinfo_command_line = 'ijkmeshinfo -internal -out_min_angle ' + \
-                               offFile;
-    os.system(ijkmeshinfo_command_line);
-
-    ijkmeshinfo_command_line = 'ijkmeshinfo -out_min_angle ' + offFile;
+    ijkmeshinfo_command_line = 'ijkmeshinfo -mesh_dim 2 -out_min_angle ' \
+                               + offFile;
     os.system(ijkmeshinfo_command_line);
 
     return;
@@ -125,10 +129,13 @@ flag_collapseC = get_flag('-collapseC', command_options);
 if (flag_collapseC):
     command_options = strip_option('-collapseC', 0, command_options);
 
+flagFound = get_flag('-quad', command_options);
+if (flagFound):
+    flag_trimesh = False;
+    command_options = strip_option('-quad', 0, command_options);
+
 
 seed = seed0;
 for i in range(numTest):
     runqdual();
     seed = seed+10;
-
-
