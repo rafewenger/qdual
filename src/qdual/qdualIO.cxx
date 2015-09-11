@@ -1155,16 +1155,16 @@ namespace {
 	void options_msg()
 	{
 		cerr << "OPTIONS:" << endl;
-		cerr << "[-subsample S] [-supersample S] [-position {centroid|cube_center}]" << endl;
-		cerr << "[-sep_neg | -sep_pos] [-select_split]" << endl;
-		cerr << "[-trimesh | -uniform_trimesh]" << endl;
-		cerr <<	"[-no_collapse | -qt_mesh]" << endl;
-		cerr << "[-move_vertex]"<<endl;
-		cerr <<" [-no_res_AB | -no_res_B | -no_res_C]"<< endl;
-		cerr <<" [-collapse_info]"<<endl;
-		cerr << "[-off|-iv] [-o {output_filename}] [-stdout]" 
+		cerr << "  [-subsample S] [-supersample S] [-position {centroid|cube_center}]" << endl;
+		cerr << "  [-sep_neg | -sep_pos] [-select_split]" << endl;
+		cerr << "  [-trimesh | -uniform_trimesh]" << endl;
+		cerr <<	"  [-no_collapse | -qt_mesh]" << endl;
+		cerr << "  [-move_vertex]"<<endl;
+		cerr << "  [-no_res_AB | -no_res_B | -no_res_C]"<< endl;
+		cerr << "  [-collapse_info]"<<endl;
+		cerr << "  [-off|-iv] [-o {output_filename}] [-stdout]" 
 			<< endl; 
-		cerr << "[-help] [-s] [-nowrite] [-time]" << endl;
+		cerr << "  [-help] [-s] [-nowrite] [-time]" << endl;
 	}
 
 }
