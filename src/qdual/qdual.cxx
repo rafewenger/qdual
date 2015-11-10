@@ -126,9 +126,6 @@ void QDUAL::quality_dual_contouring
 
 		////set variables in iso_vlist
 		setUpIsoVlist( dualiso_data, qdual_table, cube_boundary_grid, iso_vlist);
-		// OBSOLETE
-		/*hashQuadsDual2GridEdge(diagonalMap, dual_isosurface.isopoly_vert,
-		dual_isosurface.orth_dir, iso_vlist, dual_isosurface.vertex_coord);*/
 
 		//store the original quads 
 		vector <QUAD_INDEX> origQuadVert = dual_isosurface.isopoly_vert;
@@ -228,17 +225,6 @@ void QDUAL::quality_dual_contouring
 				(dual_isosurface.isopoly_vert, dual_isosurface.dual_edge,  dual_isosurface.tri_vert,
 				dual_isosurface.vertex_coord, track_quad_indices);
 
-			//flag_boundary_cubes(boundary_grid);
-			// OBSOLETE VERSION WHICH TAKES DIAGONAL MAP.
-			// UNCOMMENT :
-			// hashQuadsDual2GridEdge before using this fucntion.
-			
-			//triangulate_quad_angle_based(dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, dual_isosurface.dual_edge,
-			//	origQuadVert, dual_isosurface.tri_vert, iso_vlist, 
-			//	dual_isosurface.vertex_coord, cube_boundary_grid, qdual_table, 
-			//	diagonalMap, dual_isosurface.orth_dir, track_quad_indices, collapse_map,
-			//	dualiso_data.flag_collapse_debug);
-
 			triangulate_quad_angle_based(dualiso_data.ScalarGrid(), dual_isosurface.isopoly_vert, dual_isosurface.dual_edge,
 				origQuadVert, dual_isosurface.tri_vert, iso_vlist, 
 				dual_isosurface.vertex_coord, cube_boundary_grid, qdual_table, 
@@ -303,12 +289,6 @@ void QDUAL::dual_contouring
 	//   For each vertex iv of quad iq dual to e,
 	//     Add cube containing iv to quad_cube[].
 	//     Add position of iv on quad iq to facet_vertex[].
-
-  // **** OBSOLETE ***
-  /*
-	extract_dual_isoquad
-		(scalar_grid, isovalue, quad_cube, facet_vertex, orth_dir, dualiso_info);
-  */
 
 	extract_dual_isoquad_and_dual_edge
 		(scalar_grid, isovalue, quad_cube, facet_vertex, dual_edge, dualiso_info);

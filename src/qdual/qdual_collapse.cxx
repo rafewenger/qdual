@@ -1684,6 +1684,7 @@ void collapse_caps (
 	const int notDegreeThree = scalar_grid.NumVertices(); // Notdegree3
 
   // PROBLEM: COMPUTES WRONG DEGREE ON BOUNDARY VERTICES.
+  reset_degree_per_vertex(iso_vlist);
 	compute_degree_per_vertex(VERT_PER_QUAD, quad_vert, iso_vlist);
 
 	for (int q = 0; q < numQuads; q++)

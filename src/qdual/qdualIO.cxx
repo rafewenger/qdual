@@ -743,37 +743,6 @@ void QDUAL::write_dual_tri_mesh
 // WRITE DUAL QUAD + TRI MESH 
 // **************************************************
 
-/* OBSOLETE
-void QDUAL::write_dual_quad_tri_mesh
-( const OUTPUT_INFO & output_info,
-const DUALISO_DATA & dualiso_data,
-const DUAL_ISOSURFACE & dual_isosurface
-)
-{
-const int dimension = output_info.dimension;
-const int numv_per_simplex = output_info.num_vertices_per_isopoly;
-const bool use_stdout = output_info.use_stdout;
-const int numv = dual_isosurface.vertex_coord.size()/dimension;
-const int num_tri = dual_isosurface.tri_vert.size()/dimension;
-const int num_quad = dual_isosurface.isopoly_vert.size()/4;
-const int tri = 3;
-const int quad = 4;
-
-report_iso_info(output_info, dualiso_data, 
-vertex_coord, slist, dualiso_info);
-
-ofstream output_file;
-ERROR error_mcube("write_dual_mesh");
-string ofilename = output_info.output_filename;
-output_file.open(ofilename.c_str(), ios::out);
-ijkoutOFF(output_file, dimension, &(dual_isosurface.vertex_coord[0]), numv, 
-&(dual_isosurface.tri_vert[0]), tri, num_tri,
-&(dual_isosurface.isopoly_vert[0]), quad, num_quad);
-output_file.close();
-}
-*/
-
-
 void QDUAL::write_dual_tri_quad_mesh
 	(const OUTPUT_INFO & output_info,
 	const std::vector<COORD_TYPE> & vertex_coord, 

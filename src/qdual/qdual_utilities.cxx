@@ -23,11 +23,10 @@
 
 #include "qdual_utilities.h"
 
-
 // Compute degree of each vertex
-// Only for non degenerate poly
-// param 1 : num vertex in the poly.
-// param 2 : non degenerate polys
+// @param num_vert_per_poly Number of vertices per polygon.
+// @param poly_vert List of non degenerate polygons.
+// @pre Polygons are not degenerate.
 void QDUAL::compute_degree_per_vertex(
 	const int vert_per_poly,
 	std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
@@ -44,18 +43,10 @@ void QDUAL::compute_degree_per_vertex(
 	}
 }
 
-void QDUAL::reset_degree_per_vertex(
-	const int vert_per_poly,
-	std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
-	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
-	)
+void QDUAL::reset_degree_per_vertex
+(std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist)
 {
-	const int num_poly = poly_vert.size()/vert_per_poly;
-	for (int q=0; q<num_poly; q++)
-	{
-		for (int d=0;d<vert_per_poly;d++){
-			VERTEX_INDEX v = poly_vert[vert_per_poly*q+d];
-			iso_vlist[v].ver_degree=0;
-		}
-	}
+  for (int i = 0; i < iso_vlist.size(); i++) 
+    { iso_vlist[i].ver_degree = 0; }
 }
+

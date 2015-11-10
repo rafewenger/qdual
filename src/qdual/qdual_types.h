@@ -39,6 +39,7 @@ namespace NamedConstants{
 	static const int MAX_NUM_ISOVERT_PER_CUBE = 4;
 	static const int NO_ISOVERTEX_IN_CUBE = -1;
 	static const int VERT_PER_QUAD = 4;
+	static const int VERT_PER_TRI = 3;
 }
 
 
