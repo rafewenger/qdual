@@ -1,5 +1,28 @@
+/// \file qdual_collapse.cxx
+/// QDUAL collapse routines.
+
+/*
+  QDUAL: Quality Dual Isosurface Generation
+  Copyright (C) 2015 Arindam Bhattacharya, Rephael Wenger
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public License
+  (LGPL) as published by the Free Software Foundation; either
+  version 2.1 of the License, or any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+
 #include "qdual_collapse.h"
-#include "qdual_remove_degen.h" // for the count degree function 
+#include "qdual_utilities.h"
 
 using namespace QCOLLAPSE;
 using namespace std;
@@ -845,6 +868,7 @@ void collapse_across_facetsC
 	int v1,v2;
 	IJK::ARRAY<GRID_COORD_TYPE> facetBaseCoord(dimension,0);
 	IJK::ARRAY<GRID_COORD_TYPE> closestFacetBaseCoord(dimension,0);
+
 	//foreach quad
 	for (QUAD_INDEX q = 0; q < numQuads; q++){
 		//foreach edge
@@ -852,9 +876,11 @@ void collapse_across_facetsC
 		{
 			QUAD_INDEX endPt1=quad_vert[q*VERT_PER_QUAD+v1];
 			QUAD_INDEX endPt2=quad_vert[q*VERT_PER_QUAD+v2];
+
 			/*if(printInfo){
 				cout <<"\nCollapseAcrossFacets quad "<< q<<"  endpts "<< endPt1 <<" "<<endPt2 <<endl;
 			}*/
+
 			endPt1=find_vertex(collapse_map, endPt1);
 			endPt2=find_vertex(collapse_map, endPt2);
 
@@ -865,12 +891,14 @@ void collapse_across_facetsC
 				DIRECTION_TYPE facetDir=-1;
 				bool hasCommonFacet = findFacetCommonToEndPts
 					(endPt1, endPt2,  vertex_coord, iso_vlist, printInfo, facetBaseCoord, facetDir);
+
 				/*if(printInfo){
 					cout <<"Updated endpts "<< endPt1 <<" "<<endPt2 <<endl;
 					cout <<"endpt coords ("<<endPt1<<") "<< endPt1Coord[0] <<" "<< endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
 					cout <<" ("<<endPt2<<") "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
 					cout <<"facetBaseCoord "<< facetBaseCoord[0]<<" "<<facetBaseCoord[1]<<" "<<facetBaseCoord[2]<<endl;
 				}*/
+
 				if (hasCommonFacet){
 					bool endPt1EpsilonClose2F =
 						is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
@@ -883,6 +911,7 @@ void collapse_across_facetsC
 					bool endPt2IsPermittedAcrossF=
 						is_permitted_collapse_facet (iso_vlist, endPt2,  &(facetBaseCoord[0]),
 						facetDir);
+
 					if(endPt1EpsilonClose2F && endPt2EpsilonClose2F 
 						&& endPt1IsPermittedAcrossF && endPt2IsPermittedAcrossF)
 					{
@@ -1655,7 +1684,7 @@ void collapse_caps (
 	const int notDegreeThree = scalar_grid.NumVertices(); // Notdegree3
 
   // PROBLEM: COMPUTES WRONG DEGREE ON BOUNDARY VERTICES.
-	QTRIANGULATE::compute_degree_per_vertex(VERT_PER_QUAD, quad_vert, iso_vlist);
+	compute_degree_per_vertex(VERT_PER_QUAD, quad_vert, iso_vlist);
 
 	for (int q = 0; q < numQuads; q++)
 	{

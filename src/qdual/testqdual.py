@@ -22,6 +22,7 @@ def runqdual():
     os.system(ijkgenscalar_command_line);
 
     qdual_command_line = 'qdual -s -trimesh -move_vertex ' + \
+                         '-collapseC ' \
                          '-epsilon ' + str(epsilon) + \
                          ' -o ' + offFile + ' ' + str(isovalue) + \
                          ' random.nrrd';

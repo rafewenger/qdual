@@ -38,7 +38,7 @@
 #include "qdual_types.h"
 #include "qdual_datastruct.h"
 
-/// ijkdual classes and routines.
+/// qdual classes and routines.
 namespace QDUAL {
 
 // **************************************************

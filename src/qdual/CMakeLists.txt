@@ -63,7 +63,7 @@ ENDIF()
 
 ADD_EXECUTABLE(qdual qdual_main.cxx qdualIO.cxx qdual.cxx 
                      qdual_datastruct.cxx qdual_extract.cxx 
-                     qdual_position.cxx 
+                     qdual_position.cxx qdual_utilities.cxx
                      ijkdualtable.cxx ijkdualtable_ambig.cxx
 					 qdual_remove_degen.cxx qdual_table.cxx
 					 qdual_collapse.cxx qdual_restrictions.cxx)

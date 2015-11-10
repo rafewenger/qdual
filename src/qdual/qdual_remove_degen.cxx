@@ -1,5 +1,28 @@
+/// \file qdual_collapse.cxx
+/// Remove degenerate quadrilaterals.
+
+/*
+  QDUAL: Quality Dual Isosurface Generation
+  Copyright (C) 2015 Arindam Bhattacharya, Rephael Wenger
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public License
+  (LGPL) as published by the Free Software Foundation; either
+  version 2.1 of the License, or any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
 #include "qdual_remove_degen.h"
 #include "qdual_collapse.h"
+#include "qdual_utilities.h"
 
 
 #include <cmath>
@@ -8,30 +31,7 @@ using namespace std;
 using namespace IJK;
 using namespace NamedConstants;
 using namespace QCOLLAPSE;
-
-/// OBSOLETE *****
-//Returns true if degen quads exists
-//Returns the quadvert without the degen QUADS.
-//Returns the track_quad_indices. 
-/*
-bool QTRIANGULATE::triangulate_degenerate_quads (
-std::vector<VERTEX_INDEX> & quad_vert,
-std::vector<VERTEX_INDEX> & tri_vert,
-const std::vector<COORD_TYPE> & vertex_coord,
-unordered_map<QUAD_INDEX, QUAD_INDEX> &track_quad_indices)
-{
-std::vector<VERTEX_INDEX> non_degen_quad_vert;
-remove_degenerate_quads(quad_vert, non_degen_quad_vert,
-tri_vert, vertex_coord, track_quad_indices);
-//reset the quad vert
-quad_vert.clear();
-quad_vert = non_degen_quad_vert;
-if (tri_vert.size() == 0 )
-return false;
-else
-return true;
-}
-*/
+using namespace QDUAL;
 
 //Returns true if degen quads exists
 //Returns the quadvert without the degen QUADS.
@@ -154,168 +154,6 @@ bool checkEdgeForDiagonalCommonVerticesB
 	}
 	return false;
 }
-
-
-// Check if quads share vertices.
-// Set the right order of vertices in quad "v"
-// To triangulate the quad properly.
-//bool checkIfQuadsShareVertices02(
-//	const QUAD_INDEX q,
-//	const QUAD_INDEX q2,
-//	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
-//	std::vector<VERTEX_INDEX> & quad_vert,
-//	const std::vector<VERTEX_INDEX> & origQuadVert,
-//	vector< VERTEX_INDEX> & v
-//	)
-//{
-//	v.clear();
-//	if ((
-//		(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD])) == 
-//		find_vertex(collapse_map, (origQuadVert[q2*VERT_PER_QUAD]))
-//		)&&( 
-//		find_vertex(collapse_map, quad_vert[q*VERT_PER_QUAD+2])
-//		== find_vertex(collapse_map, origQuadVert[q2*VERT_PER_QUAD+2])
-//		))
-//	{
-//		v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
-//		v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
-//		v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
-//		v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
-//		return true;		
-//	}
-//	else
-//		return false;
-//}
-
-// Check if quads share vertices.
-// Set the right order of vertices in quad "v"
-// To triangulate the quad properly.
-//bool checkIfQuadsShareVertices13(
-//	const QUAD_INDEX q,
-//	const QUAD_INDEX q2,
-//	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
-//	std::vector<VERTEX_INDEX> & quad_vert,
-//	const std::vector<VERTEX_INDEX> & origQuadVert,
-//	vector< VERTEX_INDEX> & v
-//	)
-//{
-//	v.clear();
-//	if ((
-//		(find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1])) == 
-//		find_vertex(collapse_map, (origQuadVert[q2*VERT_PER_QUAD+3]))
-//		)&&( 
-//		find_vertex(collapse_map, quad_vert[q*VERT_PER_QUAD+3])
-//		== find_vertex(collapse_map, origQuadVert[q2*VERT_PER_QUAD+1])
-//		))
-//	{
-//		v[0] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+1]);
-//		v[1] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+3]);
-//		v[2] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD]);
-//		v[3] = find_vertex( collapse_map, quad_vert[q*VERT_PER_QUAD+2]);
-//		return true;		
-//	}
-//	else
-//		return false;
-//}
-
-
-//bool checkEdgeForDiagonalCommonVertices
-//	(
-//	VERTEX_INDEX ie, 
-//	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
-//	const QUAD_INDEX Q,
-//	QUAD_INDEX & commonQuadToQ,
-//	IJK::ARRAY<VERTEX_INDEX> & collapse_map,
-//	std::vector<VERTEX_INDEX> & quad_vert,
-//	const std::vector<VERTEX_INDEX> & origQuadVert,
-//	vector< VERTEX_INDEX> & v
-//	)
-//{
-//	std::unordered_map<VERTEX_INDEX, VERTEX_INDEX>::iterator ind 
-//		= diagonalMap.find(ie);
-//
-//	if (ind  != diagonalMap.end())
-//	{
-//		commonQuadToQ = diagonalMap.at(ie);
-//		bool check02 = checkIfQuadsShareVertices02
-//			(Q, commonQuadToQ, collapse_map, quad_vert, origQuadVert, v);
-//		if (check02)
-//			return true;
-//
-//		bool check13 = checkIfQuadsShareVertices13
-//			(Q, commonQuadToQ, collapse_map, quad_vert, origQuadVert, v);
-//		if (check13)
-//			return true;
-//	}
-//	return false;
-//}
-
-//VERSION C
-//bool sharesOppositeVerticesComputationsC
-//	(
-//	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
-//	const QUAD_INDEX q, //qth quad
-//	QUAD_INDEX & q2, //is the common quad
-//	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist, 
-//	std::vector<VERTEX_INDEX> & quad_vert,
-//	std::vector<VERTEX_INDEX> & dual_edge,
-//	const std::vector<VERTEX_INDEX> & origQuadVert,
-//	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap,
-//	std::unordered_map<VERTEX_INDEX,VERTEX_INDEX> & diagonalMap2,
-//	const std::vector<DIRECTION_TYPE> &orth_dir,
-//	vector< VERTEX_INDEX> & v,
-//	unordered_map<QUAD_INDEX, QUAD_INDEX > & track_quad_indices,
-//	IJK::ARRAY<VERTEX_INDEX> & collapse_map, 
-//	const bool printInfo
-//	)
-//{
-//	if (diagonalMap.empty())
-//		return false;
-//
-//	VERTEX_INDEX ie = dual_edge[q];
-//
-//	VERTEX_INDEX edgeDir = ie%DIM3;
-//	VERTEX_INDEX iend = (ie-edgeDir)/DIM3;
-//
-//	if(printInfo)
-//	{
-//		cout <<"diag check quad: "<<q <<endl;
-//		cout <<" iend "<< iend <<
-//			" ie "<< ie << endl;
-//	}
-//	IJK::ARRAY<GRID_COORD_TYPE> edgeBase(DIM3,0);
-//	scalar_grid.ComputeCoord(iend, &(edgeBase[0]));
-//
-//	if (edgeBase[edgeDir]!=0)
-//	{
-//		VERTEX_INDEX iprev = scalar_grid.PrevVertex(iend, edgeDir );
-//		VERTEX_INDEX ie2 = iprev*DIM3 + edgeDir;
-//		// OBSOLETE
-//		/*bool checkQuads = checkEdgeForDiagonalCommonVertices
-//			(ie2, diagonalMap, q, q2, collapse_map, quad_vert, origQuadVert, v);*/
-//	
-//		bool checkQuads = checkEdgeForDiagonalCommonVerticesB
-//			(ie2, diagonalMap2, q, q2, collapse_map, quad_vert, v);
-//		
-//		if (checkQuads)
-//			return true;
-//	}
-//	const AXIS_SIZE_TYPE * axis_size = scalar_grid.AxisSize(); 
-//	if (edgeBase[edgeDir] != (axis_size[edgeDir]-1))
-//	{
-//		VERTEX_INDEX inext = scalar_grid.NextVertex(iend, edgeDir);
-//		VERTEX_INDEX ie2 = inext*DIM3 + edgeDir;
-//		/*bool checkQuads = checkEdgeForDiagonalCommonVertices
-//			(ie2, diagonalMap, q, q2, collapse_map, quad_vert, origQuadVert, v);*/
-//	
-//		bool checkQuads = checkEdgeForDiagonalCommonVerticesB
-//			(ie2, diagonalMap2, q, q2, collapse_map, quad_vert, v);
-//
-//		if (checkQuads)
-//			return true;
-//	}
-//	return false;
-//}
 
 bool sharesOppositeVerticesComputationsD
 	(
@@ -824,43 +662,6 @@ void QTRIANGULATE::remove_degenerate_quads(
 }
 
 
-
-// Compute degree of each vertex
-// Only for non degenerate poly
-// param 1 : num vertex in the poly.
-// param 2 : non degenerate polys
-void QTRIANGULATE::compute_degree_per_vertex(
-	const int vert_per_poly,
-	std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
-	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
-	)
-{
-	const int num_poly = poly_vert.size()/vert_per_poly;
-	for (int q=0; q<num_poly; q++)
-	{
-		for (int d=0;d<vert_per_poly;d++){
-			VERTEX_INDEX v = poly_vert[vert_per_poly*q+d];
-			iso_vlist[v].ver_degree++;
-		}
-	}
-}
-
-void QTRIANGULATE::reset_degree_per_vertex(
-	const int vert_per_poly,
-	std::vector<VERTEX_INDEX> & poly_vert, // only non degenerate quads
-	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist		
-	)
-{
-	const int num_poly = poly_vert.size()/vert_per_poly;
-	for (int q=0; q<num_poly; q++)
-	{
-		for (int d=0;d<vert_per_poly;d++){
-			VERTEX_INDEX v = poly_vert[vert_per_poly*q+d];
-			iso_vlist[v].ver_degree=0;
-		}
-	}
-}
-
 //Compute the length of the side of a triangle 
 //given the vertex index of the endpts and the vertexCoord
 float length_of_side (	const VERTEX_INDEX A, const VERTEX_INDEX B,
@@ -1023,7 +824,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 {
 	const int num_quad = quadVert.size()/VERT_PER_QUAD;
 	IJK::reorder_quad_vertices(quadVert);
-	QTRIANGULATE::reset_degree_per_vertex(VERT_PER_QUAD, quadVert, iso_vlist);
+	reset_degree_per_vertex(VERT_PER_QUAD, quadVert, iso_vlist);
 	compute_degree_per_vertex(4, quadVert, iso_vlist);
 	compute_degree_per_vertex(3, tri_vert, iso_vlist);
 
@@ -1253,7 +1054,7 @@ void QTRIANGULATE::triangulate_quad_angle_based(
 {
 	const int num_quad = quadVert.size()/VERT_PER_QUAD;
 	IJK::reorder_quad_vertices(quadVert);
-	QTRIANGULATE::reset_degree_per_vertex(VERT_PER_QUAD, quadVert, iso_vlist);
+	reset_degree_per_vertex(VERT_PER_QUAD, quadVert, iso_vlist);
 	compute_degree_per_vertex(4, quadVert, iso_vlist);
 	compute_degree_per_vertex(3, tri_vert, iso_vlist);
 
