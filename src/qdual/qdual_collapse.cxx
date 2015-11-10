@@ -432,7 +432,7 @@ void collapse_across_facetsB
 					cout <<"is Endpt "<< endPt1 <<"  fixed ? "
 						<< iso_vlist[endPt1].flag_fixed <<endl;
 				}
-				//rest nunCLose
+				//reset numCLose
 				numClose=0;
 				endPt1CloseToAFacet = true;
 				for (int d = 0; d < dimension; d++)
@@ -468,6 +468,7 @@ void collapse_across_facetsB
 					cout <<"numclose "<< numClose <<endl;
 					cout <<"closestDir "<< closestFacetDir<<endl;
 				}
+
 				if(numClose!=0 && endPt1CloseToAFacet)
 				{
 					endPt2CloseToAFacet = true;
@@ -825,7 +826,8 @@ bool findFacetCommonToEndPts(
 		return false;
 }
 
-//Collapse across facets version C
+// Collapse across facets version C
+// Does not collapse if either endpoint is close to a grid edge.
 void collapse_across_facetsC
 	(	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
 	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
