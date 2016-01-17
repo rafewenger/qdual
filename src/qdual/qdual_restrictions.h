@@ -47,6 +47,11 @@ void compute_sep_vert(
 	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
 	QDUAL_TABLE & qdual_table);
 
+// Compute the sep edges
+void compute_sep_edges(
+	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	QDUAL_TABLE & qdual_table);
 
 
 // Main functions to set restrictions

@@ -74,7 +74,7 @@ namespace QDUAL {
 
 	typedef IJK::DUAL_ISOVERT
 		<ISO_VERTEX_INDEX, FACET_VERTEX_INDEX, IJKDUALTABLE::TABLE_INDEX,
-		DEGREE_TYPE, ISO_VERTEX_INDEX, COORD_TYPE>
+		DEGREE_TYPE, VERTEX_INDEX, EDGE_INDEX, COORD_TYPE>
 		DUAL_ISOVERT;
 
 	// **************************************************
@@ -179,11 +179,12 @@ namespace QDUAL {
 		bool flag_collapse_debug;
 		float qdual_epsilon;
 		bool flag_move_vertices;
-		bool flag_move_vertices2; //move_vertices by epsilon/2
+		bool flag_move_vertices2; // move_vertices by epsilon/2
 		bool flag_cap_col;// cap collapse
 		bool flag_delete_isolate;
-		bool flag_use_collapse_B; // use version B of collapse
-		bool flag_use_collapse_C;
+		bool flag_use_collapse_B; // Use version B of collapse
+		bool flag_use_collapse_C; // Use version C of collapse
+		bool flag_use_collapse_D; // Use version D of collapse
 
 		/// flag_V1w_close Controls generation of random vertex positions.
 		///   If true, isosurface vertices with degree dimension

@@ -981,19 +981,24 @@ namespace IJK {
   // **************************************************
 
   template <typename CI_TYPE, typename PI_TYPE, typename TI_TYPE,
-   typename DEG_TYPE, typename SV_TYPE, typename COORD_TYPE>
+            typename DEG_TYPE, 
+            typename SEP_VERT_TYPE, typename SEP_EDGE_TYPE,
+            typename COORD_TYPE>
   class DUAL_ISOVERT {
   public:
     CI_TYPE cube_index;
     PI_TYPE patch_index;
     TI_TYPE table_index;
-	DEG_TYPE ver_degree;
-	SV_TYPE  sep_vert;
-	PI_TYPE restricted_facets;
-	bool flag_restrictionC;
-	bool flag_isolated;
-	bool flag_fixed;
-	std::vector<COORD_TYPE> cube_coord; 
+
+    // *** SHOULD NOT BE IN THIS FILE ***
+    DEG_TYPE ver_degree;
+    SEP_VERT_TYPE  sep_vert;
+    SEP_EDGE_TYPE  sep_edge;
+    PI_TYPE restricted_facets;
+    bool flag_restrictionC;
+    bool flag_isolated;
+    bool flag_fixed;
+    std::vector<COORD_TYPE> cube_coord; 
   };
 
   // **************************************************

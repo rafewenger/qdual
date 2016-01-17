@@ -6,8 +6,8 @@ import sys
 offFile = 'out.off'
 numTest = 10
 axisSize = 20
-maxVal = 5
-isovalue = 2.1
+maxVal = 255
+isovalue = 127.5
 seed = 12345
 epsilon = 0.3
 
@@ -21,8 +21,8 @@ def runqdual():
     sys.stdout.flush()
     os.system(ijkgenscalar_command_line);
 
-    qdual_command_line = 'qdual -s -trimesh -move_vertex ' + \
-                         '-collapseC ' \
+    qdual_command_line = './qdual -s -trimesh -move_vertex ' + \
+                         '-collapseD ' \
                          '-epsilon ' + str(epsilon) + \
                          ' -o ' + offFile + ' ' + str(isovalue) + \
                          ' random.nrrd';

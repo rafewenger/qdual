@@ -3,7 +3,7 @@
 
 /*
   QDUAL: Quality Dual Isosurface Generation
-  Copyright (C) 2014 Arindam Bhattacharya, Rephael Wenger
+  Copyright (C) 2014-2015 Arindam Bhattacharya, Rephael Wenger
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public License
@@ -31,7 +31,7 @@
 
 
 namespace NamedConstants{
-	static const  int DIM3 = 3;
+	static const int DIM3 = 3;
 	static const int NUM_CUBE_FACETS = 6;
 	static const int NUM_CUBE_FACET_VERT = 4;
 	static const int NUM_CUBE_VERT = 8;
@@ -110,6 +110,12 @@ namespace QDUAL {
 // **************************************************
 
   typedef IJK::BOX<VERTEX_INDEX> GRID_BOX;  ///< Grid box type.
+
+  /// Representation of grid edge by lower/leftmost endpoint and direction.
+  struct GRID_EDGE {
+    VERTEX_INDEX endpoint0;
+    int direction;
+  };
 }
 
 #endif

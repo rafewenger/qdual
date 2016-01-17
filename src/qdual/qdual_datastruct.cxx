@@ -76,6 +76,7 @@ void DUALISO_DATA_FLAGS::Init()
   flag_delete_isolate = false;
   flag_use_collapse_B = false;
   flag_use_collapse_C = false;
+  flag_use_collapse_D = false;
 
   random_seed = 10;
   random_num_intervals = 1000;

@@ -7,8 +7,8 @@ offFile1 = 'out1.off'
 offFile2 = 'out2.off'
 numTest = 5
 axisSize = 20
-maxVal = 5
-isovalue = 2.1
+maxVal = 255
+isovalue = 127.5
 seed = 12345
 
 # Function runqdual

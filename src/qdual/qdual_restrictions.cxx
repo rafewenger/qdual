@@ -518,6 +518,36 @@ void compute_sep_vert(
 	}
 }
 
+void compute_sep_edges(
+	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	std::vector<QDUAL::DUAL_ISOVERT> & iso_vlist,
+	QDUAL_TABLE & qdual_table)
+{
+	GRID_COORD_TYPE * c = new GRID_COORD_TYPE[3];
+
+	IJKDUALTABLE::TABLE_INDEX it;
+	unsigned char ip;
+	int i=0;
+	for (i = 0; i < iso_vlist.size(); i++)
+	{
+		it = iso_vlist[i].table_index;
+		ip = iso_vlist[i].patch_index;
+		VERTEX_INDEX icube = iso_vlist[i].cube_index;
+    GRID_EDGE cube_edge = qdual_table.V2(it,ip);
+
+		if (cube_edge.endpoint0 !=255 )
+		{
+      VERTEX_INDEX endpoint0 =
+        scalar_grid.CubeVertex(icube, cube_edge.endpoint0);
+			iso_vlist[i].sep_edge = endpoint0*DIM3 + cube_edge.direction;
+		}
+		else
+		{
+			iso_vlist[i].sep_edge = scalar_grid.NumVertices()*DIM3;
+		}
+	}
+}
+
 
 //
 void set_restrictionsA(

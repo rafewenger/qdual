@@ -969,6 +969,130 @@ void collapse_across_facetsC
 	}
 }
 
+// Return true if collapse across facet is permitted
+// @param facetBaseCoord Coordinates of lowest/leftmost facet vertex.
+// @param facetDir Direction of facet.
+bool is_collapse_across_facet_permitted
+(	const VERTEX_INDEX endPt1,
+	const VERTEX_INDEX endPt2,
+	const std::vector<COORD_TYPE> & vertex_coord,
+	const std::vector<DUAL_ISOVERT> & iso_vlist,
+	const IJK::ARRAY<GRID_COORD_TYPE> & facetBaseCoord,
+	const DIRECTION_TYPE & facetDir)
+{
+  bool endPt1IsPermittedAcrossF =
+    is_permitted_collapse_facet
+    (iso_vlist, endPt1, facetBaseCoord.PtrConst(), facetDir);
+
+  bool endPt2IsPermittedAcrossF=
+    is_permitted_collapse_facet 
+    (iso_vlist, endPt2, facetBaseCoord.PtrConst(), facetDir);
+
+  if (!endPt1IsPermittedAcrossF) { return(false); }
+  if (!endPt2IsPermittedAcrossF) { return(false); }
+
+  if (iso_vlist[endPt1].ver_degree != iso_vlist[endPt2].ver_degree)
+    { return(false); }
+
+  if (iso_vlist[endPt1].ver_degree == 4) {
+    if (iso_vlist[endPt1].sep_edge == 255) { return(false); }
+    if (iso_vlist[endPt2].sep_edge == 255) { return(false); }
+    if (iso_vlist[endPt1].sep_edge != iso_vlist[endPt2].sep_edge)
+      { return(false); }
+  }
+
+  return(true);
+}
+
+// Collapse across facets version D
+// Does not collapse if vertices have different degrees.
+void collapse_across_facetsD
+	(	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
+	IJKDUALTABLE::ISODUAL_CUBE_TABLE &isodual_table,
+	std::vector<DUAL_ISOVERT> & iso_vlist,
+	std::vector<VERTEX_INDEX> & quad_vert,
+	std::vector<COORD_TYPE> & vertex_coord,
+	const std::vector<DIRECTION_TYPE> & orth_dir,
+	IJK::ARRAY<VERTEX_INDEX> &collapse_map,
+	const float epsilon,
+	const bool printInfo,
+	DUALISO_INFO & dualiso_info)
+{
+	const int numQuads=quad_vert.size()/VERT_PER_QUAD;
+	const int dimension=scalar_grid.Dimension();
+	int v1,v2;
+	IJK::ARRAY<GRID_COORD_TYPE> facetBaseCoord(dimension,0);
+	IJK::ARRAY<GRID_COORD_TYPE> closestFacetBaseCoord(dimension,0);
+
+	//foreach quad
+	for (QUAD_INDEX q = 0; q < numQuads; q++){
+		//foreach edge
+		for (v1 = VERT_PER_QUAD-1, v2 = 0; v2 < VERT_PER_QUAD; v1 = v2++)
+		{
+			QUAD_INDEX endPt1=quad_vert[q*VERT_PER_QUAD+v1];
+			QUAD_INDEX endPt2=quad_vert[q*VERT_PER_QUAD+v2];
+
+			/*if(printInfo){
+				cout <<"\nCollapseAcrossFacets quad "<< q<<"  endpts "<< endPt1 <<" "<<endPt2 <<endl;
+			}*/
+
+			endPt1=find_vertex(collapse_map, endPt1);
+			endPt2=find_vertex(collapse_map, endPt2);
+
+			if(endPt1!=endPt2){
+				const COORD_TYPE* endPt1Coord=&(vertex_coord[DIM3*endPt1]);
+				const COORD_TYPE* endPt2Coord=&(vertex_coord[DIM3*endPt2]);
+				IJK::ARRAY<GRID_COORD_TYPE> facetBaseCoord(DIM3,0);
+				DIRECTION_TYPE facetDir=-1;
+				bool hasCommonFacet = findFacetCommonToEndPts
+					(endPt1, endPt2,  vertex_coord, iso_vlist, printInfo, facetBaseCoord, facetDir);
+
+				/*if(printInfo){
+					cout <<"Updated endpts "<< endPt1 <<" "<<endPt2 <<endl;
+					cout <<"endpt coords ("<<endPt1<<") "<< endPt1Coord[0] <<" "<< endPt1Coord[1]<<" "<<endPt1Coord[2]<<endl;
+					cout <<" ("<<endPt2<<") "<< endPt2Coord[0]<<" "<<endPt2Coord[1]<<" "<<endPt2Coord[2]<<endl;
+					cout <<"facetBaseCoord "<< facetBaseCoord[0]<<" "<<facetBaseCoord[1]<<" "<<facetBaseCoord[2]<<endl;
+				}*/
+
+				if (hasCommonFacet){
+
+          if (is_collapse_across_facet_permitted
+              (endPt1, endPt2, vertex_coord, iso_vlist, 
+               facetBaseCoord, facetDir)) {
+
+            bool endPt1EpsilonClose2F =
+              is_epsilon_close(endPt1Coord, facetBaseCoord, facetDir, epsilon);
+            bool endPt2EpsilonClose2F =
+              is_epsilon_close(endPt2Coord, facetBaseCoord, facetDir, epsilon);
+
+            /* 
+					bool endPt1IsPermittedAcrossF=
+						is_permitted_collapse_facet (iso_vlist, endPt1,  &(facetBaseCoord[0]),
+						facetDir);
+					bool endPt2IsPermittedAcrossF=
+						is_permitted_collapse_facet (iso_vlist, endPt2,  &(facetBaseCoord[0]),
+						facetDir);
+            */
+
+            if(endPt1EpsilonClose2F && endPt2EpsilonClose2F) {
+
+							collapseToFacet
+								( endPt1, endPt1Coord, endPt2Coord, facetBaseCoord,
+								facetDir, vertex_coord, iso_vlist, printInfo);
+							dualiso_info.col_info.permitted_facet_restriction++;
+							update_collapse_edges(collapse_map,endPt1, endPt2);
+							/*if(printInfo)
+							{
+								cout <<"**endpt "<< endPt2 <<" collapses to "<< endPt1 << endl;
+							}*/
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 //Collapse across edges version B
 void collapse_across_edgesB(
 	const DUALISO_SCALAR_GRID_BASE & scalar_grid,
@@ -1683,10 +1807,6 @@ void collapse_caps (
 	const int numQuads = quad_vert.size()/4;
 	const int notDegreeThree = scalar_grid.NumVertices(); // Notdegree3
 
-  // PROBLEM: COMPUTES WRONG DEGREE ON BOUNDARY VERTICES.
-  reset_degree_per_vertex(iso_vlist);
-	compute_degree_per_vertex(VERT_PER_QUAD, quad_vert, iso_vlist);
-
 	for (int q = 0; q < numQuads; q++)
 	{
 		// the diagonals are given by AB and CD
@@ -1781,12 +1901,15 @@ void QCOLLAPSE::dual_collapse(
 	DUALISO_INFO & dualiso_info
 	)
 {
-	//Reordering QuadVert 
+	// Reordering QuadVert to put them in cyclic order.
 	IJK::reorder_quad_vertices(quad_vert);
 	clock_t t0,t1,t2,t3,t4;
 	t0 = clock();
 
-	//CYCLIC ORDER
+  // PROBLEM: COMPUTES WRONG DEGREE ON BOUNDARY VERTICES.
+  reset_degree_per_vertex(iso_vlist);
+	compute_degree_per_vertex(VERT_PER_QUAD, quad_vert, iso_vlist);
+
 	if (dualiso_data.flag_cap_col)
 	{
 		collapse_caps(scalar_grid, quad_vert, vertex_coord, orth_dir, 
@@ -1821,6 +1944,16 @@ void QCOLLAPSE::dual_collapse(
 
 		collapse_across_verticesB(scalar_grid, isodual_table, iso_vlist, quad_vert, 
 			vertex_coord, collapse_map, epsilon, dualiso_data.flag_collapse_debug, dualiso_info);
+		t4=clock();
+	}
+	else if (dualiso_data.flag_use_collapse_D)
+	{
+		t1=clock();
+		collapse_across_facetsD(scalar_grid, isodual_table, iso_vlist, quad_vert,
+			vertex_coord, orth_dir, collapse_map, epsilon,
+			dualiso_data.flag_collapse_debug, dualiso_info);
+		t2=clock();
+		t3=clock();
 		t4=clock();
 	}
 	else
